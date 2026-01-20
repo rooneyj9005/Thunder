@@ -1,0 +1,13 @@
+name = "Thunder"
+author = "https://github.com/rooneyj9005"
+version = "1.0.0"
+pack-format = "packwiz:1.1.0"
+
+[index]
+file = "index.toml"
+hash-format = "sha256"
+hash = "ce54da4431662f6132e1f369337747f791ce04ebcffc52db7d311b7d91a8d0de"
+
+[versions]
+forge = "47.4.13"
+minecraft = "1.20.1"

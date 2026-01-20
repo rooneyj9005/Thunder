@@ -1,0 +1,13 @@
+name = "Farmers Delight Kacchi"
+filename = "kacchi-2.0.0-1.20.1.jar"
+side = "both"
+
+[download]
+url = "https://cdn.modrinth.com/data/3OjjyiQc/versions/fTnISns1/kacchi-2.0.0-1.20.1.jar"
+hash-format = "sha512"
+hash = "6297f4c5814c4d152536e0fb11a9354d59e7aec8c1d63e8f7f296661bf684559136ddbd6789455f8bed689c27e85316995bedd76cbf97e7a65e40fb702852478"
+
+[update]
+[update.modrinth]
+mod-id = "3OjjyiQc"
+version = "fTnISns1"

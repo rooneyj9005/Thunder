@@ -1,0 +1,13 @@
+name = "Item Filters"
+filename = "item-filters-forge-2001.1.0-build.53.jar"
+side = "both"
+
+[download]
+url = "https://cdn.modrinth.com/data/1KLyhGRz/versions/FMUX4THT/item-filters-forge-2001.1.0-build.53.jar"
+hash-format = "sha512"
+hash = "4bed10d923a6b6b03614a019a50a5676f4dc89213b6143a77f5af4c759fa7f9940e45a81192e07717efbb3c917324b2e33343c1db3a6ed61171ccebb4b09832f"
+
+[update]
+[update.modrinth]
+mod-id = "1KLyhGRz"
+version = "FMUX4THT"

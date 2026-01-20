@@ -1,0 +1,13 @@
+name = "Apotheotic Creation (Create 6.0)"
+filename = "apotheoticcreation-1.0.2.jar"
+side = "both"
+
+[download]
+url = "https://cdn.modrinth.com/data/xq4R0coO/versions/ysIvqkV9/apotheoticcreation-1.0.2.jar"
+hash-format = "sha512"
+hash = "6c49a78fbad1c1b7d13bf644c55fc6409823a8c2bfe51c72ebe4bc63197070e1c1b00928946c10f08236b7e06f1ca78797b1426f78dce0f773fed3a9b1c1c74d"
+
+[update]
+[update.modrinth]
+mod-id = "xq4R0coO"
+version = "ysIvqkV9"

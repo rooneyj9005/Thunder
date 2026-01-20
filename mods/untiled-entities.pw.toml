@@ -1,0 +1,13 @@
+name = "Untiled Entities"
+filename = "untiled_entities-2.0.0.jar"
+side = "both"
+
+[download]
+url = "https://cdn.modrinth.com/data/ktlYCvRF/versions/Z04WXEJc/untiled_entities-2.0.0.jar"
+hash-format = "sha512"
+hash = "430c86fab4340cc14e8e18972ab73c34286961bb8ce78d5f4d3a6703888cfffb4db264e9f87c8e3d0c689851d00ec43cff009f556db5ff67cd5fbb8d01833fe9"
+
+[update]
+[update.modrinth]
+mod-id = "ktlYCvRF"
+version = "Z04WXEJc"

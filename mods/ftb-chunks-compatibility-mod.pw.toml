@@ -1,0 +1,13 @@
+name = "FTB Chunks Compatibility mod"
+filename = "ftbchunkscompatibility-forge-1.20.1-1.0.1.jar"
+side = "server"
+
+[download]
+url = "https://cdn.modrinth.com/data/jPnRPw1A/versions/9jHtri3e/ftbchunkscompatibility-forge-1.20.1-1.0.1.jar"
+hash-format = "sha512"
+hash = "42c8cdc36ce47ca24fedd9b5103613437287cedea5579a34efd19e1014aa77b706598cbfdb888ee206207d619d67e6af9b5d01c5218fda88ce708a1646217729"
+
+[update]
+[update.modrinth]
+mod-id = "jPnRPw1A"
+version = "9jHtri3e"

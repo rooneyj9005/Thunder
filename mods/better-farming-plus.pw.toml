@@ -1,0 +1,13 @@
+name = "Better Farming ++"
+filename = "better_farming_plus-0.3.0-forge-1.20.1.jar"
+side = "both"
+
+[download]
+url = "https://cdn.modrinth.com/data/cYvmbMbJ/versions/pasnT3ZG/better_farming_plus-0.3.0-forge-1.20.1.jar"
+hash-format = "sha512"
+hash = "bb75c1b2960efdbc5617070dc0ff05e5f010126b63bc0d00b98698d72e077e229cdf7d1b7c0bd34ec3f966f946949a6f114723c1494bdf43f03d4c04ef19a19a"
+
+[update]
+[update.modrinth]
+mod-id = "cYvmbMbJ"
+version = "pasnT3ZG"

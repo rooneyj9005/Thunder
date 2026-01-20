@@ -1,0 +1,13 @@
+name = "BeanSilo"
+filename = "BeanSilo-1.3.zip"
+side = "both"
+
+[download]
+hash-format = "sha1"
+hash = "bd0c2a6093ed09a3dde8d5ee4c403af3fc742d63"
+mode = "metadata:curseforge"
+
+[update]
+[update.curseforge]
+file-id = 5328914
+project-id = 1014244

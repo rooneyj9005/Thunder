@@ -1,0 +1,13 @@
+name = "AM Wandering Trader Fix"
+filename = "amoverride-1.0-all.jar"
+side = "client"
+
+[download]
+url = "https://cdn.modrinth.com/data/2UavtGuR/versions/o8TBr6W0/amoverride-1.0-all.jar"
+hash-format = "sha512"
+hash = "0dbf08b6e71dcbcfc0abdb2c37c1fd905a708cf5dfc28ea36ab9a1579a71d9a9f0cecd192e79d9a1e041fd7725df6e6f71719ee662871994c0df2bc15e93384e"
+
+[update]
+[update.modrinth]
+mod-id = "2UavtGuR"
+version = "o8TBr6W0"

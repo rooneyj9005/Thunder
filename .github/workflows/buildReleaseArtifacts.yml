@@ -16,6 +16,8 @@ jobs:
           cache: true
       - run: go install github.com/packwiz/packwiz@latest
       - run: $(go env GOPATH)/bin/packwiz modrinth export
-      - uses: softprops/action-gh-release@v2
-        with:
-          files: "*.mrpack"
+      - name: Upload to Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release upload ${{ github.event.release.tag_name }} *.mrpack --clobber

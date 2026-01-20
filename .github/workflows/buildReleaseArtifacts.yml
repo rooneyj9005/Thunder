@@ -4,8 +4,8 @@ on:
     types: [published]
 jobs:
   build:
-    runs-on: ubuntu-24.04
-    timeout-minutes: 5
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
     permissions:
       contents: write
     steps:
@@ -13,9 +13,10 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version: 'stable'
-          cache: true
-      - run: go install github.com/packwiz/packwiz@latest
-      - run: $(go env GOPATH)/bin/packwiz modrinth export
+      - name: Install packwiz
+        run: go install github.com/packwiz/packwiz@latest
+      - name: Export Modpack
+        run: $(go env GOPATH)/bin/packwiz modrinth export
       - name: Upload to Release
         env:
           GH_TOKEN: ${{ github.token }}

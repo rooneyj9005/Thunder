@@ -2,7 +2,7 @@
 
 Thunder is a Minecraft 1.20.1 modpack built for playing with friends. It combines technology, magic, and building mods into a cohesive experience that is optimised for server performance.
 
-You can automate your base with **Create**, craft spells with **Ars Nouveau**, set up digital storage with **AE2**, and build with **Macaw's furniture** and **Chipped** blocks. There are 111 mods at time of writing, all tested for stability.
+You can automate your base with **Create**, craft spells with **Ars Nouveau**, set up digital storage with **AE2**, and build with **Macaw's furniture** and **Chipped** blocks. There are 114 mods at time of writing, all tested for stability.
 
 ---
 
@@ -19,7 +19,7 @@ This pack uses **packwiz** to keep server files synchronised.
 1. Download the [packwiz-installer-bootstrap](https://github.com/packwiz/packwiz-installer-bootstrap/releases).
 2. Run the following command in your server directory:
    ```bash
-   java -jar packwiz-installer-bootstrap.jar -g -s server [URL-TO-YOUR-PACK.TOML]
+   java -jar packwiz-installer-bootstrap.jar -g -s server https://raw.githubusercontent.com/rooneyj9005/Thunder/main/pack.toml
    ```
 3. The installer will automatically download the correct mod versions and configurations, excluding client-side-only mods.
 
@@ -80,11 +80,11 @@ Before releasing a new version, perform the following checks:
 
 ---
 
-## What's in the Pack
+## What's actually in the Pack
 
-* **Tech:** Create (plus addons), Mekanism, Applied Energistics 2, CC: Tweaked.
+* **Tech:** Create (plus addons), Mekanism, Applied Energistics 2, Refined Storage, Modular Routers, CC: Tweaked, Mystical Agriculture.
 * **Magic:** Ars Nouveau, Blood Magic, Hexerei, Apotheosis.
 * **Building:** Macaw's suite (Doors, Windows, Bridges, Roofs), Chipped, Rechiseled.
 * **World Gen:** Biomes o' Plenty, Better Nether, Alex's Mobs.
 * **Performance:** Dynamic Lights, Memory Leak Fix, Krypton, Canary.
-* **Utility:** SecurityCraft, LuckPerms, FTB Essentials, Xaero's Maps, Jade.
+* **Utility:** SecurityCraft, LuckPerms, FTB Essentials, Xaero's Maps, Jade, Waystones, Simple Voice Chat, Lootr, Sophisticated Backpacks.

@@ -1,12 +1,16 @@
 hash-format = "sha256"
 
 [[files]]
+file = ".github/workflows/buildReleaseArtifacts.yml"
+hash = "efb6da5c3e6691716a26b1d59ab8fd722daf638abad19c04cf7277e88a5ff0a8"
+
+[[files]]
 file = "README.md"
-hash = "36a30899608ef9fe6e4e0c64fa8d52233b2ac19a85c1030668bd6e3706498685"
+hash = "d0da0a81c92c14886159a2f76665bd12ea81a08820921a1a9bbb5c6d8e470da7"
 
 [[files]]
 file = "instance.cfg"
-hash = "ed5509b6cac65bd09eb2618445739ee092850c6f0afe987d2efbde8cbe496a63"
+hash = "00b1f25424e1fc7d55cddd72e63d6b3d63b15689bfcfabee1b74ba32e943b329"
 
 [[files]]
 file = "mods/ae2.pw.toml"
@@ -116,6 +120,11 @@ metafile = true
 [[files]]
 file = "mods/chipped.pw.toml"
 hash = "b0732421ae2999d558a7b70a11fa86a93738ca33f6f3ec343017796df9c47d9c"
+metafile = true
+
+[[files]]
+file = "mods/chunky.pw.toml"
+hash = "0e17f9758f6f67ef87aa6f8d5afc47901521a05904cd8470ef65063b48e69d73"
 metafile = true
 
 [[files]]
@@ -384,6 +393,11 @@ hash = "38eff2e2ce05f4d0a2f0bd8b53e0c71b39900ed530dcda25df28b2a84bbb217d"
 metafile = true
 
 [[files]]
+file = "mods/mouse-tweaks.pw.toml"
+hash = "679fa8f3b49b9ed3fbcb29d6ccdb99bce465faa01f9cec000464ac8d4fbe134f"
+metafile = true
+
+[[files]]
 file = "mods/mystical-agriculture.pw.toml"
 hash = "0620cfb754ae5841a4383fb1db40f48a83b0c4fb659dd9b8dfe5cd51282a1f4e"
 metafile = true
@@ -536,6 +550,11 @@ metafile = true
 [[files]]
 file = "mods/waystones.pw.toml"
 hash = "50dfd8547f93d1bc8f31e1740f94e24aadf661cb2948587ac16a41404b10effd"
+metafile = true
+
+[[files]]
+file = "mods/worldedit.pw.toml"
+hash = "bd1dc13316e2aa9b56c89e7e974057f8da8d6bbfe707ba4210109fc612b782e3"
 metafile = true
 
 [[files]]

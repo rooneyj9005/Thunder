@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="en-GB" data-bs-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Installation - Thunder</title>
+    <meta
+      name="description"
+      content="How to install the Thunder modpack using Prism Launcher or any Modrinth-compatible launcher."
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
+      crossorigin="anonymous"
+    />
+    <link rel="stylesheet" href="./css/style.css" />
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-lg">
+      <div class="container">
+        <a class="navbar-brand" href="./index.html">Thunder</a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+          aria-controls="navbarNav"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav ms-auto">
+            <li class="nav-item">
+              <a class="nav-link" href="./index.html">Home</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link active" href="./install.html">Installation</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="./server.html">Server Setup</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="./features.html">Features</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="./faq.html">FAQ</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <main class="content-page">
+      <div class="container" style="max-width: 760px">
+        <h1>Installation</h1>
+        <p class="page-subtitle">
+          The whole thing takes a couple of minutes. Here's what to do.
+        </p>
+
+        <h2>Before you start</h2>
+        <p>You'll need three things:</p>
+        <ul>
+          <li>
+            <strong>Java 17 or newer.</strong> Most launchers sort this out for
+            you. If yours doesn't, grab it free from
+            <a href="https://adoptium.net">Adoptium</a>.
+          </li>
+          <li>
+            <strong>A launcher that supports Modrinth packs.</strong> We
+            recommend <a href="https://prismlauncher.org">Prism Launcher</a>.
+            It's free, open-source, and works on Windows, Mac, and Linux.
+            ATLauncher and MultiMC work too.
+          </li>
+          <li>
+            <strong>About 8 GB of RAM to spare.</strong> The pack runs 112 mods,
+            so it needs a bit of room to breathe. 6 GB is the bare minimum; 8 GB
+            is comfortable.
+          </li>
+        </ul>
+
+        <h2>Installing the pack</h2>
+
+        <div class="step">
+          <div class="step-number">1</div>
+          <div class="step-content">
+            <h3>Download the pack</h3>
+            <p>
+              Head to the <a href="./index.html">home page</a> and hit
+              <strong>Download Latest</strong>. Save the
+              <code>.mrpack</code> file somewhere you'll be able to find it
+              again.
+            </p>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-number">2</div>
+          <div class="step-content">
+            <h3>Import it into Prism Launcher</h3>
+            <p>
+              Open Prism Launcher, click <strong>Add Instance</strong>, then
+              choose <strong>Import</strong> on the left. Browse to the
+              <code>.mrpack</code> you just downloaded and click
+              <strong>OK</strong>.
+            </p>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-number">3</div>
+          <div class="step-content">
+            <h3>Hit play</h3>
+            <p>
+              Double-click the new Thunder instance. On the first launch, the
+              launcher downloads all the mods for you. Just wait for it to
+              finish. After that, Minecraft opens and you're in.
+            </p>
+          </div>
+        </div>
+
+        <div class="callout">
+          <p>
+            The first launch takes longer than usual because it's downloading
+            112 mods. After that, it starts at normal speed.
+          </p>
+        </div>
+
+        <h2>Giving it enough memory</h2>
+        <p>
+          If the game stutters or crashes with an out-of-memory error, you
+          probably need to bump up the RAM allocation. Here's how in Prism
+          Launcher:
+        </p>
+        <ol>
+          <li>
+            Right-click the Thunder instance and choose <strong>Edit</strong>.
+          </li>
+          <li>Go to <strong>Settings</strong> &rarr; <strong>Java</strong>.</li>
+          <li>
+            Tick <strong>Memory</strong> and set the maximum to
+            <strong>8192 MB</strong> (that's 8 GB).
+          </li>
+          <li>Close and launch again.</li>
+        </ol>
+
+        <div class="callout">
+          <p>
+            Don't go above 10 GB. It sounds counterintuitive, but giving Java
+            too much memory actually makes things worse because garbage
+            collection pauses get longer and you end up with frame drops. 8 GB
+            is the sweet spot.
+          </p>
+        </div>
+
+        <h2>Updating to a new version</h2>
+        <p>When a new release drops:</p>
+        <ol>
+          <li>
+            Download the new <code>.mrpack</code> from the
+            <a href="./index.html">home page</a>.
+          </li>
+          <li>
+            Delete (or rename) your old Thunder instance in Prism Launcher.
+          </li>
+          <li>Import the new file the same way you did the first time.</li>
+        </ol>
+        <p>
+          Want to keep your worlds? Before you delete the old instance, copy the
+          <code>saves</code> folder (and <code>options.txt</code> if you've
+          changed keybinds) out of the instance's
+          <code>.minecraft</code> folder, then paste them into the new one.
+        </p>
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container">
+        <p>
+          Thunder is open source.
+          <a href="https://github.com/rooneyj9005/Thunder">View on GitHub</a>
+        </p>
+      </div>
+    </footer>
+
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
+      crossorigin="anonymous"
+    ></script>
+  </body>
+</html>

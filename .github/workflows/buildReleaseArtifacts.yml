@@ -13,9 +13,11 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           cache: false
-          go-version: 'stable'
+          go-version: "stable"
       - name: Install packwiz
         run: go install github.com/packwiz/packwiz@latest
+      - name: Refresh Modpack
+        run: $(go env GOPATH)/bin/packwiz refresh
       - name: Export Modpack
         run: $(go env GOPATH)/bin/packwiz modrinth export
       - name: Upload to Release

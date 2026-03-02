@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="en-GB" data-bs-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>FAQ - Thunder</title>
+    <meta
+      name="description"
+      content="Frequently asked questions about the Thunder modpack."
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
+      crossorigin="anonymous"
+    />
+    <link rel="stylesheet" href="./css/style.css" />
+  </head>
+  <body>
+    <nav class="navbar navbar-expand-lg">
+      <div class="container">
+        <a class="navbar-brand" href="./index.html">Thunder</a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarNav"
+          aria-controls="navbarNav"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav ms-auto">
+            <li class="nav-item">
+              <a class="nav-link" href="./index.html">Home</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="./install.html">Installation</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="./server.html">Server Setup</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link" href="./features.html">Features</a>
+            </li>
+            <li class="nav-item">
+              <a class="nav-link active" href="./faq.html">FAQ</a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+    <main class="content-page">
+      <div class="container" style="max-width: 760px">
+        <h1>Frequently Asked Questions</h1>
+        <p class="page-subtitle">
+          If your question isn't here, open an issue on
+          <a href="https://github.com/rooneyj9005/Thunder/issues">GitHub</a> and
+          we'll sort it out.
+        </p>
+
+        <div class="faq-item">
+          <h3>How much RAM do I need?</h3>
+          <p>
+            Give Minecraft at least 6 GB, ideally 8 GB. That's enough for all
+            112 mods to run comfortably. Going above 10 GB actually makes things
+            worse because Java's garbage collector takes longer pauses and
+            you'll notice frame drops. The
+            <a href="./install.html">installation guide</a> explains how to
+            change this in Prism Launcher.
+          </p>
+        </div>
+
+        <div class="faq-item">
+          <h3>Can I add my own mods on top?</h3>
+          <p>
+            You can, but fair warning: all 112 mods in Thunder have been tested
+            together. Dropping in extra mods, especially ones that touch world
+            generation, rendering, or core game mechanics, might cause crashes
+            or strange behaviour. Small utility mods and shader packs are
+            usually fine.
+          </p>
+        </div>
+
+        <div class="faq-item">
+          <h3>Is OptiFine compatible?</h3>
+          <p>
+            No, and you don't need it. OptiFine conflicts with several mods in
+            the pack. Thunder already includes Canary, Krypton, and Memory Leak
+            Fix, which handle performance optimisation. If you're after shaders,
+            look into Oculus (a Forge-compatible shader loader) instead.
+          </p>
+        </div>
+
+        <div class="faq-item">
+          <h3>The game crashes on startup. What's going on?</h3>
+          <p>
+            Nine times out of ten, this is either a RAM issue or a Java version
+            issue.
+          </p>
+          <ul>
+            <li>Make sure you're running <strong>Java 17</strong> or newer.</li>
+            <li>
+              Make sure you've given Minecraft at least
+              <strong>6 GB of RAM</strong>.
+            </li>
+            <li>
+              If you added extra mods, try removing them and launching again.
+            </li>
+          </ul>
+          <p>
+            Still crashing? Check the log file at
+            <code>logs/latest.log</code> inside your instance folder. Search for
+            "Error" or "Exception". The log usually names the exact mod that's
+            causing trouble.
+          </p>
+        </div>
+
+        <div class="faq-item">
+          <h3>How do I update when a new version comes out?</h3>
+          <p>
+            Download the new <code>.mrpack</code> from the
+            <a href="./index.html">home page</a> and import it into Prism
+            Launcher as a new instance. If you want to keep your worlds, copy
+            the <code>saves</code> folder from the old instance before you
+            delete it. The <a href="./install.html">installation guide</a> has
+            the full steps.
+          </p>
+        </div>
+
+        <div class="faq-item">
+          <h3>How do I connect to a server running Thunder?</h3>
+          <p>
+            Install the pack on your machine using the
+            <a href="./install.html">installation guide</a>, then add the
+            server's IP address through the multiplayer menu. You and the server
+            need to be on the same version of the pack.
+          </p>
+        </div>
+
+        <div class="faq-item">
+          <h3>Does voice chat work automatically?</h3>
+          <p>
+            Yep. Thunder includes Simple Voice Chat. On a server that has it
+            installed (which it will if the server was set up using the
+            <a href="./server.html">server guide</a>), just be near another
+            player and talk. Press <strong>V</strong> to open the voice chat
+            settings. No extra setup needed.
+          </p>
+        </div>
+
+        <div class="faq-item">
+          <h3>The game runs but it's really laggy. Help?</h3>
+          <p>A few things to try:</p>
+          <ul>
+            <li>
+              Make sure you've allocated <strong>8 GB of RAM</strong> (but not
+              more than 10).
+            </li>
+            <li>
+              Drop your render distance to <strong>8&ndash;10 chunks</strong> in
+              video settings.
+            </li>
+            <li>Close Chrome. Seriously, it's probably eating your RAM.</li>
+            <li>Check that your graphics drivers are up to date.</li>
+          </ul>
+        </div>
+
+        <div class="faq-item">
+          <h3>Where do I report bugs or suggest changes?</h3>
+          <p>
+            Open an issue on the
+            <a href="https://github.com/rooneyj9005/Thunder/issues"
+              >GitHub repository</a
+            >. If the game is crashing, paste your crash log. It makes things
+            much easier to diagnose.
+          </p>
+        </div>
+      </div>
+    </main>
+
+    <footer class="site-footer">
+      <div class="container">
+        <p>
+          Thunder is open source.
+          <a href="https://github.com/rooneyj9005/Thunder">View on GitHub</a>
+        </p>
+      </div>
+    </footer>
+
+    <script
+      src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
+      integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
+      crossorigin="anonymous"
+    ></script>
+  </body>
+</html>

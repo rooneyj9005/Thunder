@@ -1,1 +1,3 @@
-* -text
+*.toml -text
+instance.cfg -text
+config/** -text

@@ -27,6 +27,8 @@ This pack uses **packwiz** to keep server files synchronised.
    ```
 3. The installer will automatically download the correct mod versions and configurations, excluding client-side-only mods.
 
+**Pterodactyl / Pelican users:** A ready-made egg template is included at [`packwiz.json`](./packwiz.json). Import it through your panel's Nests section to get a pre-configured server with automatic mod synchronisation.
+
 For full server setup instructions, see the [server guide](https://thunder.john.rooney.scot/server.html).
 
 ## License and Ethos
@@ -88,8 +90,8 @@ install.html        # Installation guide
 server.html         # Server setup guide
 features.html       # What's in the pack
 faq.html            # Frequently asked questions
-css/style.css       # Shared stylesheet
-js/release.js       # Fetches latest release from GitHub API
+stylesheet.css      # Shared stylesheet
+scripts.js          # Fetches latest release from GitHub API
 ```
 
 The site is deployed via **GitHub Pages** from the root of the `main` branch to [thunder.john.rooney.scot](https://thunder.john.rooney.scot). Changes pushed to `main` are deployed automatically.

@@ -14,7 +14,7 @@
       integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
       crossorigin="anonymous"
     />
-    <link rel="stylesheet" href="./css/style.css" />
+    <link rel="stylesheet" href="./stylesheet.css" />
   </head>
   <body>
     <nav class="navbar navbar-expand-lg">
@@ -134,6 +134,66 @@
               installed and ready to go.
             </p>
           </div>
+        </div>
+
+        <h2>Pterodactyl / Pelican panel</h2>
+        <p>
+          If you're running a Pterodactyl or Pelican hosting panel, Thunder
+          ships with a ready-made egg template that handles everything for you -
+          Forge installation, mod synchronisation, and automatic updates on
+          every restart.
+        </p>
+
+        <div class="step">
+          <div class="step-number">1</div>
+          <div class="step-content">
+            <h3>Import the egg</h3>
+            <p>
+              Download
+              <a
+                href="https://github.com/rooneyj9005/Thunder/blob/main/packwiz.json"
+                ><code>packwiz.json</code></a
+              >
+              from the repository. In your panel, go to
+              <strong>Nests &rarr; Import Egg</strong> and upload the file.
+            </p>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-number">2</div>
+          <div class="step-content">
+            <h3>Create a server</h3>
+            <p>
+              Create a new server using the imported Thunder egg. The defaults
+              are already configured - Forge 47.4.13, Minecraft 1.20.1, and the
+              correct packwiz URL are all pre-filled. Select the
+              <strong>Java 21</strong> Docker image (recommended) and allocate
+              at least <strong>6 GB of RAM</strong>.
+            </p>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-number">3</div>
+          <div class="step-content">
+            <h3>Start the server</h3>
+            <p>
+              Hit install, then start. The egg's install script sets up Forge
+              automatically, and the startup command runs
+              <code>packwiz-installer-bootstrap</code> before every launch to
+              keep mods in sync. No manual file management needed.
+            </p>
+          </div>
+        </div>
+
+        <div class="callout">
+          <p>
+            <strong>Note:</strong> The egg is hardened against user-side
+            injection. Server owners (non-admin users in the panel) can see the
+            modpack settings but cannot change the packwiz URL, modloader, or
+            Forge version. Only panel administrators can modify those values.
+          </p>
         </div>
 
         <h2>Keeping things up to date</h2>

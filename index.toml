@@ -1,48 +1,12 @@
 hash-format = "sha256"
 
 [[files]]
-file = ".github/workflows/buildReleaseArtifacts.yml"
-hash = "3760d2ce947907e1e0d4ea289928753131a9f8322bfa2db8b775eebe1fdab71a"
-
-[[files]]
-file = ".nojekyll"
-hash = "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-
-[[files]]
-file = "CNAME"
-hash = "64f13f4cff58a2a8cdf339ec60cbfb4b3b5741a328f643e531c376f8978c490f"
-
-[[files]]
-file = "README.md"
-hash = "e16af8771532f2efc5cec26ab044778008d70658eb95c12879534c127be55c7a"
-
-[[files]]
-file = "css/style.css"
-hash = "47a4c761d8f6d04b69c714a1015fd992374ad1335c6010e2643bf1978b2a4763"
-
-[[files]]
-file = "faq.html"
-hash = "b5bc0d227f039745f94a5a4b824b9d30548156709f8e446c5a8e4c6581425d59"
-
-[[files]]
-file = "features.html"
-hash = "97bdd368c31220e41bc0972daf50b0e5dce082b1495b487ee3ebcf3fafb270b4"
-
-[[files]]
-file = "index.html"
-hash = "a559eb116f3dcd393a227d2217482c60d81d5fd123ece64b44e410b857d3e7a8"
-
-[[files]]
-file = "install.html"
-hash = "a9dcf9d043ddd2524d37da4698a82f5a91b7b90c43c7794a45a9180d3017d9f8"
+file = "config/securitycraft-client.toml"
+hash = "846b902a8195b545f36d2562a7b00b465cb6863d0e2fb2b8d62634e36e61b5de"
 
 [[files]]
 file = "instance.cfg"
 hash = "00b1f25424e1fc7d55cddd72e63d6b3d63b15689bfcfabee1b74ba32e943b329"
-
-[[files]]
-file = "js/release.js"
-hash = "fa5f2dba1810e036baa75354095f8a3b86f28e055659af5e1be7c207ac8ced54"
 
 [[files]]
 file = "mods/ae2.pw.toml"
@@ -605,6 +569,10 @@ hash = "b43f507cffbcc7178b184fa63b2d74fc6b2b8103c4d299ec5633ccf1f5abdafb"
 metafile = true
 
 [[files]]
+file = "packwiz.json"
+hash = "c037255a39139de765d5a79c2adb9db94c690be401da0e5b8d21131db9e7b581"
+
+[[files]]
 file = "resourcepacks/beansilo.pw.toml"
 hash = "dcc8397f8ca9f10a7170cda85e21a50f34bb94dde8d716d2614375b74f841d46"
 metafile = true
@@ -613,7 +581,3 @@ metafile = true
 file = "resourcepacks/better-nether.pw.toml"
 hash = "6341b8f60b7e1bc4f778e5077255e621819a48bc7324c2f2f43ae7ceac04b0ba"
 metafile = true
-
-[[files]]
-file = "server.html"
-hash = "72e4877b3242ead52068a0f007a7c50a0727e1bb6a9b8a18d3867c1c25ca276c"

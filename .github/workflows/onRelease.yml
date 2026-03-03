@@ -14,22 +14,12 @@ jobs:
         with:
           cache: false
           go-version: "stable"
-      - name: Resolve latest packwiz release tag
-        env:
-          GH_TOKEN: ${{ github.token }}
+      - name: Install packwiz
         run: |
-          PACKWIZ_TAG=$(gh api repos/packwiz/packwiz/releases/latest --jq '.tag_name')
-          if [ -z "$PACKWIZ_TAG" ] || [ "$PACKWIZ_TAG" = "null" ]; then
-            echo "ERROR: Could not resolve latest packwiz release tag." >&2
-            exit 1
-          fi
-          echo "PACKWIZ_TAG=$PACKWIZ_TAG" >> "$GITHUB_ENV"
-      - name: Install packwiz for build steps
+          go install github.com/packwiz/packwiz@latest
+      - name: Compile packwiz.exe for Windows
         run: |
-          go install github.com/packwiz/packwiz@${PACKWIZ_TAG}
-      - name: Compile packwiz.exe from latest release
-        run: |
-          GOBIN="$PWD" GOOS=windows GOARCH=amd64 go install github.com/packwiz/packwiz@${PACKWIZ_TAG}
+          GOBIN="$PWD" GOOS=windows GOARCH=amd64 go install github.com/packwiz/packwiz@latest
           test -f packwiz.exe
       - name: Refresh Modpack
         run: $(go env GOPATH)/bin/packwiz refresh

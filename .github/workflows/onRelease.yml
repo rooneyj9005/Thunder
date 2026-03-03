@@ -73,6 +73,7 @@ jobs:
           cp -R docs/* public/
 
           cp pack.toml index.toml instance.cfg public/
+          cp startup.sh startup.ps1 public/
           cp -R mods config resourcepacks public/
 
           if [ -f CNAME ]; then cp CNAME public/; fi

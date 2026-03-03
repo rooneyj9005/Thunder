@@ -9,6 +9,7 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
+$ProgressPreference = "SilentlyContinue"
 
 Set-Location $Dir
 
@@ -26,6 +27,34 @@ if ($ForgeVersion -and $ForgeVersion -notmatch '^\d+(\.\d+)*$') {
 
 if ($ServerJarFile -notmatch '^[A-Za-z0-9._-]+\.jar$') {
     throw "SERVER_JARFILE must be a simple .jar filename."
+}
+
+$javaCmd = Get-Command java -ErrorAction SilentlyContinue
+if (-not $javaCmd) {
+    $existingJdk = Get-ChildItem -Directory -Filter "jdk-*" -ErrorAction SilentlyContinue | Select-Object -First 1
+    if ($existingJdk) {
+        Write-Host "Using existing local JDK at $($existingJdk.Name)"
+        $env:JAVA_HOME = $existingJdk.FullName
+        $env:PATH = "$($existingJdk.FullName)\bin;$env:PATH"
+    } else {
+        Write-Host "Java not found. Downloading Temurin 21..."
+        $javaZip = "temurin-21.zip"
+        try {
+            Invoke-WebRequest -Uri "https://api.adoptium.net/v3/binary/latest/21/ga/windows/x64/jdk/hotspot/normal/eclipse" -OutFile $javaZip -TimeoutSec 300
+            Expand-Archive -Path $javaZip -DestinationPath "." -Force
+            Remove-Item $javaZip
+        } catch {
+            Remove-Item -Force -ErrorAction SilentlyContinue $javaZip
+            throw "Failed to download Temurin 21: $_"
+        }
+        $jdkDir = Get-ChildItem -Directory -Filter "jdk-21*" | Select-Object -First 1
+        if (-not $jdkDir) {
+            throw "Temurin 21 archive did not contain an expected jdk-21* directory."
+        }
+        $env:JAVA_HOME = $jdkDir.FullName
+        $env:PATH = "$($jdkDir.FullName)\bin;$env:PATH"
+        Write-Host "Installed Temurin 21 to $($jdkDir.FullName)"
+    }
 }
 
 Write-Host "Fetching packwiz-installer-bootstrap..."

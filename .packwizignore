@@ -18,4 +18,5 @@
 /.github/
 /.packwizignore
 /pterodactyl.json
+/install.sh
 /instance.cfg

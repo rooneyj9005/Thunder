@@ -27,9 +27,7 @@ This pack uses **packwiz** to keep server files synchronised.
    ```
 3. The installer will automatically download the correct mod versions and configurations, excluding client-side-only mods.
 
-**Pterodactyl / Pelican users:** A ready-made egg template is included at [`packwiz.json`](./packwiz.json). Import it through your panel's Nests section to get a pre-configured server with automatic mod synchronisation.
-
-For full server setup instructions, see the [server guide](https://thunder.john.rooney.scot/server.html).
+**Pterodactyl / Pelican users:** A ready-made egg template is included at [`pterodactyl.json`](./pterodactyl.json). Import it through your panel's Nests section to get a pre-configured server with automatic mod synchronisation. See the [server setup guide](https://thunder.john.rooney.scot/server.html) for detailed instructions.
 
 ## License and Ethos
 

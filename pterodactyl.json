@@ -24,7 +24,7 @@
   },
   "scripts": {
     "installation": {
-      "script": "#!/bin/bash\nset -eo pipefail\n\napt-get update\napt-get install -y --no-install-recommends curl jq ca-certificates default-jre-headless\n\ncd /mnt/server\n\necho \"Fetching packwiz-installer-bootstrap...\"\nPACKWIZ_BOOTSTRAP_URL=$(curl -sSfL https://api.github.com/repos/packwiz/packwiz-installer-bootstrap/releases/latest | jq -r '.assets[] | select(.name | endswith(\".jar\")) | .browser_download_url')\n\nif [[ -z \"$PACKWIZ_BOOTSTRAP_URL\" ]]; then\n  echo \"ERROR: Failed to resolve packwiz-installer-bootstrap download URL.\"\n  exit 1\nfi\n\ncurl -sSfL -o packwiz-installer-bootstrap.jar \"$PACKWIZ_BOOTSTRAP_URL\"\necho \"Downloaded packwiz-installer-bootstrap.jar\"\n\ncase \"${MODLOADER}\" in\n  forge)\n    rm -f unix_args.txt user_jvm_args.txt run.sh run.bat\n\n    RESOLVED_VERSION=\"${FORGE_VERSION:-}\"\n    if [[ -z \"$RESOLVED_VERSION\" ]]; then\n      JSON_DATA=$(curl -sSfL https://files.minecraftforge.net/maven/net/minecraftforge/forge/promotions_slim.json)\n      RESOLVED_VERSION=$(echo \"$JSON_DATA\" | jq -r \".promos[\\\"${MC_VERSION}-recommended\\\"] // .promos[\\\"${MC_VERSION}-latest\\\"]\")\n      if [[ -z \"$RESOLVED_VERSION\" || \"$RESOLVED_VERSION\" == \"null\" ]]; then\n        echo \"ERROR: No Forge version found for Minecraft ${MC_VERSION}.\"\n        exit 1\n      fi\n    fi\n\n    echo \"Installing Forge ${MC_VERSION}-${RESOLVED_VERSION}...\"\n    curl -sSfL -o installer.jar \"https://maven.minecraftforge.net/net/minecraftforge/forge/${MC_VERSION}-${RESOLVED_VERSION}/forge-${MC_VERSION}-${RESOLVED_VERSION}-installer.jar\"\n\n    java -jar installer.jar --installServer\n\n    ARGS_FILE=\"libraries/net/minecraftforge/forge/${MC_VERSION}-${RESOLVED_VERSION}/unix_args.txt\"\n    if [[ -f \"$ARGS_FILE\" ]]; then\n      ln -sf \"$ARGS_FILE\" unix_args.txt\n      echo \"Linked unix_args.txt for Forge ${MC_VERSION}-${RESOLVED_VERSION}\"\n    elif [[ ! -f \"${SERVER_JARFILE}\" ]]; then\n      echo \"ERROR: Forge installation produced neither unix_args.txt nor ${SERVER_JARFILE}.\"\n      exit 1\n    fi\n\n    rm -f installer.jar installer.jar.log\n    ;;\n\n  fabric)\n    FABRIC_LOADER=${FORGE_VERSION:-$(curl -sSfL https://meta.fabricmc.net/v2/versions/loader | jq -r '.[0].version')}\n    FABRIC_INSTALLER=$(curl -sSfL https://meta.fabricmc.net/v2/versions/installer | jq -r '.[0].version')\n\n    echo \"Installing Fabric Loader ${FABRIC_LOADER} for Minecraft ${MC_VERSION}...\"\n    curl -sSfL -o \"${SERVER_JARFILE}\" \"https://meta.fabricmc.net/v2/versions/loader/${MC_VERSION}/${FABRIC_LOADER}/${FABRIC_INSTALLER}/server/jar\"\n    ;;\n\n  quilt)\n    QUILT_LOADER=${FORGE_VERSION:-$(curl -sSfL https://meta.quiltmc.org/v3/versions/loader | jq -r '.[0].version')}\n    QUILT_INSTALLER=$(curl -sSfL https://meta.quiltmc.org/v3/versions/installer | jq -r '.[0].version')\n\n    echo \"Installing Quilt Loader ${QUILT_LOADER} for Minecraft ${MC_VERSION}...\"\n    curl -sSfL -o \"${SERVER_JARFILE}\" \"https://meta.quiltmc.org/v3/versions/loader/${MC_VERSION}/${QUILT_LOADER}/${QUILT_INSTALLER}/server/jar\"\n    ;;\n\n  *)\n    echo \"ERROR: Unknown modloader '${MODLOADER}'. Expected: forge, fabric, or quilt.\"\n    exit 1\n    ;;\nesac\n\necho \"Server installation complete.\"",
+      "script": "#!/bin/bash\napt-get update && apt-get install -y --no-install-recommends curl jq\ncd /mnt/server\nif [[ \"${INSTALL_SCRIPT_SOURCE}\" == \"release\" ]]; then\n  curl -sSfL \"https://raw.githubusercontent.com/rooneyj9005/Thunder/refs/tags/$(curl -sSfL https://api.github.com/repos/rooneyj9005/Thunder/releases/latest | jq -r '.tag_name')/install.sh\" | bash\nelse\n  curl -sSfL \"https://raw.githubusercontent.com/rooneyj9005/Thunder/refs/heads/main/install.sh\" | bash\nfi",
       "container": "debian:bookworm-slim",
       "entrypoint": "bash"
     }
@@ -138,6 +138,16 @@
       "user_viewable": true,
       "user_editable": true,
       "rules": "required|string|min:8",
+      "field_type": "text"
+    },
+    {
+      "name": "Installation Script Source",
+      "description": "Admin-only: Select whether to use the installation script from the main branch or the latest release tag.",
+      "env_variable": "INSTALL_SCRIPT_SOURCE",
+      "default_value": "main",
+      "user_viewable": false,
+      "user_editable": false,
+      "rules": "required|string|in:main,release",
       "field_type": "text"
     }
   ]

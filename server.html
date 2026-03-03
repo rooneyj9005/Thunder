@@ -151,7 +151,8 @@
             <p>
               Download
               <a
-                href="https://github.com/rooneyj9005/Thunder/blob/main/pterodactyl.json"
+                href="https://raw.githubusercontent.com/rooneyj9005/Thunder/main/pterodactyl.json"
+                download="pterodactyl.json"
                 ><code>pterodactyl.json</code></a
               >
               from the repository. In your panel, go to
@@ -240,6 +241,45 @@
             <code>eula.txt</code> or the server won't start.
           </li>
         </ul>
+        <h2>Server administration tips</h2>
+        <p>
+          Thunder includes several mods designed for server operators. Here's
+          a quick overview of the ones you'll use most.
+        </p>
+
+        <h3>Permissions with LuckPerms</h3>
+        <p>
+          LuckPerms handles all permissions on the server. Use
+          <code>/lp editor</code> in-game to open a web-based editor where you
+          can create groups, assign permissions, and manage players. The
+          <a href="https://luckperms.net/wiki/Home">LuckPerms wiki</a> covers
+          everything in detail.
+        </p>
+
+        <h3>Tracking griefing with GriefLogger</h3>
+        <p>
+          GriefLogger records every block placement and removal. If a player
+          reports griefing, use the in-game lookup commands to check the
+          history of any block. You'll see who placed or broke it and when.
+        </p>
+
+        <h3>Base protection with SecurityCraft</h3>
+        <p>
+          SecurityCraft lets players protect their own builds with reinforced
+          blocks, keycard doors, laser grids, and security cameras. As a
+          server operator, it means less moderation work &mdash; players can
+          defend their own stuff. The included config file
+          (<code>config/securitycraft-client.toml</code>) ships with sensible
+          defaults.
+        </p>
+
+        <h3>Voice chat</h3>
+        <p>
+          Simple Voice Chat runs on port <strong>24454</strong> (UDP) by
+          default, in addition to the standard Minecraft port (25565). Make
+          sure this port is open in your firewall and forwarded if needed.
+          Players connect to voice automatically when they join the server.
+        </p>
       </div>
     </main>
 

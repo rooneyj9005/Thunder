@@ -1,0 +1,49 @@
+name: Check Version Bump
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  check-version:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Checkout PR branch
+        uses: actions/checkout@v4
+
+      - name: Get PR version
+        id: pr
+        run: |
+          VERSION=$(grep '^version' pack.toml | sed 's/.*= *"\(.*\)"/\1/')
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Get main branch version
+        id: main
+        run: |
+          git fetch origin main
+          MAIN_VERSION=$(git show origin/main:pack.toml | grep '^version' | sed 's/.*= *"\(.*\)"/\1/')
+          echo "version=$MAIN_VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Compare versions
+        run: |
+          PR_VER="${{ steps.pr.outputs.version }}"
+          MAIN_VER="${{ steps.main.outputs.version }}"
+          echo "PR version:   $PR_VER"
+          echo "Main version: $MAIN_VER"
+
+          IFS='.' read -r PR_MAJ PR_MIN PR_PAT <<< "$PR_VER"
+          IFS='.' read -r MAIN_MAJ MAIN_MIN MAIN_PAT <<< "$MAIN_VER"
+
+          if [[ "$PR_MAJ" -gt "$MAIN_MAJ" ]]; then
+            echo "Version bump detected (major)"
+            exit 0
+          elif [[ "$PR_MAJ" -eq "$MAIN_MAJ" && "$PR_MIN" -gt "$MAIN_MIN" ]]; then
+            echo "Version bump detected (minor)"
+            exit 0
+          elif [[ "$PR_MAJ" -eq "$MAIN_MAJ" && "$PR_MIN" -eq "$MAIN_MIN" && "$PR_PAT" -gt "$MAIN_PAT" ]]; then
+            echo "Version bump detected (patch)"
+            exit 0
+          else
+            echo "::error::Version in pack.toml ($PR_VER) must be higher than main ($MAIN_VER). Bump the version before merging."
+            exit 1
+          fi

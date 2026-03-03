@@ -4,30 +4,7 @@ Thunder is a Minecraft 1.20.1 modpack built for playing with friends. It combine
 
 You can automate your base with **Create**, craft spells with **Ars Nouveau**, set up digital storage with **AE2**, and build with **Macaw's furniture** and **Chipped** blocks. There are 122 mods, all tested for stability.
 
-## Quick Start
-
-### For Players
-
-If you just want to play, do not download the code from this repository. Visit the **[website](https://thunder.john.rooney.scot)** or:
-
-1. Go to the **[Releases](../../releases)** tab.
-2. Download the latest `Thunder-[v].mrpack` file.
-3. Import this file into **Prism Launcher** (or any Modrinth-compatible launcher).
-
-For full installation instructions, see the [installation guide](https://thunder.john.rooney.scot/install.html).
-
-### For Server Owners
-
-This pack uses **packwiz** to keep server files synchronised.
-
-1. Download the [packwiz-installer-bootstrap](https://github.com/packwiz/packwiz-installer-bootstrap/releases).
-2. Run the following command in your server directory:
-   ```bash
-   java -jar packwiz-installer-bootstrap.jar -g -s server https://thunder.john.rooney.scot/pack.toml
-   ```
-3. The installer will automatically download the correct mod versions and configurations, excluding client-side-only mods.
-
-**Pterodactyl / Pelican users:** A ready-made egg template is included at [`pterodactyl.json`](./pterodactyl.json). Import it through your panel's Nests section to get a pre-configured server with automatic mod synchronisation. See the [server setup guide](https://thunder.john.rooney.scot/server.html) for detailed instructions.
+> **Looking to play?** Visit **[thunder.john.rooney.scot](https://thunder.john.rooney.scot)** for download links, installation instructions, and server setup guides. This README is for developers and contributors.
 
 ## License and Ethos
 
@@ -78,6 +55,14 @@ Before releasing a new version, perform the following checks:
 * **Missing Mod Error:** Usually a dependency issue. Add the missing mod via packwiz and refresh.
 * **MixinTransformerError:** Often a version conflict. If you've just added a mod, it's likely incompatible with the existing environment. Try an older version or an alternative mod.
 
+## Contributing
+
+1. Fork the repository and create a branch for your changes.
+2. Make your changes (add/remove/update mods, edit site content, etc.).
+3. Test locally with Prism Launcher — import the `.mrpack` and verify it launches cleanly.
+4. Bump the `version` field in `pack.toml` (PRs that don't bump the version will fail CI).
+5. Open a pull request against `main`.
+
 ## Documentation Site
 
 The player-facing documentation site lives in the repository root alongside the packwiz files:
@@ -99,6 +84,7 @@ To preview locally, open `index.html` in a browser. All links are relative.
 ## CI/CD
 
 * **Release workflow** (`.github/workflows/buildReleaseArtifacts.yml`): When a GitHub release is published, the workflow installs packwiz, runs `packwiz modrinth export`, and uploads the resulting `.mrpack` to the release.
+* **Version check workflow** (`.github/workflows/checkVersionBump.yml`): On pull requests to `main`, verifies that `pack.toml` version is higher than the current `main` version. Combined with branch protection, this blocks merges without a version bump.
 * **GitHub Pages**: Serves the documentation site from the repository root on `main`.
 
 ## What's Actually in the Pack
@@ -110,3 +96,5 @@ To preview locally, open `index.html` in a browser. All links are relative.
 * **Food:** Farmer's Delight, Create Confectionery, Better Farming Plus.
 * **Performance & Polish:** Memory Leak Fix, Krypton, Canary, Ferrite Core, Dynamic Torches.
 * **Utility & Server:** SecurityCraft, GriefLogger, LuckPerms, FTB Essentials, Xaero's Maps, Jade, Waystones, Simple Voice Chat, Lootr, Sophisticated Backpacks, WorldEdit.
+
+For the full player-facing guide, visit [thunder.john.rooney.scot](https://thunder.john.rooney.scot).

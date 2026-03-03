@@ -15,10 +15,10 @@
     "Java 11": "ghcr.io/pterodactyl/yolks:java_11",
     "Java 8": "ghcr.io/pterodactyl/yolks:java_8"
   },
-  "startup": "bash -c 'if [[ \"$CLEAN_INSTALL\" == \"1\" ]]; then rm -rf mods config/packwiz-installer.toml; fi; java -jar packwiz-installer-bootstrap.jar -g -s \"$PACKWIZ_SIDE\" $PACKWIZ_EXTRA_FLAGS \"$PACKWIZ_URL\"; if [[ -f unix_args.txt ]]; then java -Xms128M -XX:MaxRAMPercentage=95.0 @unix_args.txt; else java -Xms128M -XX:MaxRAMPercentage=95.0 -jar \"$SERVER_JARFILE\"; fi'",
+  "startup": "bash -c \"if [[ \\\"$CLEAN_INSTALL\\\" == \\\"1\\\" ]]; then rm -rf mods config/packwiz-installer.toml; fi; java -jar packwiz-installer-bootstrap.jar -g -s \\\"$PACKWIZ_SIDE\\\" $PACKWIZ_EXTRA_FLAGS \\\"$PACKWIZ_URL\\\"; if [[ -f unix_args.txt ]]; then java -Xms128M -XX:MaxRAMPercentage=95.0 @unix_args.txt; else java -Xms128M -XX:MaxRAMPercentage=95.0 -jar \\\"$SERVER_JARFILE\\\"; fi\"",
   "config": {
     "files": "{\n    \"server.properties\": {\n        \"parser\": \"properties\",\n        \"find\": {\n            \"server-ip\": \"0.0.0.0\",\n            \"server-port\": \"{{server.build.default.port}}\",\n            \"enable-rcon\": \"{{ENABLE_RCON}}\",\n            \"rcon.port\": \"{{RCON_PORT}}\",\n            \"rcon.password\": \"{{RCON_PASS}}\",\n            \"broadcast-rcon-to-ops\": \"false\"\n        }\n    }\n}",
-    "startup": "{\n    \"done\": \")! For help, type \"\n}",
+    "startup": "{\n    \"done\": \"Done (\"\n}",
     "logs": "{}",
     "stop": "stop"
   },

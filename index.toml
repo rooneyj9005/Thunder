@@ -95,6 +95,11 @@ hash = "02062a6b61e230e7debaf1c03d5e1e7203e427588fceb9f3d6ef8cad8062397e"
 metafile = true
 
 [[files]]
+file = "mods/botarium.pw.toml"
+hash = "440a806e54d48cd4c5ef447ff8f1a6cd9a99d53d02ab90d50204be9b31c2f30d"
+metafile = true
+
+[[files]]
 file = "mods/caelum.pw.toml"
 hash = "33735d57abe99591ac312f8a307e539bbc45ede5df0292f992c7e62d7ca23541"
 metafile = true
@@ -145,8 +150,23 @@ hash = "4063abe583282834b2f78e3b3e6b9ee4d231a680f74c020e405a4ef196f21ee4"
 metafile = true
 
 [[files]]
+file = "mods/copycats.pw.toml"
+hash = "0b8f3e4e235e5c6eb3c84e0ff59d4a34f7db72abdc033e76478ea056980c0d38"
+metafile = true
+
+[[files]]
+file = "mods/create-big-cannons.pw.toml"
+hash = "0675672ba65bfe98f1bd731dbba6d063eb3c3c36d5ddaba2af646f5acbd32bee"
+metafile = true
+
+[[files]]
 file = "mods/create-confectionery.pw.toml"
 hash = "8845c6e549e63cef58e420a081b87e1db4230ea02efc835c74b8dab37e183148"
+metafile = true
+
+[[files]]
+file = "mods/create-connected.pw.toml"
+hash = "4852a9af0dd34136c85a20a9729b554bbb8afbf81f8bfdbb52b8a8cae898b1e6"
 metafile = true
 
 [[files]]
@@ -157,6 +177,21 @@ metafile = true
 [[files]]
 file = "mods/create-enchantment-industry.pw.toml"
 hash = "c670ae9055f10dafb61fe340583c361f4c41ed45671c9440bae1f0696b47252a"
+metafile = true
+
+[[files]]
+file = "mods/create-jetpack.pw.toml"
+hash = "0a0533fddd34d04fd6551f5c352081b711662d12f2f2051fe7232a53172edf0e"
+metafile = true
+
+[[files]]
+file = "mods/create-new-age.pw.toml"
+hash = "705f2896491dcb762ea9585a9d72f9482dcfd326796c3d9554764a5431aba844"
+metafile = true
+
+[[files]]
+file = "mods/create-steam-n-rails.pw.toml"
+hash = "809b6d4cb3454599c2f55610364519ddf93bbb089fab27a6d43db0f536902b0d"
 metafile = true
 
 [[files]]
@@ -270,6 +305,11 @@ hash = "3aa4d2e503b7a4544868954aa8175335ee34714a8b44cc2a41cdbb833e271c31"
 metafile = true
 
 [[files]]
+file = "mods/interiors.pw.toml"
+hash = "7ca55cd661721ca944979439aac5160009e07ce2568fbf8aee53e019f3e55fba"
+metafile = true
+
+[[files]]
 file = "mods/item-filters.pw.toml"
 hash = "6f92d6a906fe5d960b53dc83e0060edfb2604f8deb4b38d25f7f66525966f7ad"
 metafile = true
@@ -296,7 +336,7 @@ metafile = true
 
 [[files]]
 file = "mods/kotlin-for-forge.pw.toml"
-hash = "1678327ac50408273c1828b631929128d3fdfd54cda7b2e823ce9352495a68ff"
+hash = "70a4ecd9d0c04ad20aeb976c1ee28933ce48a0a1f43df42deafaeb2ad7235297"
 metafile = true
 
 [[files]]
@@ -465,6 +505,11 @@ hash = "5b92406160d9ea8a61ddf111caaecb7f6283678e2c40b08b72dce3eeaf20dc96"
 metafile = true
 
 [[files]]
+file = "mods/rpl.pw.toml"
+hash = "93128d85ae0b3be9c8248b09f3a63ed88c746568480cc7e9a8e2a9b4bd13477c"
+metafile = true
+
+[[files]]
 file = "mods/searchables.pw.toml"
 hash = "b8c7497acbf4890b4609b6b20de7affdd3482fc99af975d9ff6b29c075e1d8a7"
 metafile = true
@@ -477,6 +522,11 @@ metafile = true
 [[files]]
 file = "mods/simple-voice-chat.pw.toml"
 hash = "b97a311aeaf633716450ac7ac644d8cdbc4b9731840ad1a08f9957a80de586e1"
+metafile = true
+
+[[files]]
+file = "mods/slice-and-dice.pw.toml"
+hash = "8a33a4cf8a70ee42b6d844d18e755a241095f94b7815906491c796266db68dc9"
 metafile = true
 
 [[files]]

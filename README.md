@@ -2,7 +2,7 @@
 
 Thunder is a Minecraft 1.20.1 modpack built for playing with friends. It combines technology, magic, and building mods into a cohesive experience that is optimised for server performance.
 
-You can automate your base with **Create**, craft spells with **Ars Nouveau**, set up digital storage with **AE2**, and build with **Macaw's furniture** and **Chipped** blocks. There are 112 mods, all tested for stability.
+You can automate your base with **Create**, craft spells with **Ars Nouveau**, set up digital storage with **AE2**, and build with **Macaw's furniture** and **Chipped** blocks. There are 122 mods, all tested for stability.
 
 ## Quick Start
 
@@ -41,8 +41,8 @@ This project is as open as any license can allow. Do whatever you want with it: 
 
 ## Important: Version Pinning
 
-**Do not update Create.** or do I'm not your mother, but the pack is built on **Create 6.0.6**. Many included addons were designed specifically for this version; updating to 6.0.7 or 6.0.8 will most likely cause crashes.
-* When adding new Create addons, ensure they support version 6.0.6.
+**Do not update Create** — the pack is built on **Create 6.0.6**, and many included addons only work with this version. Updating to 6.0.7 or later will almost certainly cause crashes.
+* When adding new Create addons, check they support version 6.0.6.
 * **Create Slice & Dice** is pinned at version **3.4.0** for the same reason.
 
 ## Development Workflow
@@ -108,7 +108,7 @@ To preview locally, open `index.html` in a browser. All links are relative.
 * **Tech:** Create (plus addons), Mekanism, Applied Energistics 2, Refined Storage, Thermal Expansion, Modular Routers, CC: Tweaked, Mystical Agriculture.
 * **Magic:** Ars Nouveau, Blood Magic, Hexerei, Apotheosis.
 * **Building:** Macaw's suite (Doors, Windows, Bridges, Roofs, Fences, Stairs, Trapdoors), Chipped, Rechiseled, Immersive Paintings.
-* **World Gen:** Biomes o' Plenty, Better Nether, Alex's Mobs, Oh The Trees You'll Grow.
+* **World Gen:** Biomes o' Plenty, Alex's Mobs, Oh The Trees You'll Grow.
 * **Food:** Farmer's Delight, Create Confectionery, Better Farming Plus.
-* **Performance:** Dynamic Torches, Memory Leak Fix, Krypton, Canary, Ferrite Core.
-* **Utility:** SecurityCraft, LuckPerms, FTB Essentials, Xaero's Maps, Jade, Waystones, Simple Voice Chat, Lootr, Sophisticated Backpacks, WorldEdit.
+* **Performance & Polish:** Memory Leak Fix, Krypton, Canary, Ferrite Core, Dynamic Torches.
+* **Utility & Server:** SecurityCraft, GriefLogger, LuckPerms, FTB Essentials, Xaero's Maps, Jade, Waystones, Simple Voice Chat, Lootr, Sophisticated Backpacks, WorldEdit.

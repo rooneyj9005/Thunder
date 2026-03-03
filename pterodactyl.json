@@ -12,7 +12,7 @@
     "Java 21 (Recommended)": "ghcr.io/pterodactyl/yolks:java_21",
     "Java 17": "ghcr.io/pterodactyl/yolks:java_17"
   },
-  "startup": "if [[ \"{{CLEAN_INSTALL}}\" == \"true\" ]]; then rm -rf mods config/packwiz-installer.toml; fi; java -jar packwiz-installer-bootstrap.jar -g -s \"{{PACKWIZ_SIDE}}\" {{PACKWIZ_EXTRA_FLAGS}} \"{{PACKWIZ_URL}}\"; if [[ -f unix_args.txt ]]; then java -Xms128M -XX:MaxRAMPercentage=95.0 @unix_args.txt; else java -Xms128M -XX:MaxRAMPercentage=95.0 -jar \"{{SERVER_JARFILE}}\"; fi",
+  "startup": "bash startup.sh --container",
   "config": {
     "files": "{\n    \"server.properties\": {\n        \"parser\": \"properties\",\n        \"find\": {\n            \"server-ip\": \"0.0.0.0\",\n            \"server-port\": \"{{server.build.default.port}}\",\n            \"enable-rcon\": \"{{ENABLE_RCON}}\",\n            \"rcon.port\": \"{{RCON_PORT}}\",\n            \"rcon.password\": \"{{RCON_PASS}}\",\n            \"broadcast-rcon-to-ops\": \"false\"\n        }\n    }\n}",
     "startup": "{\n    \"done\": \"Done (\"\n}",
@@ -21,7 +21,7 @@
   },
   "scripts": {
     "installation": {
-      "script": "#!/bin/bash\napt-get update && apt-get install -y --no-install-recommends curl jq ca-certificates\ncd /mnt/server\nif [[ \"${INSTALL_SCRIPT_SOURCE}\" == \"release\" ]]; then\n  curl -sSfL \"https://raw.githubusercontent.com/rooneyj9005/Thunder/refs/tags/$(curl -sSfL https://api.github.com/repos/rooneyj9005/Thunder/releases/latest | jq -r '.tag_name')/install.sh\" | bash\nelse\n  curl -sSfL \"https://raw.githubusercontent.com/rooneyj9005/Thunder/refs/heads/main/install.sh\" | bash\nfi",
+      "script": "#!/bin/bash\nset -euo pipefail\n\napt-get -q update\napt-get install -y --no-install-recommends curl jq ca-certificates\ncd /mnt/server\n\nif [[ \"${INSTALL_SCRIPT_SOURCE:-main}\" == \"release\" ]]; then\n  LATEST_TAG=$(curl -sSfL --connect-timeout 30 --max-time 30 https://api.github.com/repos/rooneyj9005/Thunder/releases/latest | jq -r '.tag_name')\n  if [[ -z \"$LATEST_TAG\" || \"$LATEST_TAG\" == \"null\" ]]; then\n    echo \"ERROR: Could not resolve latest release tag from GitHub API.\" >&2\n    exit 1\n  fi\n  INSTALL_URL=\"https://raw.githubusercontent.com/rooneyj9005/Thunder/refs/tags/${LATEST_TAG}/install.sh\"\nelse\n  INSTALL_URL=\"https://raw.githubusercontent.com/rooneyj9005/Thunder/refs/heads/main/install.sh\"\nfi\n\ncurl -sSfL --connect-timeout 30 --max-time 30 \"$INSTALL_URL\" | bash -s -- --container",
       "container": "debian:bookworm-slim",
       "entrypoint": "bash"
     }
@@ -135,6 +135,16 @@
       "user_viewable": true,
       "user_editable": true,
       "rules": "required|string|min:8",
+      "field_type": "text"
+    },
+    {
+      "name": "Voice Chat Port",
+      "description": "UDP port for Simple Voice Chat. Must be open in your firewall and allocated in the panel.",
+      "env_variable": "VOICE_PORT",
+      "default_value": "24454",
+      "user_viewable": true,
+      "user_editable": false,
+      "rules": "required|integer|between:1024,65535",
       "field_type": "text"
     },
     {

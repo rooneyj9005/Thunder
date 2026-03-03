@@ -12,6 +12,7 @@
 /CNAME
 /.nojekyll
 /README.md
+/RELEASE_CHECKLIST.md
 /LICENSE
 /.gitignore
 /.gitattributes
@@ -19,4 +20,9 @@
 /.packwizignore
 /pterodactyl.json
 /install.sh
+/install.ps1
 /instance.cfg
+
+# Keep startup scripts in the exported pack (do not ignore):
+# /startup.sh
+# /startup.ps1

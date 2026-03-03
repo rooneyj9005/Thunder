@@ -14,7 +14,7 @@
       integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
       crossorigin="anonymous"
     />
-    <link rel="stylesheet" href="./stylesheet.css" />
+    <link rel="stylesheet" href="./stylesheet.css" integrity="sha384-DAtX/hAJRqE4TcMfUt9dhFhM6i8tAQ+8csvjgwKUWJgIGw05svVXDdCB7FT7cC1Y" crossorigin="anonymous" />
   </head>
   <body>
     <nav class="navbar navbar-expand-lg">
@@ -185,6 +185,10 @@
               <code>packwiz-installer-bootstrap</code> before every launch to
               keep mods in sync. No manual file management needed.
             </p>
+            <div class="code-block">
+              Install command: <code>bash install.sh --container</code><br />
+              Startup command: <code>bash startup.sh --container</code>
+            </div>
             <p>
               <strong>Advanced:</strong> Panel administrators can use the
               <code>Installation Script Source</code> variable to choose between
@@ -203,10 +207,84 @@
           </p>
         </div>
 
+        <h2>Standalone server (Linux)</h2>
+        <p>
+          If you're not using a hosting panel, the repository includes an
+          install script that sets up Forge and downloads everything for you.
+          You'll need <strong>curl</strong>, <strong>jq</strong>, and
+          <strong>Java 17+</strong> installed.
+        </p>
+
+        <div class="step">
+          <div class="step-number">1</div>
+          <div class="step-content">
+            <h3>Download and run the install script</h3>
+            <p>Create a directory for your server and run:</p>
+            <div class="code-block">
+              mkdir thunder-server && cd thunder-server && curl -sSfL
+              https://raw.githubusercontent.com/rooneyj9005/Thunder/main/install.sh
+              | bash
+            </div>
+            <p>
+              This installs Forge, downloads
+              <code>packwiz-installer-bootstrap.jar</code>, and fetches the
+              startup script. No manual file management needed.
+            </p>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-number">2</div>
+          <div class="step-content">
+            <h3>Accept the EULA and start</h3>
+            <div class="code-block">
+              echo "eula=true" > eula.txt && bash startup.sh
+            </div>
+            <p>
+              The startup script syncs the modpack via packwiz before every
+              launch, so mods stay up to date automatically.
+            </p>
+          </div>
+        </div>
+
+        <h2>Standalone server (Windows)</h2>
+        <p>
+          The repository also includes PowerShell scripts for Windows servers.
+          You'll need <strong>Java 17+</strong> installed and available on your
+          PATH.
+        </p>
+
+        <div class="step">
+          <div class="step-number">1</div>
+          <div class="step-content">
+            <h3>Download and run the install script</h3>
+            <p>
+              Download
+              <a
+                href="https://raw.githubusercontent.com/rooneyj9005/Thunder/main/install.ps1"
+                download="install.ps1"
+                ><code>install.ps1</code></a
+              >
+              into an empty folder and run it in PowerShell:
+            </p>
+            <div class="code-block">.\install.ps1</div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-number">2</div>
+          <div class="step-content">
+            <h3>Accept the EULA and start</h3>
+            <div class="code-block">
+              Set-Content eula.txt "eula=true"; .\startup.ps1
+            </div>
+          </div>
+        </div>
+
         <h2>Keeping things up to date</h2>
         <p>
           When a new version of Thunder comes out, just re-run the installer
-          command from step 2. It figures out what's changed, downloads new
+          command from step 1. It figures out what's changed, downloads new
           mods, updates existing ones, and removes anything that's been dropped
           from the pack.
         </p>
@@ -243,8 +321,8 @@
         </ul>
         <h2>Server administration tips</h2>
         <p>
-          Thunder includes several mods designed for server operators. Here's
-          a quick overview of the ones you'll use most.
+          Thunder includes several mods designed for server operators. Here's a
+          quick overview of the ones you'll use most.
         </p>
 
         <h3>Permissions with LuckPerms</h3>
@@ -259,16 +337,16 @@
         <h3>Tracking griefing with GriefLogger</h3>
         <p>
           GriefLogger records every block placement and removal. If a player
-          reports griefing, use the in-game lookup commands to check the
-          history of any block. You'll see who placed or broke it and when.
+          reports griefing, use the in-game lookup commands to check the history
+          of any block. You'll see who placed or broke it and when.
         </p>
 
         <h3>Base protection with SecurityCraft</h3>
         <p>
           SecurityCraft lets players protect their own builds with reinforced
-          blocks, keycard doors, laser grids, and security cameras. As a
-          server operator, it means less moderation work &mdash; players can
-          defend their own stuff. The included config file
+          blocks, keycard doors, laser grids, and security cameras. As a server
+          operator, it means less moderation work &mdash; players can defend
+          their own stuff. The included config file
           (<code>config/securitycraft-client.toml</code>) ships with sensible
           defaults.
         </p>
@@ -276,9 +354,9 @@
         <h3>Voice chat</h3>
         <p>
           Simple Voice Chat runs on port <strong>24454</strong> (UDP) by
-          default, in addition to the standard Minecraft port (25565). Make
-          sure this port is open in your firewall and forwarded if needed.
-          Players connect to voice automatically when they join the server.
+          default, in addition to the standard Minecraft port (25565). Make sure
+          this port is open in your firewall and forwarded if needed. Players
+          connect to voice automatically when they join the server.
         </p>
       </div>
     </main>

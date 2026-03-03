@@ -1,38 +1,92 @@
 #!/bin/bash
-set -eo pipefail
+set -euo pipefail
 
-apt-get update
-apt-get install -y --no-install-recommends curl jq ca-certificates default-jre-headless
+MODE="server"
+INSTALL_DIR=""
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --container) MODE="container"; shift ;;
+    --dir) [[ -n "${2:-}" ]] || { echo "ERROR: --dir requires a path argument." >&2; exit 1; }; INSTALL_DIR="$2"; shift 2 ;;
+    *) echo "Unknown option: $1" >&2; exit 1 ;;
+  esac
+done
 
-cd /mnt/server
+if [[ "$MODE" == "container" ]]; then
+    apt-get -q update
+    apt-get install -y --no-install-recommends curl jq ca-certificates default-jre-headless
+fi
+
+if [[ "$MODE" == "container" ]]; then
+    cd "${INSTALL_DIR:-/mnt/server}"
+elif [[ -n "$INSTALL_DIR" ]]; then
+    cd "$INSTALL_DIR"
+fi
 
 echo "Fetching packwiz-installer-bootstrap..."
-PACKWIZ_BOOTSTRAP_URL=$(curl -sSfL https://api.github.com/repos/packwiz/packwiz-installer-bootstrap/releases/latest | jq -r '.assets[] | select(.name | endswith(".jar")) | .browser_download_url')
+PACKWIZ_BOOTSTRAP_URL=$(curl -sSfL --connect-timeout 30 --max-time 30 \
+  https://api.github.com/repos/packwiz/packwiz-installer-bootstrap/releases/latest \
+  | jq -r '.assets[] | select(.name | endswith(".jar")) | .browser_download_url')
 
 if [[ -z "$PACKWIZ_BOOTSTRAP_URL" ]]; then
-  echo "ERROR: Failed to resolve packwiz-installer-bootstrap download URL."
+  echo "ERROR: Failed to resolve packwiz-installer-bootstrap download URL." >&2
   exit 1
 fi
 
-curl -sSfL -o packwiz-installer-bootstrap.jar "$PACKWIZ_BOOTSTRAP_URL"
+curl -sSfL --connect-timeout 30 --max-time 120 \
+  -o packwiz-installer-bootstrap.jar "$PACKWIZ_BOOTSTRAP_URL"
 echo "Downloaded packwiz-installer-bootstrap.jar"
+
+MODLOADER="${MODLOADER:-forge}"
+MC_VERSION="${MC_VERSION:-1.20.1}"
+if [[ "$MODLOADER" == "forge" ]]; then
+    FORGE_VERSION="${FORGE_VERSION:-47.4.13}"
+else
+    FORGE_VERSION="${FORGE_VERSION:-}"
+fi
+
+if [[ "$MODLOADER" != "forge" && "$MODLOADER" != "fabric" && "$MODLOADER" != "quilt" ]]; then
+  echo "ERROR: MODLOADER must be 'forge', 'fabric', or 'quilt'." >&2
+  exit 1
+fi
+
+if [[ ! "$MC_VERSION" =~ ^[0-9]+\.[0-9]+(\.[0-9]+)?$ ]]; then
+  echo "ERROR: MC_VERSION must be in the form x.y or x.y.z." >&2
+  exit 1
+fi
+
+if [[ -n "$FORGE_VERSION" ]] && [[ ! "$FORGE_VERSION" =~ ^[0-9]+(\.[0-9]+)*$ ]]; then
+  echo "ERROR: FORGE_VERSION must contain only digits and dots." >&2
+  exit 1
+fi
+
+if [[ ! "${SERVER_JARFILE:-server.jar}" =~ ^[A-Za-z0-9._-]+\.jar$ ]]; then
+  echo "ERROR: SERVER_JARFILE must be a simple .jar filename." >&2
+  exit 1
+fi
 
 case "${MODLOADER}" in
   forge)
     rm -f unix_args.txt user_jvm_args.txt run.sh run.bat
 
+    cleanup_forge() { rm -f installer.jar installer.jar.log; }
+    trap cleanup_forge EXIT
+
     RESOLVED_VERSION="${FORGE_VERSION:-}"
     if [[ -z "$RESOLVED_VERSION" ]]; then
-      JSON_DATA=$(curl -sSfL https://files.minecraftforge.net/maven/net/minecraftforge/forge/promotions_slim.json)
-      RESOLVED_VERSION=$(echo "$JSON_DATA" | jq -r ".promos[\"${MC_VERSION}-recommended\"] // .promos[\"${MC_VERSION}-latest\"]")
+      JSON_DATA=$(curl -sSfL --connect-timeout 30 --max-time 30 \
+        https://files.minecraftforge.net/maven/net/minecraftforge/forge/promotions_slim.json)
+      RESOLVED_VERSION=$(echo "$JSON_DATA" | jq -r \
+        ".promos[\"${MC_VERSION}-recommended\"] // .promos[\"${MC_VERSION}-latest\"]")
       if [[ -z "$RESOLVED_VERSION" || "$RESOLVED_VERSION" == "null" ]]; then
-        echo "ERROR: No Forge version found for Minecraft ${MC_VERSION}."
+        echo "ERROR: No Forge version found for Minecraft ${MC_VERSION}." >&2
         exit 1
       fi
     fi
 
     echo "Installing Forge ${MC_VERSION}-${RESOLVED_VERSION}..."
-    curl -sSfL -o installer.jar "https://maven.minecraftforge.net/net/minecraftforge/forge/${MC_VERSION}-${RESOLVED_VERSION}/forge-${MC_VERSION}-${RESOLVED_VERSION}-installer.jar"
+    curl -sSfL --connect-timeout 30 --max-time 120 \
+      -o installer.jar \
+      "https://maven.minecraftforge.net/net/minecraftforge/forge/${MC_VERSION}-${RESOLVED_VERSION}/forge-${MC_VERSION}-${RESOLVED_VERSION}-installer.jar"
 
     java -jar installer.jar --installServer
 
@@ -40,34 +94,73 @@ case "${MODLOADER}" in
     if [[ -f "$ARGS_FILE" ]]; then
       ln -sf "$ARGS_FILE" unix_args.txt
       echo "Linked unix_args.txt for Forge ${MC_VERSION}-${RESOLVED_VERSION}"
-    elif [[ ! -f "${SERVER_JARFILE}" ]]; then
-      echo "ERROR: Forge installation produced neither unix_args.txt nor ${SERVER_JARFILE}."
+    elif [[ ! -f "${SERVER_JARFILE:-server.jar}" ]]; then
+      echo "ERROR: Forge installation produced neither unix_args.txt nor ${SERVER_JARFILE:-server.jar}." >&2
       exit 1
     fi
 
     rm -f installer.jar installer.jar.log
+    trap - EXIT
     ;;
 
   fabric)
-    FABRIC_LOADER=${FORGE_VERSION:-$(curl -sSfL https://meta.fabricmc.net/v2/versions/loader | jq -r '.[0].version')}
-    FABRIC_INSTALLER=$(curl -sSfL https://meta.fabricmc.net/v2/versions/installer | jq -r '.[0].version')
+    FABRIC_LOADER="${FORGE_VERSION:-$(curl -sSfL --connect-timeout 30 --max-time 30 \
+      https://meta.fabricmc.net/v2/versions/loader | jq -r '.[0].version')}"
+    FABRIC_INSTALLER=$(curl -sSfL --connect-timeout 30 --max-time 30 \
+      https://meta.fabricmc.net/v2/versions/installer | jq -r '.[0].version')
 
     echo "Installing Fabric Loader ${FABRIC_LOADER} for Minecraft ${MC_VERSION}..."
-    curl -sSfL -o "${SERVER_JARFILE}" "https://meta.fabricmc.net/v2/versions/loader/${MC_VERSION}/${FABRIC_LOADER}/${FABRIC_INSTALLER}/server/jar"
+
+    cleanup_fabric() { rm -f "${SERVER_JARFILE:-server.jar}.tmp"; }
+    trap cleanup_fabric EXIT
+
+    curl -sSfL --connect-timeout 30 --max-time 120 \
+      -o "${SERVER_JARFILE:-server.jar}.tmp" \
+      "https://meta.fabricmc.net/v2/versions/loader/${MC_VERSION}/${FABRIC_LOADER}/${FABRIC_INSTALLER}/server/jar"
+    mv "${SERVER_JARFILE:-server.jar}.tmp" "${SERVER_JARFILE:-server.jar}"
+
+    trap - EXIT
     ;;
 
   quilt)
-    QUILT_LOADER=${FORGE_VERSION:-$(curl -sSfL https://meta.quiltmc.org/v3/versions/loader | jq -r '.[0].version')}
-    QUILT_INSTALLER=$(curl -sSfL https://meta.quiltmc.org/v3/versions/installer | jq -r '.[0].version')
+    QUILT_LOADER="${FORGE_VERSION:-$(curl -sSfL --connect-timeout 30 --max-time 30 \
+      https://meta.quiltmc.org/v3/versions/loader | jq -r '.[0].version')}"
+    QUILT_INSTALLER=$(curl -sSfL --connect-timeout 30 --max-time 30 \
+      https://meta.quiltmc.org/v3/versions/installer | jq -r '.[0].version')
 
     echo "Installing Quilt Loader ${QUILT_LOADER} for Minecraft ${MC_VERSION}..."
-    curl -sSfL -o "${SERVER_JARFILE}" "https://meta.quiltmc.org/v3/versions/loader/${MC_VERSION}/${QUILT_LOADER}/${QUILT_INSTALLER}/server/jar"
+
+    cleanup_quilt() { rm -f "${SERVER_JARFILE:-server.jar}.tmp"; }
+    trap cleanup_quilt EXIT
+
+    curl -sSfL --connect-timeout 30 --max-time 120 \
+      -o "${SERVER_JARFILE:-server.jar}.tmp" \
+      "https://meta.quiltmc.org/v3/versions/loader/${MC_VERSION}/${QUILT_LOADER}/${QUILT_INSTALLER}/server/jar"
+    mv "${SERVER_JARFILE:-server.jar}.tmp" "${SERVER_JARFILE:-server.jar}"
+
+    trap - EXIT
     ;;
 
   *)
-    echo "ERROR: Unknown modloader '${MODLOADER}'. Expected: forge, fabric, or quilt."
+    echo "ERROR: Unknown modloader '${MODLOADER}'. Expected: forge, fabric, or quilt." >&2
     exit 1
     ;;
 esac
+
+PACKWIZ_URL="${PACKWIZ_URL:-https://thunder.john.rooney.scot/pack.toml}"
+PACKWIZ_SIDE="${PACKWIZ_SIDE:-server}"
+
+if [[ "$PACKWIZ_SIDE" != "server" && "$PACKWIZ_SIDE" != "both" ]]; then
+  echo "ERROR: PACKWIZ_SIDE must be 'server' or 'both'." >&2
+  exit 1
+fi
+
+if [[ "$PACKWIZ_URL" =~ [[:space:]] ]]; then
+  echo "ERROR: PACKWIZ_URL must not contain whitespace." >&2
+  exit 1
+fi
+
+echo "Syncing modpack via packwiz..."
+java -jar packwiz-installer-bootstrap.jar -g -s "${PACKWIZ_SIDE}" "${PACKWIZ_URL}"
 
 echo "Server installation complete."

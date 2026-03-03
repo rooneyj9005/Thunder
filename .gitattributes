@@ -1,3 +1,4 @@
 *.toml -text
 instance.cfg -text
 config/** -text
+*.sh text eol=lf

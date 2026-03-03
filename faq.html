@@ -14,7 +14,7 @@
       integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
       crossorigin="anonymous"
     />
-    <link rel="stylesheet" href="./stylesheet.css" />
+    <link rel="stylesheet" href="./stylesheet.css" integrity="sha384-DAtX/hAJRqE4TcMfUt9dhFhM6i8tAQ+8csvjgwKUWJgIGw05svVXDdCB7FT7cC1Y" crossorigin="anonymous" />
   </head>
   <body>
     <nav class="navbar navbar-expand-lg">
@@ -180,6 +180,64 @@
             that handles Forge installation and mod synchronisation
             automatically. Import it through your panel's Nests section. The
             <a href="./server.html">server setup guide</a> has the full steps.
+          </p>
+        </div>
+
+        <div class="faq-item">
+          <h3>What Java version do I need?</h3>
+          <p>
+            <strong>Java 17</strong> is the minimum for Minecraft 1.20.1. Java
+            21 also works and is recommended for servers because it has better
+            garbage collection. Most launchers (Prism, ATLauncher) handle Java
+            for you automatically, but if you're running a standalone server
+            you'll need to install it yourself. Grab it from
+            <a href="https://adoptium.net">Adoptium</a>.
+          </p>
+        </div>
+
+        <div class="faq-item">
+          <h3>Can I run a server on Windows?</h3>
+          <p>
+            Yes. The repository includes PowerShell scripts (<code
+              >install.ps1</code
+            >
+            and <code>startup.ps1</code>) that work the same as the Linux
+            equivalents. Open PowerShell in an empty folder, run
+            <code>.\install.ps1</code>, then <code>.\startup.ps1</code>. The
+            <a href="./server.html">server setup guide</a> has the full steps.
+          </p>
+        </div>
+
+        <div class="faq-item">
+          <h3>Do I need to use Pterodactyl to host a server?</h3>
+          <p>
+            No. The install scripts work on any Linux or Windows machine.
+            Pterodactyl is just one option. You can run
+            <code>install.sh</code> (or <code>install.ps1</code> on Windows) on
+            a VPS, a spare PC, or anywhere else you can run Java. The scripts
+            handle Forge installation and mod downloads for you.
+          </p>
+        </div>
+
+        <div class="faq-item">
+          <h3>Do I need to port forward?</h3>
+          <p>
+            If you're hosting from home, yes. You'll need to forward port
+            <strong>25565</strong> (TCP) for Minecraft and port
+            <strong>24454</strong> (UDP) for Simple Voice Chat. If you're
+            renting a VPS or using a hosting panel, ports are usually handled
+            for you. Check with your provider if you're not sure.
+          </p>
+        </div>
+
+        <div class="faq-item">
+          <h3>Can I change the modlist on my server?</h3>
+          <p>
+            You can, but clients connecting to your server will need matching
+            mods. If you add server-side-only mods (permissions, anti-grief,
+            etc.) those won't affect clients. If you add mods that change
+            gameplay or add new items, every player will need them installed
+            too. The safest option is to stick with the official modlist.
           </p>
         </div>
 

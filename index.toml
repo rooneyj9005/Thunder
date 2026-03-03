@@ -623,3 +623,11 @@ metafile = true
 file = "resourcepacks/better-nether.pw.toml"
 hash = "6341b8f60b7e1bc4f778e5077255e621819a48bc7324c2f2f43ae7ceac04b0ba"
 metafile = true
+
+[[files]]
+file = "startup.ps1"
+hash = "14b2b54989aebddffcbd18d834f969b3ce115e600db9bba4a0174ed035e3399d"
+
+[[files]]
+file = "startup.sh"
+hash = "70f0e70ba84fea94d93eacb65f084f8a42ccaf880522ed3645b3d13bb80dbe15"

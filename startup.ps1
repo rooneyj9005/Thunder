@@ -49,7 +49,9 @@ if ($VoicePort -ne 0) {
 }
 
 if (Test-Path "unix_args.txt") {
-    & java -Xms128M "-XX:MaxRAMPercentage=95.0" "@unix_args.txt"
+    $winArgs = (Get-Content "unix_args.txt") -replace "(?<=\.jar):", ";"
+    Set-Content "win_args.txt" $winArgs
+    & java -Xms128M "-XX:MaxRAMPercentage=95.0" "@win_args.txt"
 }
 else {
     & java -Xms128M "-XX:MaxRAMPercentage=95.0" -jar $ServerJarFile

@@ -21,7 +21,7 @@
   },
   "scripts": {
     "installation": {
-      "script": "#!/bin/bash\nset -euo pipefail\n\napt-get -q update\napt-get install -y --no-install-recommends curl jq ca-certificates\ncd /mnt/server\n\nif [[ \"${INSTALL_SCRIPT_SOURCE:-main}\" == \"release\" ]]; then\n  LATEST_TAG=$(curl -sSfL --connect-timeout 30 --max-time 30 https://api.github.com/repos/rooneyj9005/Thunder/releases/latest | jq -r '.tag_name')\n  if [[ -z \"$LATEST_TAG\" || \"$LATEST_TAG\" == \"null\" ]]; then\n    echo \"ERROR: Could not resolve latest release tag from GitHub API.\" >&2\n    exit 1\n  fi\n  INSTALL_URL=\"https://raw.githubusercontent.com/rooneyj9005/Thunder/refs/tags/${LATEST_TAG}/install.sh\"\nelse\n  INSTALL_URL=\"https://raw.githubusercontent.com/rooneyj9005/Thunder/refs/heads/main/install.sh\"\nfi\n\ncurl -sSfL --connect-timeout 30 --max-time 30 \"$INSTALL_URL\" | bash -s -- --container",
+      "script": "#!/bin/bash\nset -euo pipefail\n\napt-get -q update\napt-get install -y --no-install-recommends curl ca-certificates\ncd /mnt/server\n\ncurl -sSfL --connect-timeout 30 --max-time 30 \\\n  https://github.com/rooneyj9005/Thunder/releases/latest/download/install.sh \\\n  | bash -s -- --container",
       "container": "debian:bookworm-slim",
       "entrypoint": "bash"
     }
@@ -145,16 +145,6 @@
       "user_viewable": true,
       "user_editable": false,
       "rules": "required|integer|between:1024,65535",
-      "field_type": "text"
-    },
-    {
-      "name": "Installation Script Source",
-      "description": "Admin-only: Select whether to use the installation script from the main branch or the latest release tag.",
-      "env_variable": "INSTALL_SCRIPT_SOURCE",
-      "default_value": "main",
-      "user_viewable": false,
-      "user_editable": false,
-      "rules": "required|string|in:main,release",
       "field_type": "text"
     }
   ]

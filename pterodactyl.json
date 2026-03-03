@@ -1,0 +1,144 @@
+{
+  "meta": {
+    "version": "PTDL_v2",
+    "update_url": null
+  },
+  "exported_at": "2026-03-02T00:00:00+00:00",
+  "name": "Thunder",
+  "author": "john@rooney.scot",
+  "description": "Pterodactyl egg for the Thunder modpack - a Minecraft 1.20.1 Forge modpack combining technology, magic, and building mods. Uses packwiz for automatic server-side mod synchronisation.",
+  "features": ["eula", "java_version", "pid_limit"],
+  "docker_images": {
+    "Java 21 (Recommended)": "ghcr.io/pterodactyl/yolks:java_21",
+    "Java 17": "ghcr.io/pterodactyl/yolks:java_17",
+    "Java 16": "ghcr.io/pterodactyl/yolks:java_16",
+    "Java 11": "ghcr.io/pterodactyl/yolks:java_11",
+    "Java 8": "ghcr.io/pterodactyl/yolks:java_8"
+  },
+  "startup": "bash -c 'if [[ \"$CLEAN_INSTALL\" == \"1\" ]]; then rm -rf mods config/packwiz-installer.toml; fi; java -jar packwiz-installer-bootstrap.jar -g -s \"$PACKWIZ_SIDE\" $PACKWIZ_EXTRA_FLAGS \"$PACKWIZ_URL\"; if [[ -f unix_args.txt ]]; then java -Xms128M -XX:MaxRAMPercentage=95.0 @unix_args.txt; else java -Xms128M -XX:MaxRAMPercentage=95.0 -jar \"$SERVER_JARFILE\"; fi'",
+  "config": {
+    "files": "{\n    \"server.properties\": {\n        \"parser\": \"properties\",\n        \"find\": {\n            \"server-ip\": \"0.0.0.0\",\n            \"server-port\": \"{{server.build.default.port}}\",\n            \"enable-rcon\": \"{{ENABLE_RCON}}\",\n            \"rcon.port\": \"{{RCON_PORT}}\",\n            \"rcon.password\": \"{{RCON_PASS}}\",\n            \"broadcast-rcon-to-ops\": \"false\"\n        }\n    }\n}",
+    "startup": "{\n    \"done\": \")! For help, type \"\n}",
+    "logs": "{}",
+    "stop": "stop"
+  },
+  "scripts": {
+    "installation": {
+      "script": "#!/bin/bash\nset -eo pipefail\n\napt-get update\napt-get install -y --no-install-recommends curl jq ca-certificates default-jre-headless\n\ncd /mnt/server\n\necho \"Fetching packwiz-installer-bootstrap...\"\nPACKWIZ_BOOTSTRAP_URL=$(curl -sSfL https://api.github.com/repos/packwiz/packwiz-installer-bootstrap/releases/latest | jq -r '.assets[] | select(.name | endswith(\".jar\")) | .browser_download_url')\n\nif [[ -z \"$PACKWIZ_BOOTSTRAP_URL\" ]]; then\n  echo \"ERROR: Failed to resolve packwiz-installer-bootstrap download URL.\"\n  exit 1\nfi\n\ncurl -sSfL -o packwiz-installer-bootstrap.jar \"$PACKWIZ_BOOTSTRAP_URL\"\necho \"Downloaded packwiz-installer-bootstrap.jar\"\n\ncase \"${MODLOADER}\" in\n  forge)\n    rm -f unix_args.txt user_jvm_args.txt run.sh run.bat\n\n    RESOLVED_VERSION=\"${FORGE_VERSION:-}\"\n    if [[ -z \"$RESOLVED_VERSION\" ]]; then\n      JSON_DATA=$(curl -sSfL https://files.minecraftforge.net/maven/net/minecraftforge/forge/promotions_slim.json)\n      RESOLVED_VERSION=$(echo \"$JSON_DATA\" | jq -r \".promos[\\\"${MC_VERSION}-recommended\\\"] // .promos[\\\"${MC_VERSION}-latest\\\"]\")\n      if [[ -z \"$RESOLVED_VERSION\" || \"$RESOLVED_VERSION\" == \"null\" ]]; then\n        echo \"ERROR: No Forge version found for Minecraft ${MC_VERSION}.\"\n        exit 1\n      fi\n    fi\n\n    echo \"Installing Forge ${MC_VERSION}-${RESOLVED_VERSION}...\"\n    curl -sSfL -o installer.jar \"https://maven.minecraftforge.net/net/minecraftforge/forge/${MC_VERSION}-${RESOLVED_VERSION}/forge-${MC_VERSION}-${RESOLVED_VERSION}-installer.jar\"\n\n    java -jar installer.jar --installServer\n\n    ARGS_FILE=\"libraries/net/minecraftforge/forge/${MC_VERSION}-${RESOLVED_VERSION}/unix_args.txt\"\n    if [[ -f \"$ARGS_FILE\" ]]; then\n      ln -sf \"$ARGS_FILE\" unix_args.txt\n      echo \"Linked unix_args.txt for Forge ${MC_VERSION}-${RESOLVED_VERSION}\"\n    elif [[ ! -f \"${SERVER_JARFILE}\" ]]; then\n      echo \"ERROR: Forge installation produced neither unix_args.txt nor ${SERVER_JARFILE}.\"\n      exit 1\n    fi\n\n    rm -f installer.jar installer.jar.log\n    ;;\n\n  fabric)\n    FABRIC_LOADER=${FORGE_VERSION:-$(curl -sSfL https://meta.fabricmc.net/v2/versions/loader | jq -r '.[0].version')}\n    FABRIC_INSTALLER=$(curl -sSfL https://meta.fabricmc.net/v2/versions/installer | jq -r '.[0].version')\n\n    echo \"Installing Fabric Loader ${FABRIC_LOADER} for Minecraft ${MC_VERSION}...\"\n    curl -sSfL -o \"${SERVER_JARFILE}\" \"https://meta.fabricmc.net/v2/versions/loader/${MC_VERSION}/${FABRIC_LOADER}/${FABRIC_INSTALLER}/server/jar\"\n    ;;\n\n  quilt)\n    QUILT_LOADER=${FORGE_VERSION:-$(curl -sSfL https://meta.quiltmc.org/v3/versions/loader | jq -r '.[0].version')}\n    QUILT_INSTALLER=$(curl -sSfL https://meta.quiltmc.org/v3/versions/installer | jq -r '.[0].version')\n\n    echo \"Installing Quilt Loader ${QUILT_LOADER} for Minecraft ${MC_VERSION}...\"\n    curl -sSfL -o \"${SERVER_JARFILE}\" \"https://meta.quiltmc.org/v3/versions/loader/${MC_VERSION}/${QUILT_LOADER}/${QUILT_INSTALLER}/server/jar\"\n    ;;\n\n  *)\n    echo \"ERROR: Unknown modloader '${MODLOADER}'. Expected: forge, fabric, or quilt.\"\n    exit 1\n    ;;\nesac\n\necho \"Server installation complete.\"",
+      "container": "debian:bookworm-slim",
+      "entrypoint": "bash"
+    }
+  },
+  "variables": [
+    {
+      "name": "Packwiz URL",
+      "description": "URL to the pack.toml file. Points to Thunder's GitHub Pages by default.",
+      "env_variable": "PACKWIZ_URL",
+      "default_value": "https://thunder.john.rooney.scot/pack.toml",
+      "user_viewable": true,
+      "user_editable": false,
+      "rules": "required|url",
+      "field_type": "text"
+    },
+    {
+      "name": "Minecraft Version",
+      "description": "Target Minecraft version. Must match the version required by the modpack.",
+      "env_variable": "MC_VERSION",
+      "default_value": "1.20.1",
+      "user_viewable": true,
+      "user_editable": false,
+      "rules": "required|regex:/^\\d+\\.\\d+(\\.\\d+)?$/",
+      "field_type": "text"
+    },
+    {
+      "name": "Modloader",
+      "description": "Modloader type. Thunder requires Forge.",
+      "env_variable": "MODLOADER",
+      "default_value": "forge",
+      "user_viewable": true,
+      "user_editable": false,
+      "rules": "required|string|in:forge,fabric,quilt",
+      "field_type": "text"
+    },
+    {
+      "name": "Build / Loader Version",
+      "description": "Forge build number or Fabric/Quilt loader version. Leave empty for auto-detection. Thunder requires Forge 47.4.13.",
+      "env_variable": "FORGE_VERSION",
+      "default_value": "47.4.13",
+      "user_viewable": true,
+      "user_editable": false,
+      "rules": "nullable|regex:/^[\\d.]*$/",
+      "field_type": "text"
+    },
+    {
+      "name": "Server Jar File",
+      "description": "Server jar filename. Only used by Fabric/Quilt and legacy Forge. Modern Forge uses unix_args.txt instead.",
+      "env_variable": "SERVER_JARFILE",
+      "default_value": "server.jar",
+      "user_viewable": false,
+      "user_editable": false,
+      "rules": "required|regex:/^[\\w][\\w.\\-]*\\.jar$/",
+      "field_type": "text"
+    },
+    {
+      "name": "Packwiz Side",
+      "description": "Which side of mods to install. Use 'server' for dedicated servers.",
+      "env_variable": "PACKWIZ_SIDE",
+      "default_value": "server",
+      "user_viewable": false,
+      "user_editable": false,
+      "rules": "required|string|in:server,both",
+      "field_type": "text"
+    },
+    {
+      "name": "Clean Install",
+      "description": "Wipe the mods folder before each startup to force a fresh packwiz sync. Set to 1 to enable, 0 to disable.",
+      "env_variable": "CLEAN_INSTALL",
+      "default_value": "0",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|in:0,1",
+      "field_type": "text"
+    },
+    {
+      "name": "Extra Packwiz Flags",
+      "description": "Additional flags passed to packwiz-installer-bootstrap. Admin use only.",
+      "env_variable": "PACKWIZ_EXTRA_FLAGS",
+      "default_value": "",
+      "user_viewable": false,
+      "user_editable": false,
+      "rules": "nullable|string|max:200",
+      "field_type": "text"
+    },
+    {
+      "name": "Enable RCON",
+      "description": "Enable the Minecraft RCON protocol for remote console access.",
+      "env_variable": "ENABLE_RCON",
+      "default_value": "false",
+      "user_viewable": true,
+      "user_editable": false,
+      "rules": "required|string|in:true,false",
+      "field_type": "text"
+    },
+    {
+      "name": "RCON Port",
+      "description": "Port for RCON connections. Must not conflict with the game port.",
+      "env_variable": "RCON_PORT",
+      "default_value": "25575",
+      "user_viewable": true,
+      "user_editable": false,
+      "rules": "required|integer|between:1024,65535",
+      "field_type": "text"
+    },
+    {
+      "name": "RCON Password",
+      "description": "Password for RCON authentication. Change from the default before enabling RCON.",
+      "env_variable": "RCON_PASS",
+      "default_value": "change_me",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|string|min:8",
+      "field_type": "text"
+    }
+  ]
+}

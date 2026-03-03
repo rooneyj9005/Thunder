@@ -5,10 +5,6 @@ file = "config/securitycraft-client.toml"
 hash = "846b902a8195b545f36d2562a7b00b465cb6863d0e2fb2b8d62634e36e61b5de"
 
 [[files]]
-file = "instance.cfg"
-hash = "00b1f25424e1fc7d55cddd72e63d6b3d63b15689bfcfabee1b74ba32e943b329"
-
-[[files]]
 file = "mods/ae2.pw.toml"
 hash = "74bbdad7434bc02ec767c15c0136269f885331601f73fa2365252c24e58c09bd"
 metafile = true
@@ -567,10 +563,6 @@ metafile = true
 file = "mods/zeta.pw.toml"
 hash = "b43f507cffbcc7178b184fa63b2d74fc6b2b8103c4d299ec5633ccf1f5abdafb"
 metafile = true
-
-[[files]]
-file = "packwiz.json"
-hash = "c037255a39139de765d5a79c2adb9db94c690be401da0e5b8d21131db9e7b581"
 
 [[files]]
 file = "resourcepacks/beansilo.pw.toml"

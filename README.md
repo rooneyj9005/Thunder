@@ -84,7 +84,6 @@ To preview locally, open `index.html` in a browser. All links are relative.
 ## CI/CD
 
 * **Release workflow** (`.github/workflows/buildReleaseArtifacts.yml`): When a GitHub release is published, the workflow installs packwiz, runs `packwiz modrinth export`, and uploads the resulting `.mrpack` to the release.
-* **Version check workflow** (`.github/workflows/checkVersionBump.yml`): On pull requests to `main`, verifies that `pack.toml` version is higher than the current `main` version. Combined with branch protection, this blocks merges without a version bump.
 * **GitHub Pages**: Serves the documentation site from the repository root on `main`.
 
 ## What's Actually in the Pack

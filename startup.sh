@@ -44,7 +44,7 @@ fi
 echo "Syncing modpack via packwiz..."
 PACKWIZ_ARGS=(-g -s "${PACKWIZ_SIDE}")
 if [[ -n "${PACKWIZ_EXTRA_FLAGS:-}" ]]; then
-  if [[ "${PACKWIZ_EXTRA_FLAGS}" =~ [\;\&\|\<\>\`\$\(\)\{\}] ]]; then
+  if [[ "${PACKWIZ_EXTRA_FLAGS}" =~ [\;\&\|\<\>\`\$\(\)\{\}] ]] || [[ "${PACKWIZ_EXTRA_FLAGS}" =~ $'\n' ]]; then
     echo "ERROR: PACKWIZ_EXTRA_FLAGS contains unsupported characters." >&2
     exit 1
   fi

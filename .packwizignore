@@ -2,18 +2,11 @@
 # relative to the pack root. Any path matched here will be omitted from
 # the exported .mrpack so clients never download it.
 # See: https://git-scm.com/docs/gitignore
-/index.html
-/install.html
-/server.html
-/features.html
-/faq.html
-/stylesheet.css
-/scripts.js
+/docs/
 /CNAME
-/.nojekyll
 /README.md
-/RELEASE_CHECKLIST.md
 /LICENSE
+/.git/
 /.gitignore
 /.gitattributes
 /.github/

@@ -26,8 +26,8 @@ if ($PackwizExtraFlags -match "[;|&`$()<>{}]" -or $PackwizExtraFlags -match "[\r
     throw "PACKWIZ_EXTRA_FLAGS contains unsupported characters."
 }
 
-if ($VoicePort -lt 1 -or $VoicePort -gt 65535) {
-    throw "VOICE_PORT must be between 1 and 65535."
+if ($VoicePort -lt 0 -or $VoicePort -gt 65535) {
+    throw "VOICE_PORT must be between 0 and 65535 (0 to disable)."
 }
 
 if ($CleanInstall) {
@@ -54,3 +54,4 @@ if (Test-Path "unix_args.txt") {
 else {
     & java -Xms128M "-XX:MaxRAMPercentage=95.0" -jar $ServerJarFile
 }
+exit $LASTEXITCODE

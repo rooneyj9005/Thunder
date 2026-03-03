@@ -14,7 +14,13 @@
       integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
       crossorigin="anonymous"
     />
-    <link rel="stylesheet" href="./stylesheet.css" integrity="sha384-DAtX/hAJRqE4TcMfUt9dhFhM6i8tAQ+8csvjgwKUWJgIGw05svVXDdCB7FT7cC1Y" crossorigin="anonymous" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+      rel="stylesheet"
+      integrity="sha384-XGjxtQfXaH2tnPFa9x+ruJTuLE3Aa6LhHSWRr1XeTyhezb4abCG4ccI5AkVDxqC+"
+      crossorigin="anonymous"
+    />
+    <link rel="stylesheet" href="./stylesheet.css" />
   </head>
   <body>
     <nav class="navbar navbar-expand-lg">
@@ -49,6 +55,10 @@
               <a class="nav-link active" href="./faq.html">FAQ</a>
             </li>
           </ul>
+          <div id="header-version-status" class="version-status ms-lg-3 mt-2 mt-lg-0" data-state="loading" aria-live="polite">
+            <i class="bi bi-hourglass-split" aria-hidden="true"></i>
+            <span>Loading version status</span>
+          </div>
         </div>
       </div>
     </nav>
@@ -102,7 +112,10 @@
             issue.
           </p>
           <ul>
-            <li>Make sure you're running <strong>Java 17</strong> or newer.</li>
+            <li>
+              Make sure you're running the Java version required by the current
+              Thunder release.
+            </li>
             <li>
               Make sure you've given Minecraft at least
               <strong>6 GB of RAM</strong>.
@@ -174,7 +187,7 @@
           <p>
             Yes. The repository includes a
             <a
-              href="https://github.com/rooneyj9005/Thunder/blob/main/pterodactyl.json"
+              href="https://github.com/rooneyj9005/Thunder/releases/latest/download/pterodactyl.json"
               >ready-made egg template</a
             >
             that handles Forge installation and mod synchronisation
@@ -186,11 +199,10 @@
         <div class="faq-item">
           <h3>What Java version do I need?</h3>
           <p>
-            <strong>Java 17</strong> is the minimum for Minecraft 1.20.1. Java
-            21 also works and is recommended for servers because it has better
-            garbage collection. Most launchers (Prism, ATLauncher) handle Java
-            for you automatically, but if you're running a standalone server
-            you'll need to install it yourself. Grab it from
+            Use the Java version required by the current Thunder release.
+            Most launchers (Prism, ATLauncher) handle Java for you
+            automatically, but if you're running a standalone server you'll need
+            to install it yourself. Grab it from
             <a href="https://adoptium.net">Adoptium</a>.
           </p>
         </div>
@@ -268,5 +280,9 @@
       integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
       crossorigin="anonymous"
     ></script>
+    <script src="./functions.js"></script>
+    <script>
+      window.initializeThunderPage();
+    </script>
   </body>
 </html>

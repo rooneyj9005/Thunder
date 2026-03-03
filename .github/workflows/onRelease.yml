@@ -1,0 +1,100 @@
+name: Build and Release Modpack
+on:
+  release:
+    types: [published]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          cache: false
+          go-version: "stable"
+      - name: Resolve latest packwiz release tag
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          PACKWIZ_TAG=$(gh api repos/packwiz/packwiz/releases/latest --jq '.tag_name')
+          if [ -z "$PACKWIZ_TAG" ] || [ "$PACKWIZ_TAG" = "null" ]; then
+            echo "ERROR: Could not resolve latest packwiz release tag." >&2
+            exit 1
+          fi
+          echo "PACKWIZ_TAG=$PACKWIZ_TAG" >> "$GITHUB_ENV"
+      - name: Install packwiz for build steps
+        run: |
+          go install github.com/packwiz/packwiz@${PACKWIZ_TAG}
+      - name: Compile packwiz.exe from latest release
+        run: |
+          GOBIN="$PWD" GOOS=windows GOARCH=amd64 go install github.com/packwiz/packwiz@${PACKWIZ_TAG}
+          test -f packwiz.exe
+      - name: Refresh Modpack
+        run: $(go env GOPATH)/bin/packwiz refresh
+      - name: Export Modpack
+        run: |
+          $(go env GOPATH)/bin/packwiz modrinth export
+          EXPORTED_PACK=$(ls -1 *.mrpack | head -n 1)
+          if [ -z "$EXPORTED_PACK" ]; then
+            echo "ERROR: No .mrpack file was produced." >&2
+            exit 1
+          fi
+          mv -f "$EXPORTED_PACK" Thunder.mrpack
+      - name: Normalize shell scripts to LF
+        run: |
+          sed -i 's/\r$//' install.sh startup.sh
+          if grep -q $'\r' install.sh startup.sh; then
+            echo "ERROR: CRLF line endings still present in shell scripts." >&2
+            exit 1
+          fi
+      - name: Upload to Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release upload ${{ github.event.release.tag_name }} \
+            Thunder.mrpack \
+            install.sh install.ps1 startup.sh startup.ps1 pterodactyl.json \
+            packwiz.exe \
+            --clobber
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.release.tag_name }}
+
+      - name: Stage Pages content from release
+        run: |
+          mkdir -p public
+
+          cp -R docs/* public/
+
+          cp pack.toml index.toml instance.cfg public/
+          cp -R mods config resourcepacks public/
+
+          if [ -f CNAME ]; then cp CNAME public/; fi
+          touch public/.nojekyll
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: public
+
+      - name: Deploy Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

@@ -1,14 +1,14 @@
 # Thunder Modpack
 
-Thunder is a Minecraft 1.20.1 modpack built for playing with friends. It combines technology, magic, and building mods into a cohesive experience that is optimised for server performance.
+Thunder is a Minecraft Forge modpack built for playing with friends. It combines technology, magic, and building mods into a cohesive experience that is optimised for server performance.
 
 You can automate your base with **Create**, craft spells with **Ars Nouveau**, set up digital storage with **AE2**, and build with **Macaw's furniture** and **Chipped** blocks. There are 122 mods, all tested for stability.
 
 > **Looking to play?** Visit **[thunder.john.rooney.scot](https://thunder.john.rooney.scot)** for download links, installation instructions, and server setup guides. This README is for developers and contributors.
 
-## License and Ethos
+## Licence and Ethos
 
-This project is as open as any license can allow. Do whatever you want with it: fork it, modify it, or redistribute your own flavour of it. If you genuinely improve the player experience, a pull request is appreciated, but never required.
+This project is as open as any licence can allow. Do whatever you want with it: fork it, modify it, or redistribute your own flavour of it. If you genuinely improve the player experience, a pull request is appreciated, but never required.
 
 **The "No-Nonsense" Rules:**
 
@@ -17,10 +17,10 @@ This project is as open as any license can allow. Do whatever you want with it: 
 
 ## Important: Version Pinning
 
-**Do not update Create.** The pack is built on **Create 6.0.6**, and many included addons only work with this version. Updating to 6.0.7 or later will almost certainly cause crashes.
+**Do not update Create casually.** The pack is pinned to a specific Create line and addon compatibility depends on it.
 
-- When adding new Create addons, check they support version 6.0.6.
-- **Create Slice & Dice** is pinned at version **3.4.0** for the same reason.
+- Check the currently pinned versions in `mods/create.pw.toml` and `mods/create-slice-and-dice.pw.toml` before changing anything.
+- When adding new Create addons, confirm compatibility with the versions currently pinned in this repository.
 
 ## Getting Started (Developers)
 
@@ -29,7 +29,7 @@ git clone https://github.com/rooneyj9005/Thunder.git
 cd Thunder
 ```
 
-You will need [packwiz](https://packwiz.infra.link/) installed and available on your PATH. On Windows you can also keep a local copy at `bin/packwiz.exe` and run it from there.
+You will need [packwiz](https://packwiz.infra.link/) installed and available on your PATH. On Windows you can also use the release-hosted binary at [packwiz.exe](https://github.com/rooneyj9005/Thunder/releases/latest/download/packwiz.exe).
 
 ### Adding a Mod
 
@@ -74,7 +74,7 @@ Before releasing a new version, perform the following checks:
 1. Fork the repository and create a branch for your changes.
 2. Make your changes (add/remove/update mods, edit site content, etc.).
 3. Test locally with Prism Launcher - import the `.mrpack` and verify it launches cleanly.
-4. Bump the `version` field in `pack.toml` (PRs that don't bump the version will fail CI).
+4. Bump the `version` field in `pack.toml`.
 5. Open a pull request against `main`.
 
 ## Server Scripts
@@ -106,7 +106,7 @@ The `--container` flag is used internally by the Pterodactyl egg. It installs sy
 .\startup.ps1
 ```
 
-Both scripts accept a `-Dir` parameter to specify the install directory. All Thunder defaults (Forge 47.4.13, Minecraft 1.20.1, packwiz URL) are built in, so no extra arguments are needed for a standard setup.
+Both scripts accept a `-Dir` parameter to specify the install directory. All Thunder defaults (current modloader, current game version, and packwiz URL) are built in, so no extra arguments are needed for a standard setup.
 
 ### Pterodactyl / Pelican
 
@@ -114,31 +114,31 @@ Import `pterodactyl.json` as an egg in your panel. It passes `--container` to th
 
 ## Documentation Site
 
-The player-facing documentation site lives in the repository root alongside the packwiz files:
+The player-facing documentation source lives in `docs/`:
 
 ```
-index.html          # Landing page with latest release download
-install.html        # Installation guide
-server.html         # Server setup guide
-features.html       # What's in the pack
-faq.html            # Frequently asked questions
-stylesheet.css      # Shared stylesheet
-scripts.js          # Fetches latest release from GitHub API
+docs/index.html          # Landing page with latest release download
+docs/install.html        # Installation guide
+docs/server.html         # Server setup guide
+docs/features.html       # What's in the pack
+docs/faq.html            # Frequently asked questions
+docs/stylesheet.css      # Shared stylesheet
+docs/functions.js        # Fetches latest release from GitHub API
 ```
 
-The site is deployed via **GitHub Pages** from the root of the `main` branch to [thunder.john.rooney.scot](https://thunder.john.rooney.scot). Changes pushed to `main` are deployed automatically.
+The published site is deployed via **GitHub Pages Actions** on release publish. The workflow stages `docs/*` at the site root and also publishes packwiz metadata files (`pack.toml`, `index.toml`, `mods/`, `config/`, `resourcepacks/`, `instance.cfg`) so both docs and pack metadata are available at [thunder.john.rooney.scot](https://thunder.john.rooney.scot).
 
-To preview locally, open `index.html` in a browser. All links are relative.
+To preview locally, open `docs/index.html` in a browser. All links are relative.
 
 ## CI/CD
 
-- **Release workflow** (`.github/workflows/buildReleaseArtifacts.yml`): When a GitHub release is published, the workflow installs packwiz, runs `packwiz modrinth export`, and uploads the resulting `.mrpack` to the release.
-- **GitHub Pages**: Serves the documentation site from the repository root on `main`.
+- **Release workflow** (`.github/workflows/onRelease.yml`): When a GitHub release is published, the workflow compiles `packwiz.exe` from the latest packwiz release tag, exports the pack as `Thunder.mrpack`, normalises `.sh` line endings to LF, and uploads `Thunder.mrpack`, `packwiz.exe`, and the install/startup scripts.
+- **GitHub Pages**: On release publish, deploys the site via Actions from the release tag snapshot.
 - **Server scripts** (`install.sh`, `startup.sh`, `pterodactyl.json`): The Pterodactyl egg installs Forge and fetches `startup.sh` from the same GitHub ref as `install.sh` - either `main` or the latest release tag, controlled by the `Installation Script Source` panel variable.
 
 ## Release Checklist
 
-Use `RELEASE_CHECKLIST.md` as the mandatory go/no-go checklist before publishing a release.
+Use `docs/RELEASE_CHECKLIST.md` as the mandatory go/no-go checklist before publishing a release.
 
 ## What's Actually in the Pack
 

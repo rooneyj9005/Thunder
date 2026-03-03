@@ -69,6 +69,34 @@ code {
   color: var(--text-primary) !important;
 }
 
+.version-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.38rem;
+  padding: 0.3rem 0.65rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--bg-card);
+  color: var(--text-body);
+  font-size: 0.78rem;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.version-status .bi {
+  font-size: 0.82rem;
+}
+
+.version-status[data-state="in-sync"] {
+  color: var(--text-primary);
+  border-color: var(--border-light);
+}
+
+.version-status[data-state="out-of-sync"] {
+  color: var(--text-primary);
+  border-color: var(--accent);
+}
+
 .navbar-toggler {
   border-color: var(--border);
 }
@@ -189,7 +217,9 @@ code {
   line-height: 1.55;
 }
 
-.card a {
+.card > a {
+  display: block;
+  height: 100%;
   text-decoration: none;
   color: inherit;
 }

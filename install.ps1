@@ -4,7 +4,7 @@ param(
     [string]$Dir = ".",
     [string]$ModLoader = "forge",
     [string]$McVersion = "1.20.1",
-    [string]$ForgeVersion = "47.4.13",
+    [string]$ForgeVersion = "",
     [string]$ServerJarFile = "server.jar"
 )
 
@@ -40,8 +40,8 @@ if (-not $asset) {
 Invoke-WebRequest -Uri $asset.browser_download_url -OutFile "packwiz-installer-bootstrap.jar" -TimeoutSec 120
 Write-Host "Downloaded packwiz-installer-bootstrap.jar"
 
-if ($ModLoader -ne "forge" -and $ForgeVersion -eq "47.4.13") {
-    $ForgeVersion = ""
+if ($ModLoader -eq "forge" -and -not $ForgeVersion) {
+    $ForgeVersion = "47.4.13"
 }
 
 switch ($ModLoader) {

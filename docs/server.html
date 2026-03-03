@@ -14,7 +14,13 @@
       integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
       crossorigin="anonymous"
     />
-    <link rel="stylesheet" href="./stylesheet.css" integrity="sha384-DAtX/hAJRqE4TcMfUt9dhFhM6i8tAQ+8csvjgwKUWJgIGw05svVXDdCB7FT7cC1Y" crossorigin="anonymous" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+      rel="stylesheet"
+      integrity="sha384-XGjxtQfXaH2tnPFa9x+ruJTuLE3Aa6LhHSWRr1XeTyhezb4abCG4ccI5AkVDxqC+"
+      crossorigin="anonymous"
+    />
+    <link rel="stylesheet" href="./stylesheet.css" />
   </head>
   <body>
     <nav class="navbar navbar-expand-lg">
@@ -49,6 +55,10 @@
               <a class="nav-link" href="./faq.html">FAQ</a>
             </li>
           </ul>
+          <div id="header-version-status" class="version-status ms-lg-3 mt-2 mt-lg-0" data-state="loading" aria-live="polite">
+            <i class="bi bi-hourglass-split" aria-hidden="true"></i>
+            <span>Loading version status</span>
+          </div>
         </div>
       </div>
     </nav>
@@ -73,13 +83,12 @@
 
         <h2>What you'll need</h2>
         <ul>
-          <li><strong>Java 17</strong> or newer.</li>
+          <li><strong>The Java version required by the current release.</strong></li>
           <li>
-            A <strong>Forge 1.20.1</strong> server (Forge version
-            <strong>47.4.13</strong>). If you haven't set one up before, grab
-            the installer from
+            A <strong>Forge server matching the current release metadata</strong>.
+            If you haven't set one up before, grab the installer from
             <a
-              href="https://files.minecraftforge.net/net/minecraftforge/forge/index_1.20.1.html"
+              href="https://files.minecraftforge.net/net/minecraftforge/forge/"
               >the Forge downloads page</a
             >
             and run it once to generate the server files.
@@ -151,7 +160,7 @@
             <p>
               Download
               <a
-                href="https://raw.githubusercontent.com/rooneyj9005/Thunder/main/pterodactyl.json"
+                href="https://github.com/rooneyj9005/Thunder/releases/latest/download/pterodactyl.json"
                 download="pterodactyl.json"
                 ><code>pterodactyl.json</code></a
               >
@@ -167,8 +176,8 @@
             <h3>Create a server</h3>
             <p>
               Create a new server using the imported Thunder egg. The defaults
-              are already configured - Forge 47.4.13, Minecraft 1.20.1, and the
-              correct packwiz URL are all pre-filled. Select the
+              are already configured from the current Thunder release metadata,
+              and the correct packwiz URL is pre-filled. Select the
               <strong>Java 21</strong> Docker image (recommended) and allocate
               at least <strong>6 GB of RAM</strong>.
             </p>
@@ -211,8 +220,8 @@
         <p>
           If you're not using a hosting panel, the repository includes an
           install script that sets up Forge and downloads everything for you.
-          You'll need <strong>curl</strong>, <strong>jq</strong>, and
-          <strong>Java 17+</strong> installed.
+          You'll need <strong>curl</strong>, <strong>jq</strong>, and the Java
+          runtime required by the current release installed.
         </p>
 
         <div class="step">
@@ -222,7 +231,7 @@
             <p>Create a directory for your server and run:</p>
             <div class="code-block">
               mkdir thunder-server && cd thunder-server && curl -sSfL
-              https://raw.githubusercontent.com/rooneyj9005/Thunder/main/install.sh
+              https://github.com/rooneyj9005/Thunder/releases/latest/download/install.sh
               | bash
             </div>
             <p>
@@ -250,8 +259,8 @@
         <h2>Standalone server (Windows)</h2>
         <p>
           The repository also includes PowerShell scripts for Windows servers.
-          You'll need <strong>Java 17+</strong> installed and available on your
-          PATH.
+          You'll need the Java runtime required by the current release installed
+          and available on your PATH.
         </p>
 
         <div class="step">
@@ -261,13 +270,18 @@
             <p>
               Download
               <a
-                href="https://raw.githubusercontent.com/rooneyj9005/Thunder/main/install.ps1"
+                href="https://github.com/rooneyj9005/Thunder/releases/latest/download/install.ps1"
                 download="install.ps1"
                 ><code>install.ps1</code></a
               >
               into an empty folder and run it in PowerShell:
             </p>
             <div class="code-block">.\install.ps1</div>
+            <p>
+              Optional: download packwiz directly from
+              <a href="https://github.com/rooneyj9005/Thunder/releases/latest/download/packwiz.exe"><code>packwiz.exe</code></a>
+              if you need a standalone binary.
+            </p>
           </div>
         </div>
 
@@ -375,5 +389,9 @@
       integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
       crossorigin="anonymous"
     ></script>
+    <script src="./functions.js"></script>
+    <script>
+      window.initializeThunderPage();
+    </script>
   </body>
 </html>

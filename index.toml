@@ -626,8 +626,8 @@ metafile = true
 
 [[files]]
 file = "startup.ps1"
-hash = "14b2b54989aebddffcbd18d834f969b3ce115e600db9bba4a0174ed035e3399d"
+hash = "09640038483dba18313596d7a82ff7a17aa4dde094d24f3a457425785c3e574d"
 
 [[files]]
 file = "startup.sh"
-hash = "70f0e70ba84fea94d93eacb65f084f8a42ccaf880522ed3645b3d13bb80dbe15"
+hash = "c861a8d6f9e680f61acae2085d35bbf9fce4cfb47daf74e06bd06e1eb2f4e510"

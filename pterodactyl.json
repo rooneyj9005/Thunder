@@ -10,12 +10,9 @@
   "features": ["eula", "java_version", "pid_limit"],
   "docker_images": {
     "Java 21 (Recommended)": "ghcr.io/pterodactyl/yolks:java_21",
-    "Java 17": "ghcr.io/pterodactyl/yolks:java_17",
-    "Java 16": "ghcr.io/pterodactyl/yolks:java_16",
-    "Java 11": "ghcr.io/pterodactyl/yolks:java_11",
-    "Java 8": "ghcr.io/pterodactyl/yolks:java_8"
+    "Java 17": "ghcr.io/pterodactyl/yolks:java_17"
   },
-  "startup": "if [[ \"{{CLEAN_INSTALL}}\" == \"1\" ]]; then rm -rf mods config/packwiz-installer.toml; fi; java -jar packwiz-installer-bootstrap.jar -g -s \"{{PACKWIZ_SIDE}}\" {{PACKWIZ_EXTRA_FLAGS}} \"{{PACKWIZ_URL}}\"; if [[ -f unix_args.txt ]]; then java -Xms128M -XX:MaxRAMPercentage=95.0 @unix_args.txt; else java -Xms128M -XX:MaxRAMPercentage=95.0 -jar \"{{SERVER_JARFILE}}\"; fi",
+  "startup": "if [[ \"{{CLEAN_INSTALL}}\" == \"true\" ]]; then rm -rf mods config/packwiz-installer.toml; fi; java -jar packwiz-installer-bootstrap.jar -g -s \"{{PACKWIZ_SIDE}}\" {{PACKWIZ_EXTRA_FLAGS}} \"{{PACKWIZ_URL}}\"; if [[ -f unix_args.txt ]]; then java -Xms128M -XX:MaxRAMPercentage=95.0 @unix_args.txt; else java -Xms128M -XX:MaxRAMPercentage=95.0 -jar \"{{SERVER_JARFILE}}\"; fi",
   "config": {
     "files": "{\n    \"server.properties\": {\n        \"parser\": \"properties\",\n        \"find\": {\n            \"server-ip\": \"0.0.0.0\",\n            \"server-port\": \"{{server.build.default.port}}\",\n            \"enable-rcon\": \"{{ENABLE_RCON}}\",\n            \"rcon.port\": \"{{RCON_PORT}}\",\n            \"rcon.password\": \"{{RCON_PASS}}\",\n            \"broadcast-rcon-to-ops\": \"false\"\n        }\n    }\n}",
     "startup": "{\n    \"done\": \"Done (\"\n}",
@@ -57,7 +54,7 @@
       "default_value": "forge",
       "user_viewable": true,
       "user_editable": false,
-      "rules": "required|string|in:forge,fabric,quilt",
+      "rules": "required|string|in:forge",
       "field_type": "text"
     },
     {
@@ -92,12 +89,12 @@
     },
     {
       "name": "Clean Install",
-      "description": "Wipe the mods folder before each startup to force a fresh packwiz sync. Set to 1 to enable, 0 to disable.",
+      "description": "Wipe the mods folder before each startup to force a fresh packwiz sync. Set to true to enable, false to disable.",
       "env_variable": "CLEAN_INSTALL",
-      "default_value": "0",
+      "default_value": "false",
       "user_viewable": true,
       "user_editable": true,
-      "rules": "required|in:0,1",
+      "rules": "required|string|in:true,false",
       "field_type": "text"
     },
     {

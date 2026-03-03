@@ -19,7 +19,8 @@ jobs:
           go install github.com/packwiz/packwiz@latest
       - name: Compile packwiz.exe for Windows
         run: |
-          GOBIN="$PWD" GOOS=windows GOARCH=amd64 go install github.com/packwiz/packwiz@latest
+          GOOS=windows GOARCH=amd64 go install github.com/packwiz/packwiz@latest
+          cp "$(go env GOPATH)/bin/windows_amd64/packwiz.exe" .
           test -f packwiz.exe
       - name: Refresh Modpack
         run: $(go env GOPATH)/bin/packwiz refresh

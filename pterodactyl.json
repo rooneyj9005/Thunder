@@ -24,7 +24,7 @@
   },
   "scripts": {
     "installation": {
-      "script": "#!/bin/bash\napt-get update && apt-get install -y --no-install-recommends curl jq\ncd /mnt/server\nif [[ \"${INSTALL_SCRIPT_SOURCE}\" == \"release\" ]]; then\n  curl -sSfL \"https://raw.githubusercontent.com/rooneyj9005/Thunder/refs/tags/$(curl -sSfL https://api.github.com/repos/rooneyj9005/Thunder/releases/latest | jq -r '.tag_name')/install.sh\" | bash\nelse\n  curl -sSfL \"https://raw.githubusercontent.com/rooneyj9005/Thunder/refs/heads/main/install.sh\" | bash\nfi",
+      "script": "#!/bin/bash\napt-get update && apt-get install -y --no-install-recommends curl jq ca-certificates\ncd /mnt/server\nif [[ \"${INSTALL_SCRIPT_SOURCE}\" == \"release\" ]]; then\n  curl -sSfL \"https://raw.githubusercontent.com/rooneyj9005/Thunder/refs/tags/$(curl -sSfL https://api.github.com/repos/rooneyj9005/Thunder/releases/latest | jq -r '.tag_name')/install.sh\" | bash\nelse\n  curl -sSfL \"https://raw.githubusercontent.com/rooneyj9005/Thunder/refs/heads/main/install.sh\" | bash\nfi",
       "container": "debian:bookworm-slim",
       "entrypoint": "bash"
     }

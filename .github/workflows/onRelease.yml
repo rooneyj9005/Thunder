@@ -60,9 +60,13 @@ jobs:
 
           cp -R docs/* public/
 
-          cp pack.toml index.toml instance.cfg public/
-          cp startup.sh startup.ps1 public/
-          cp -R mods config resourcepacks public/
+          for file in pack.toml index.toml instance.cfg startup.sh startup.ps1 start-local.ps1; do
+            if [ -f "$file" ]; then cp "$file" public/; fi
+          done
+
+          for dir in mods config defaultconfigs kubejs resourcepacks; do
+            if [ -d "$dir" ]; then cp -R "$dir" public/; fi
+          done
 
           if [ -f CNAME ]; then cp CNAME public/; fi
           touch public/.nojekyll

@@ -1,5 +1,5 @@
 # Thunder Modpack
-
+[![Release Build](https://github.com/rooneyj9005/Thunder/actions/workflows/onRelease.yml/badge.svg)](https://github.com/rooneyj9005/Thunder/actions/workflows/onRelease.yml)
 Thunder is a Minecraft Forge modpack built for playing with friends. It combines technology, magic, and building mods into a cohesive experience that is optimised for server performance.
 
 You can automate your base with **Create**, craft spells with **Ars Nouveau**, set up digital storage with **AE2**, and build with **Macaw's furniture** and **Chipped** blocks. There are 122 mods, all tested for stability.

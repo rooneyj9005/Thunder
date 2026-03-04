@@ -3,7 +3,7 @@
 
 Thunder is a Minecraft Forge modpack built for playing with friends. It combines technology, magic, and building mods into a cohesive experience that is optimised for server performance.
 
-You can automate your base with **Create**, craft spells with **Ars Nouveau**, set up digital storage with **AE2**, and build with **Macaw's furniture** and **Chipped** blocks. There are 122 mods, all tested for stability.
+You can automate your base with **Create**, craft spells with **Ars Nouveau**, set up digital storage with **AE2**, and build with **Macaw's furniture** and **Chipped** blocks. There are 123 mods, all tested for stability.
 
 > **Looking to play?** Visit **[thunder.john.rooney.scot](https://thunder.john.rooney.scot)** for download links, installation instructions, and server setup guides. This README is for developers and contributors.
 
@@ -84,7 +84,7 @@ The repository includes scripts for setting up a dedicated server on Linux or Wi
 
 ### Linux (`install.sh` / `startup.sh`)
 
-By default the scripts run in **server mode** (bare metal). They assume `curl`, `jq`, and `java` are already installed, and install to the current directory:
+By default the scripts run in **server mode** (bare metal). They assume `curl`, `jq`, and Java 21 are already installed, and install to the current directory:
 
 ```bash
 bash install.sh
@@ -107,7 +107,50 @@ The `--container` flag is used internally by the Pterodactyl egg. It installs sy
 .\startup.ps1
 ```
 
-Both scripts accept a `-Dir` parameter to specify the install directory. All Thunder defaults (current modloader, current game version, and packwiz URL) are built in, so no extra arguments are needed for a standard setup.
+Both scripts accept a `-Dir` parameter to specify the install directory. All Thunder defaults (current modloader, current game version, and packwiz URL) are built in, so no extra arguments are needed for a standard setup. `install.ps1` also downloads Temurin 21 automatically if Java is not on your PATH.
+
+### Managed Files and Auto-Update
+
+Thunder server startup scripts are self-updating by default: each run of `startup.sh` / `startup.ps1` syncs files from `pack.toml` via packwiz.
+
+Prism-imported `.mrpack` instances also run a prelaunch sync path via `instance.cfg`, which calls `update.ps1` with `-PackwizSide client` before launch.
+
+We care about player privacy and safety first. Some users reasonably view any auto-updater as a potential backdoor. If you prefer full manual control, you can disable update sync at startup (examples below).
+
+What the updater does:
+
+- Downloads only pack files listed by `pack.toml` and `index.toml`.
+- Does not collect player data, chat logs, credentials, or personal files.
+- Can be disabled per run with explicit flags/environment variables.
+
+- **Managed files:** Only files that have explicit entries in `index.toml` are pack-managed and may be updated or restored to pack state.
+- **Directory note:** A folder name like `config/` or `mods/` does not mean every file in that folder is managed; only indexed file paths are managed.
+- **Usually untouched:** Extra user-added files with unique names/paths are generally left alone.
+- **Will be replaced:** Anything that collides with a pack-managed filename/path.
+- **Clean install mode:** `CLEAN_INSTALL=true` (Linux) or `-CleanInstall` (PowerShell) wipes `mods` first.
+
+If you want to preserve local custom changes and skip the updater for a run, disable sync explicitly:
+
+Linux:
+
+```bash
+PACKWIZ_SKIP_UPDATE=true bash startup.sh
+```
+
+Windows PowerShell:
+
+```powershell
+.\startup.ps1 -SkipPackUpdate
+```
+
+Windows (environment variable alternative):
+
+```powershell
+$env:PACKWIZ_SKIP_UPDATE = "true"
+.\startup.ps1
+```
+
+If you disable auto-update, update to the latest Thunder release before filing issues.
 
 ### Pterodactyl / Pelican
 
@@ -127,19 +170,53 @@ docs/stylesheet.css      # Shared stylesheet
 docs/functions.js        # Fetches latest release from GitHub API
 ```
 
-The published site is deployed via **GitHub Pages Actions** on release publish. The workflow stages `docs/*` at the site root and also publishes packwiz metadata files (`pack.toml`, `index.toml`, `mods/`, `config/`, `resourcepacks/`, `instance.cfg`) so both docs and pack metadata are available at [thunder.john.rooney.scot](https://thunder.john.rooney.scot).
+The published site is deployed via **GitHub Pages Actions** on release publish. The workflow stages `docs/*` at the site root and also publishes packwiz metadata files (`pack.toml`, `index.toml`, `mods/`, `config/`, `defaultconfigs/`, `kubejs/`, `resourcepacks/`, `instance.cfg`) plus startup scripts so both docs and pack metadata are available at [thunder.john.rooney.scot](https://thunder.john.rooney.scot).
 
 To preview locally, open `docs/index.html` in a browser. All links are relative.
 
 ## CI/CD
 
-- **Release workflow** (`.github/workflows/onRelease.yml`): When a GitHub release is published, the workflow compiles `packwiz.exe` from the latest packwiz release tag, exports the pack as `Thunder.mrpack`, normalises `.sh` line endings to LF, and uploads `Thunder.mrpack`, `packwiz.exe`, and the install/startup scripts.
+- **Release workflow** (`.github/workflows/onRelease.yml`): When a GitHub release is published, the workflow installs the latest packwiz tooling via Go, builds `packwiz.exe` for Windows, exports the pack as `Thunder.mrpack`, normalises `.sh` line endings to LF, and uploads `Thunder.mrpack`, `packwiz.exe`, plus install/startup/update scripts.
 - **GitHub Pages**: On release publish, deploys the site via Actions from the release tag snapshot.
-- **Server scripts** (`install.sh`, `startup.sh`, `pterodactyl.json`): The Pterodactyl egg installs Forge and fetches `startup.sh` from the same GitHub ref as `install.sh` - either `main` or the latest release tag, controlled by the `Installation Script Source` panel variable.
+- **Server scripts** (`install.sh`, `startup.sh`, `update.sh`, `pterodactyl.json`): The Pterodactyl egg install step fetches `install.sh` from the latest release tag, and runtime uses the startup/update scripts bundled with the Thunder pack files.
 
 ## Release Checklist
 
-Use `docs/RELEASE_CHECKLIST.md` as the mandatory go/no-go checklist before publishing a release.
+Only create a release when you are certain the code at this point is working, tested, and safe for real-world use.
+
+### 1) Build and startup gate
+
+<ul>
+	<li><input type="checkbox"> `packwiz refresh` and `packwiz modrinth export` completed successfully.</li>
+	<li><input type="checkbox"> Fresh client import launches without crash-level errors.</li>
+	<li><input type="checkbox"> Server install/startup flow works on Linux and PowerShell paths.</li>
+	<li><input type="checkbox"> No known issue remains that breaks launch, saves, networking, or pack sync.</li>
+</ul>
+
+### 2) Pack and export boundaries
+
+<ul>
+	<li><input type="checkbox"> `.packwizignore` excludes repo-only files (`docs/`, `README`, `.github`, install helpers).</li>
+	<li><input type="checkbox"> `startup.sh`, `startup.ps1`, `update.sh`, `update.ps1`, and `instance.cfg` are included in export.</li>
+	<li><input type="checkbox"> `.gitattributes` still protects packwiz hashes (`*.toml -text`, `config/** -text`, `instance.cfg -text`).</li>
+	<li><input type="checkbox"> Shell scripts are LF (`*.sh text eol=lf`) and pass basic syntax checks.</li>
+</ul>
+
+### 3) Docs and site consistency
+
+<ul>
+	<li><input type="checkbox"> `README.md` and `docs/*` match current install/update behaviour.</li>
+	<li><input type="checkbox"> GitHub Pages staging still merges docs plus pack metadata/files.</li>
+	<li><input type="checkbox"> Release download links use `https://github.com/rooneyj9005/Thunder/releases/latest/download/&lt;asset&gt;` format.</li>
+</ul>
+
+### 4) Release governance
+
+<ul>
+	<li><input type="checkbox"> Release tag or release commit is signed (GPG or SSH) and verified on GitHub.</li>
+	<li><input type="checkbox"> Release notes match what actually shipped.</li>
+	<li><input type="checkbox"> If any required item is unchecked, do not release.</li>
+</ul>
 
 ## What's Actually in the Pack
 

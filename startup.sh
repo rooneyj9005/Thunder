@@ -17,50 +17,33 @@ fi
 PACKWIZ_URL="${PACKWIZ_URL:-https://thunder.john.rooney.scot/pack.toml}"
 PACKWIZ_SIDE="${PACKWIZ_SIDE:-server}"
 CLEAN_INSTALL="${CLEAN_INSTALL:-false}"
+PACKWIZ_SKIP_UPDATE="${PACKWIZ_SKIP_UPDATE:-false}"
 
-: "${PACKWIZ_URL:?ERROR: PACKWIZ_URL must be set}"
-: "${PACKWIZ_SIDE:?ERROR: PACKWIZ_SIDE must be set}"
+if [[ "$PACKWIZ_SKIP_UPDATE" == "true" || "$PACKWIZ_SKIP_UPDATE" == "1" || "$PACKWIZ_SKIP_UPDATE" == "yes" ]]; then
+    if [[ "$CLEAN_INSTALL" == "true" ]]; then
+        echo "Clean install - wiping mods and packwiz config..."
+        rm -rf mods config/packwiz-installer.toml
+    fi
+    echo "Skipping packwiz sync (PACKWIZ_SKIP_UPDATE enabled)."
+else
+    UPDATE_SCRIPT="$(dirname "$0")/update.sh"
+    if [[ ! -f "$UPDATE_SCRIPT" ]]; then
+        echo "ERROR: Could not find '$UPDATE_SCRIPT'." >&2
+        exit 1
+    fi
 
-if [[ "$PACKWIZ_SIDE" != "server" && "$PACKWIZ_SIDE" != "both" ]]; then
-    echo "ERROR: PACKWIZ_SIDE must be 'server' or 'both'." >&2
-    exit 1
+    "$UPDATE_SCRIPT" --dir "$(pwd)"
 fi
-
-if [[ "$CLEAN_INSTALL" != "true" && "$CLEAN_INSTALL" != "false" ]]; then
-    echo "ERROR: CLEAN_INSTALL must be 'true' or 'false'." >&2
-    exit 1
-fi
-
-if [[ "$PACKWIZ_URL" =~ [[:space:]] ]]; then
-    echo "ERROR: PACKWIZ_URL must not contain whitespace." >&2
-    exit 1
-fi
-
-if [[ "$CLEAN_INSTALL" == "true" ]]; then
-    echo "Clean install - wiping mods and packwiz config..."
-    rm -rf mods config/packwiz-installer.toml
-fi
-
-echo "Syncing modpack via packwiz..."
-PACKWIZ_ARGS=(-g -s "${PACKWIZ_SIDE}")
-if [[ -n "${PACKWIZ_EXTRA_FLAGS:-}" ]]; then
-  if [[ "${PACKWIZ_EXTRA_FLAGS}" =~ [\;\&\|\<\>\`\$\(\)\{\}] ]] || [[ "${PACKWIZ_EXTRA_FLAGS}" =~ $'\n' ]]; then
-    echo "ERROR: PACKWIZ_EXTRA_FLAGS contains unsupported characters." >&2
-    exit 1
-  fi
-  read -r -a EXTRA_ARGS <<< "${PACKWIZ_EXTRA_FLAGS}"
-  PACKWIZ_ARGS+=("${EXTRA_ARGS[@]}")
-fi
-PACKWIZ_ARGS+=("${PACKWIZ_URL}")
-java -jar packwiz-installer-bootstrap.jar "${PACKWIZ_ARGS[@]}"
 
 VOICE_PORT="${VOICE_PORT:-24454}"
-if [[ ! "$VOICE_PORT" =~ ^[0-9]+$ ]] || (( VOICE_PORT < 1 || VOICE_PORT > 65535 )); then
-    echo "ERROR: VOICE_PORT must be an integer between 1 and 65535." >&2
+if [[ ! "$VOICE_PORT" =~ ^[0-9]+$ ]] || (( VOICE_PORT < 0 || VOICE_PORT > 65535 )); then
+    echo "ERROR: VOICE_PORT must be an integer between 0 and 65535 (0 to disable)." >&2
     exit 1
 fi
-mkdir -p config/voicechat
-echo "port=${VOICE_PORT}" > config/voicechat/voicechat-server.properties
+if (( VOICE_PORT != 0 )); then
+    mkdir -p config/voicechat
+    echo "port=${VOICE_PORT}" > config/voicechat/voicechat-server.properties
+fi
 if [[ -f unix_args.txt ]]; then
     exec java -Xms128M -XX:MaxRAMPercentage=95.0 @unix_args.txt
 else

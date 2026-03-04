@@ -105,6 +105,10 @@ file = "defaultconfigs/voicechat-server.toml"
 hash = "c12c8e2b495940755a8ca8ddc5ae87c09fea9e4f173b806a06a75f6db20e0475"
 
 [[files]]
+file = "instance.cfg"
+hash = "22c5af98f13406997784bc4a72097d0f76c48df63e2bd81725c74013154e3087"
+
+[[files]]
 file = "kubejs/server_scripts/fix_create_confectionery.js"
 hash = "ca116e69a979a551e1177de30c67760a92fefc80d0cd2623ba197d9125789bae"
 
@@ -739,8 +743,16 @@ hash = "1d2ba0714013ca518f4d25b1ab7130ae47eb846a32d6f20b631ff9d6aef13188"
 
 [[files]]
 file = "startup.ps1"
-hash = "cbbc04df0f88206cedc557e071a9e0122cd4d200ab346b546752578e551945b9"
+hash = "e64429b7b3a535989cd1233d966407702519f23443453403feff6c01ea487d53"
 
 [[files]]
 file = "startup.sh"
-hash = "c861a8d6f9e680f61acae2085d35bbf9fce4cfb47daf74e06bd06e1eb2f4e510"
+hash = "83db436d619cdbd83fb680fcac8479d5dd196a8ab96e05816db41863897d95ef"
+
+[[files]]
+file = "update.ps1"
+hash = "69da5a212988cbbab2f339aa71fa65765c59c9ab7b533fb67fa5b0fa6b51f6af"
+
+[[files]]
+file = "update.sh"
+hash = "f9b5a4a0225a2768a9f8e6e46600f8948452e293ce30162ea322f7a86e42f121"

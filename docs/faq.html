@@ -8,6 +8,15 @@
       name="description"
       content="Frequently asked questions about the Thunder modpack."
     />
+    <link rel="canonical" href="https://thunder.john.rooney.scot/faq.html" />
+    <meta property="og:title" content="FAQ - Thunder" />
+    <meta property="og:description" content="Frequently asked questions about the Thunder modpack." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://thunder.john.rooney.scot/faq.html" />
+    <meta property="og:site_name" content="Thunder" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="FAQ - Thunder" />
+    <meta name="twitter:description" content="Frequently asked questions about the Thunder modpack." />
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
       rel="stylesheet"
@@ -76,7 +85,7 @@
           <h3>How much RAM do I need?</h3>
           <p>
             Give Minecraft at least 6 GB, ideally 8 GB. That's enough for all
-            122 mods to run comfortably. Going above 10 GB actually makes things
+            123 mods to run comfortably. Going above 10 GB actually makes things
             worse because Java's garbage collector takes longer pauses and
             you'll notice frame drops. The
             <a href="./install.html">installation guide</a> explains how to
@@ -87,21 +96,56 @@
         <div class="faq-item">
           <h3>Can I add my own mods on top?</h3>
           <p>
-            You can, but fair warning: all 122 mods in Thunder have been tested
-            together. Dropping in extra mods, especially ones that touch world
-            generation, rendering, or core game mechanics, might cause crashes
-            or strange behaviour. Small utility mods and shader packs are
-            usually fine.
+            Yes. You can install your own mods, but you should understand how
+            Thunder's managed files work.
           </p>
+          <p>
+            The pack core is kept in sync by the updater so the base experience
+            stays stable and supportable. That means some custom dependency
+            chains or config combinations may not survive updates if they rely
+            on managed paths.
+          </p>
+          <p>
+            As a rule of thumb: extra utility mods and shader tooling are often
+            fine, while worldgen, rendering internals, and core gameplay mods
+            are more likely to conflict.
+          </p>
+        </div>
+
+        <div class="faq-item">
+          <h3>What files are managed, and what is usually left untouched?</h3>
+          <p>
+            Managed files are files with explicit entries in Thunder's pack
+            index (<code>index.toml</code>). On update, those indexed files may be
+            restored to the pack's expected state.
+          </p>
+          <ul>
+            <li>
+              <strong>Managed:</strong> specific indexed files, often under
+              paths such as <code>mods/</code>, <code>config/</code>,
+              <code>defaultconfigs/</code>, and <code>kubejs/</code>.
+            </li>
+            <li>
+              <strong>Usually untouched:</strong> extra files you add with
+              unique names/paths that do not collide with managed files.
+            </li>
+            <li>
+              <strong>Will be replaced:</strong> files that use the same
+              filename/path as a managed file.
+            </li>
+          </ul>
         </div>
 
         <div class="faq-item">
           <h3>Is OptiFine compatible?</h3>
           <p>
-            No, and you don't need it. OptiFine conflicts with several mods in
-            the pack. Thunder already includes Canary, Krypton, and Memory Leak
-            Fix, which handle performance optimisation. If you're after shaders,
-            look into Oculus (a Forge-compatible shader loader) instead.
+            No. OptiFine is not supported and commonly conflicts with modern
+            Forge mod stacks.
+          </p>
+          <p>
+            Thunder already includes performance-focused mods such as Canary,
+            Krypton, and Memory Leak Fix. If you want shaders, use Oculus
+            (Forge shader loader) with shader packs, not OptiFine.
           </p>
         </div>
 
@@ -113,8 +157,7 @@
           </p>
           <ul>
             <li>
-              Make sure you're running the Java version required by the current
-              Thunder release.
+              Make sure you're running <strong>Java 21</strong>.
             </li>
             <li>
               Make sure you've given Minecraft at least
@@ -135,12 +178,67 @@
         <div class="faq-item">
           <h3>How do I update when a new version comes out?</h3>
           <p>
-            Download the new <code>.mrpack</code> from the
-            <a href="./index.html">home page</a> and import it into Prism
-            Launcher as a new instance. If you want to keep your worlds, copy
-            the <code>saves</code> folder from the old instance before you
-            delete it. The <a href="./install.html">installation guide</a> has
-            the full steps.
+            If you imported the <code>.mrpack</code> into Prism Launcher,
+            you don't need to do anything. The instance includes a prelaunch
+            command that syncs pack files automatically before every launch.
+          </p>
+          <p>
+            If you need to update manually, download the latest
+            <code>.mrpack</code> from the <a href="./index.html">home page</a>,
+            import it in your launcher, and copy your <code>saves</code> folder
+            (and optionally <code>options.txt</code>) into the new instance.
+          </p>
+          <p>
+            Server operators should use <code>startup.sh</code> or
+            <code>startup.ps1</code>, which run packwiz sync by default. See
+            the <a href="./server.html">server setup guide</a> for details.
+          </p>
+        </div>
+
+        <div class="faq-item">
+          <h3>Is the auto-updater safe, and can I disable it?</h3>
+          <p>
+            Fair question. Some players see any auto-updater as a potential
+            backdoor. Thunder only syncs pack files listed by
+            <code>pack.toml</code> and <code>index.toml</code>, and you can
+            disable sync if you want full manual control.
+          </p>
+          <p>
+            Managed files can be restored to pack defaults. Extra files with
+            unique names are usually left alone unless they collide with a
+            managed path.
+          </p>
+          <p>
+            If you disable the updater and edit the pack directly, you are
+            effectively forking your local install. That is fine for advanced
+            users, but future Thunder updates will likely overwrite those
+            changes unless you stay pinned to your current version.
+          </p>
+          <p>
+            If you've disabled auto-update, try updating to the latest Thunder
+            release before filing an issue.
+          </p>
+          <ul>
+            <li>
+              Linux: run
+              <code>PACKWIZ_SKIP_UPDATE=true bash startup.sh</code>
+            </li>
+            <li>
+              Windows: run <code>.\startup.ps1 -SkipPackUpdate</code>
+            </li>
+          </ul>
+        </div>
+
+        <div class="faq-item">
+          <h3>Why does Thunder avoid bundling every optional tool?</h3>
+          <p>
+            We keep Thunder as neat as possible so players can customise it.
+            Every extra built-in tool can lock users into specific workflows or
+            create more compatibility burden in the core pack.
+          </p>
+          <p>
+            The goal is a stable base that works out of the box, while still
+            leaving room for advanced users to layer their own preferences.
           </p>
         </div>
 
@@ -174,7 +272,7 @@
               more than 10).
             </li>
             <li>
-              Drop your render distance to <strong>8&ndash;10 chunks</strong> in
+              Drop your render distance to <strong>8-10 chunks</strong> in
               video settings.
             </li>
             <li>Close Chrome. Seriously, it's probably eating your RAM.</li>
@@ -199,10 +297,11 @@
         <div class="faq-item">
           <h3>What Java version do I need?</h3>
           <p>
-            Use the Java version required by the current Thunder release.
-            Most launchers (Prism, ATLauncher) handle Java for you
-            automatically, but if you're running a standalone server you'll need
-            to install it yourself. Grab it from
+            Java 21. Most launchers (Prism, ATLauncher) handle this for you
+            automatically. On Windows, <code>install.ps1</code> downloads
+            Temurin 21 if Java isn't found, so you don't need to set it up
+            yourself. On Linux, install Java 21 before running
+            <code>install.sh</code>. Grab it from
             <a href="https://adoptium.net">Adoptium</a>.
           </p>
         </div>
@@ -213,8 +312,9 @@
             Yes. The repository includes PowerShell scripts (<code
               >install.ps1</code
             >
-            and <code>startup.ps1</code>) that work the same as the Linux
-            equivalents. Open PowerShell in an empty folder, run
+            and <code>startup.ps1</code>). <code>install.ps1</code> handles
+            everything including downloading Java 21 if it isn't installed.
+            Open PowerShell in an empty folder, run
             <code>.\install.ps1</code>, then <code>.\startup.ps1</code>. The
             <a href="./server.html">server setup guide</a> has the full steps.
           </p>

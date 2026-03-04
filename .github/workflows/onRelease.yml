@@ -40,8 +40,8 @@ jobs:
           mv -f "$EXPORTED_PACK" Thunder.mrpack
       - name: Normalize shell scripts to LF
         run: |
-          sed -i 's/\r$//' install.sh startup.sh
-          if grep -q $'\r' install.sh startup.sh; then
+          sed -i 's/\r$//' install.sh startup.sh update.sh
+          if grep -q $'\r' install.sh startup.sh update.sh; then
             echo "ERROR: CRLF line endings still present in shell scripts." >&2
             exit 1
           fi
@@ -51,7 +51,7 @@ jobs:
         run: |
           gh release upload ${{ github.event.release.tag_name }} \
             Thunder.mrpack \
-            install.sh install.ps1 startup.sh startup.ps1 pterodactyl.json \
+            install.sh install.ps1 startup.sh startup.ps1 update.sh update.ps1 pterodactyl.json \
             packwiz.exe \
             --clobber
       - name: Stage Pages content
@@ -60,7 +60,7 @@ jobs:
 
           cp -R docs/* public/
 
-          for file in pack.toml index.toml instance.cfg startup.sh startup.ps1 start-local.ps1; do
+          for file in pack.toml index.toml instance.cfg startup.sh startup.ps1 update.sh update.ps1 start-local.ps1; do
             if [ -f "$file" ]; then cp "$file" public/; fi
           done
 

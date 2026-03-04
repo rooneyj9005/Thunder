@@ -8,6 +8,15 @@
       name="description"
       content="How to set up a Minecraft server running the Thunder modpack."
     />
+    <link rel="canonical" href="https://thunder.john.rooney.scot/server.html" />
+    <meta property="og:title" content="Server Setup - Thunder" />
+    <meta property="og:description" content="How to set up a Minecraft server running the Thunder modpack." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://thunder.john.rooney.scot/server.html" />
+    <meta property="og:site_name" content="Thunder" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="Server Setup - Thunder" />
+    <meta name="twitter:description" content="How to set up a Minecraft server running the Thunder modpack." />
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css"
       rel="stylesheet"
@@ -83,7 +92,7 @@
 
         <h2>What you'll need</h2>
         <ul>
-          <li><strong>The Java version required by the current release.</strong></li>
+          <li><strong>Java 21</strong> installed and on your PATH.</li>
           <li>
             A <strong>Forge server matching the current release metadata</strong>.
             If you haven't set one up before, grab the installer from
@@ -199,10 +208,8 @@
               Startup command: <code>bash startup.sh --container</code>
             </div>
             <p>
-              <strong>Advanced:</strong> Panel administrators can use the
-              <code>Installation Script Source</code> variable to choose between
-              the latest stable release or the bleeding-edge main branch
-              installation script.
+              The egg's install step fetches <code>install.sh</code> from the
+              latest GitHub release automatically.
             </p>
           </div>
         </div>
@@ -220,8 +227,8 @@
         <p>
           If you're not using a hosting panel, the repository includes an
           install script that sets up Forge and downloads everything for you.
-          You'll need <strong>curl</strong>, <strong>jq</strong>, and the Java
-          runtime required by the current release installed.
+          You'll need <strong>curl</strong>, <strong>jq</strong>, and
+          <strong>Java 21</strong> installed.
         </p>
 
         <div class="step">
@@ -259,8 +266,8 @@
         <h2>Standalone server (Windows)</h2>
         <p>
           The repository also includes PowerShell scripts for Windows servers.
-          You'll need the Java runtime required by the current release installed
-          and available on your PATH.
+          If Java isn't already installed, <code>install.ps1</code> downloads
+          Temurin 21 automatically, so no manual Java setup is needed.
         </p>
 
         <div class="step">
@@ -297,21 +304,65 @@
 
         <h2>Keeping things up to date</h2>
         <p>
-          When a new version of Thunder comes out, just re-run the installer
-          command from step 1. It figures out what's changed, downloads new
-          mods, updates existing ones, and removes anything that's been dropped
-          from the pack.
+          In normal operation, just start the server with
+          <code>startup.sh</code> or <code>startup.ps1</code>. By default, the
+          startup scripts run packwiz sync on each launch, which applies pack
+          updates automatically.
         </p>
 
         <div class="callout">
           <p>
-            <strong>Tip:</strong> Add the installer command to the top of your
-            server start script, before the line that launches Forge. That way
-            your mods are always in sync every time the server starts. The
-            installer is fast and if nothing has changed, it finishes in a
-            couple of seconds.
+            <strong>Tip:</strong> Re-run <code>install.sh</code> or
+            <code>install.ps1</code> only when you need to bootstrap a fresh
+            directory, repair a broken install, or intentionally change
+            modloader/runtime components.
           </p>
         </div>
+
+        <h2>Managed files, custom mods, and updater control</h2>
+        <p>
+          You can add your own mods, but Thunder intentionally keeps core pack
+          files managed and synchronised so the base experience stays stable.
+          That is expected behaviour if you want the official pack core to keep
+          working after updates.
+        </p>
+        <ul>
+          <li>
+            <strong>Managed:</strong> only files with explicit entries in
+            <code>index.toml</code>, often under paths such as
+            <code>mods/</code>, <code>config/</code>,
+            <code>defaultconfigs/</code>, and <code>kubejs/</code>.
+          </li>
+          <li>
+            <strong>Usually untouched:</strong> extra files you add with unique
+            names and paths that do not collide with managed files.
+          </li>
+          <li>
+            <strong>Replaced on update:</strong> files that share the same path
+            as a managed file.
+          </li>
+        </ul>
+        <p>
+          For privacy and safety, we document this clearly: some users view any
+          auto-updater as a potential backdoor. If you want full manual control
+          and understand the trade-offs, you can disable sync per run:
+        </p>
+        <ul>
+          <li>
+            Linux:
+            <code>PACKWIZ_SKIP_UPDATE=true bash startup.sh</code>
+          </li>
+          <li>
+            Windows PowerShell:
+            <code>.\startup.ps1 -SkipPackUpdate</code>
+          </li>
+        </ul>
+        <p>
+          If you disable updates and alter pack-managed files, you are
+          effectively running a local fork and are likely to stay pinned to the
+          Thunder version you downloaded unless you manually merge future
+          changes.
+        </p>
 
         <h2>A few recommended tweaks</h2>
         <p>
@@ -359,9 +410,9 @@
         <p>
           SecurityCraft lets players protect their own builds with reinforced
           blocks, keycard doors, laser grids, and security cameras. As a server
-          operator, it means less moderation work &mdash; players can defend
-          their own stuff. The included config file
-          (<code>config/securitycraft-client.toml</code>) ships with sensible
+          operator, it means less moderation work -- players can defend
+          their own stuff. The default server config
+          (<code>defaultconfigs/securitycraft-server.toml</code>) ships with sensible
           defaults.
         </p>
 

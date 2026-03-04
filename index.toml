@@ -1,8 +1,112 @@
 hash-format = "sha256"
 
 [[files]]
-file = "config/securitycraft-client.toml"
-hash = "846b902a8195b545f36d2562a7b00b465cb6863d0e2fb2b8d62634e36e61b5de"
+file = "config/fml.toml"
+hash = "0a19f827abac613bbce62232a2e661aec4b4be1f972dbd23f52b5eb6826a972a"
+
+[[files]]
+file = "config/logbegone.toml"
+hash = "2288cbc7022b5ed4b37d8e70e1c3ba5b048fad9ab2fb01071dfaa00686efd209"
+
+[[files]]
+file = "config/storagedrawers-common.v2.toml"
+hash = "ae662c5164151f8378a78f05b9cfed712d8f3e40ec9d9aa5019f7741218f41c2"
+
+[[files]]
+file = "defaultconfigs/cofh_core-server.toml"
+hash = "936cc6909e95faefe50b6aa94199e3c988fa027688f7860ac6040bcd0dcdf735"
+
+[[files]]
+file = "defaultconfigs/computercraft-server.toml"
+hash = "0d1194b2b7cc12c9c90653e5732f35561274f3cc50e12bef08e45340f3a2357b"
+
+[[files]]
+file = "defaultconfigs/copycats-server.toml"
+hash = "6eccc702431fd40b6a2ab45c6d9e15b881324a2cb3ff6e0dbb0a8c1ebf465409"
+
+[[files]]
+file = "defaultconfigs/create-server.toml"
+hash = "174341ce04648cda0b7757a78bbd2f3bc8fe789b81a35178f9dafeedc1d89f4d"
+
+[[files]]
+file = "defaultconfigs/create_connected-server.toml"
+hash = "991acdf040385cc4f0d83c4cdbfb0db64dceaad05709ec199573aec60dae8ddb"
+
+[[files]]
+file = "defaultconfigs/create_enchantment_industry-server.toml"
+hash = "16c2b6fbd8da6f0ec44a6b3c81cb95ab85805031c94f7f2c60aab3073006a2cb"
+
+[[files]]
+file = "defaultconfigs/createbigcannons-server.toml"
+hash = "cfed06c0bab62cc0a776ae6c4241f4858c050b585fad17ae3d0215798acf817f"
+
+[[files]]
+file = "defaultconfigs/curios-server.toml"
+hash = "31818944254f689e486489e6ca4fb63a8a409e099e5f3ef99bab39c4d6e8008a"
+
+[[files]]
+file = "defaultconfigs/forge-server.toml"
+hash = "dd89a047ff2f59d512be3b7538b98809698bd1ca2cffab2432668b92a018538e"
+
+[[files]]
+file = "defaultconfigs/ftbessentials.snbt"
+hash = "7d7d46b0f706594d187eeea649fad2e26183eb019cb77526ad0590a5e29d8e6f"
+
+[[files]]
+file = "defaultconfigs/jei-server.toml"
+hash = "9736d42f228f95c96c96b90b79b0988931caf7e1b6d455c982c1441371031979"
+
+[[files]]
+file = "defaultconfigs/openpartiesandclaims-default-player-config.toml"
+hash = "da381700fcb28e3c0f7338aef08355cdf7d2d6e217ee65d3830cbd5614fc8fca"
+
+[[files]]
+file = "defaultconfigs/openpartiesandclaims-expired-claim-config.toml"
+hash = "da381700fcb28e3c0f7338aef08355cdf7d2d6e217ee65d3830cbd5614fc8fca"
+
+[[files]]
+file = "defaultconfigs/openpartiesandclaims-server-claim-config.toml"
+hash = "da381700fcb28e3c0f7338aef08355cdf7d2d6e217ee65d3830cbd5614fc8fca"
+
+[[files]]
+file = "defaultconfigs/openpartiesandclaims-server.toml"
+hash = "c38727b9b8c3dd4076f06843c45d3cbaccdbe59ae0c82c4f1e4aa4c6e500904b"
+
+[[files]]
+file = "defaultconfigs/openpartiesandclaims-wilderness-config.toml"
+hash = "e68215f92eeeab1ac7741dcbed1dd12929c1cc1a34d65b27665e2adb98b19d82"
+
+[[files]]
+file = "defaultconfigs/railways-server.toml"
+hash = "8bb806db99040ea909537e1baa2c4621f136f4f85d15e2174cbe1754c62f66d8"
+
+[[files]]
+file = "defaultconfigs/refinedstorage-server.toml"
+hash = "6a42f3226391bd94a7a4e5e4f67565b2b93b1789180a64702befb70f96820a28"
+
+[[files]]
+file = "defaultconfigs/ritchiesprojectilelib-server.toml"
+hash = "e3d0ebc53b2ce6bf54296680c6914ae7fcbb7fb014d47f7f36259c49b5afee35"
+
+[[files]]
+file = "defaultconfigs/securitycraft-server.toml"
+hash = "e67ad64a5e56af5aca139fd5e0ce48edfab1b3cba1bb740e0e3402c57879c62c"
+
+[[files]]
+file = "defaultconfigs/sophisticatedbackpacks-server.toml"
+hash = "e6fff85bca9a229c0c0046addb52d273e6f22ca1c0ad87439c277354070000fc"
+
+[[files]]
+file = "defaultconfigs/thermal-server.toml"
+hash = "0730cd0a733e3f80ea1bf967b96f8fabd37bba2fe32d732e040f6b58b2096b1e"
+
+[[files]]
+file = "defaultconfigs/voicechat-server.toml"
+hash = "c12c8e2b495940755a8ca8ddc5ae87c09fea9e4f173b806a06a75f6db20e0475"
+
+[[files]]
+file = "kubejs/server_scripts/fix_create_confectionery.js"
+hash = "ca116e69a979a551e1177de30c67760a92fefc80d0cd2623ba197d9125789bae"
 
 [[files]]
 file = "mods/ae2.pw.toml"
@@ -196,7 +300,7 @@ metafile = true
 
 [[files]]
 file = "mods/create-stuff-additions.pw.toml"
-hash = "8d568223f61b027a5db4622d9d15dd8d00ccefe99e1cdcb6b62c0f0fae5c6f27"
+hash = "3c4a4642664f6fb9797e99ea24d8adb5c48128bd71babe678c77fc8ff2b9e8db"
 metafile = true
 
 [[files]]
@@ -352,6 +456,11 @@ metafile = true
 [[files]]
 file = "mods/lmd.pw.toml"
 hash = "6aa6897a3227a41db128aef512ad6e6cf33e3c3b806973f94bf63a2eed69f4df"
+metafile = true
+
+[[files]]
+file = "mods/log-begone.pw.toml"
+hash = "f618ae45f80532409d1c2b5a473320f54619540580c3f51160f44927ade0ee6a"
 metafile = true
 
 [[files]]
@@ -625,8 +734,12 @@ hash = "6341b8f60b7e1bc4f778e5077255e621819a48bc7324c2f2f43ae7ceac04b0ba"
 metafile = true
 
 [[files]]
+file = "start-local.ps1"
+hash = "1d2ba0714013ca518f4d25b1ab7130ae47eb846a32d6f20b631ff9d6aef13188"
+
+[[files]]
 file = "startup.ps1"
-hash = "09640038483dba18313596d7a82ff7a17aa4dde094d24f3a457425785c3e574d"
+hash = "cbbc04df0f88206cedc557e071a9e0122cd4d200ab346b546752578e551945b9"
 
 [[files]]
 file = "startup.sh"

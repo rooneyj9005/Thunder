@@ -1,0 +1,19 @@
+# The configuration file for Log Begone
+
+[logbegone]
+# If a log message has one of these phrases, it will be filtered out from logging
+phrases = [
+  "Starting version check at",
+  "Found status:",
+  "Failed to process update information",
+  "is missing mods.toml file",
+  "Reference map '",
+  "If this is a development environment you can ignore this message",
+  "Attempted to select two dependency jars from JarJar",
+  "Attempted to select a dependency jar for JarJar",
+  "uses unexpected schema",
+  "specified a duration. Durations have no impact on this type of recipe."
+]
+
+# If a log message matches one of these regex patterns, it will be filtered out from logging. EX:
+regex = []

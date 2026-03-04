@@ -738,10 +738,6 @@ hash = "6341b8f60b7e1bc4f778e5077255e621819a48bc7324c2f2f43ae7ceac04b0ba"
 metafile = true
 
 [[files]]
-file = "start-local.ps1"
-hash = "1d2ba0714013ca518f4d25b1ab7130ae47eb846a32d6f20b631ff9d6aef13188"
-
-[[files]]
 file = "startup.ps1"
 hash = "e64429b7b3a535989cd1233d966407702519f23443453403feff6c01ea487d53"
 

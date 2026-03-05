@@ -188,6 +188,11 @@ hash = "a8d1463905877b52b0ee7ce58ebac60e2731dca5230e3dde5cb79fa4308cfac1"
 metafile = true
 
 [[files]]
+file = "mods/better-forge-chat-(luckperms)-fork.pw.toml"
+hash = "6bd02fc3354df60b2f84c3db1bdd5762e07c16625866e26eaf18b8f059b1d98f"
+metafile = true
+
+[[files]]
 file = "mods/biomes-o-plenty.pw.toml"
 hash = "2bcea8e16d358942a8f8b8cf6e39cc303d90fac29b1b3ecb8033bd214d4afa0f"
 metafile = true

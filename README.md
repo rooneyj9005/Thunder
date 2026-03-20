@@ -2,95 +2,68 @@
 # Thunder Modpack
 [![Release Build](https://github.com/rooneyj9005/Thunder/actions/workflows/onRelease.yml/badge.svg)](https://github.com/rooneyj9005/Thunder/actions/workflows/onRelease.yml)
 
-Thunder is a Minecraft Forge modpack for friends and communities. It blends technology, magic, and building mods into a stable, performance-optimised experience.
 
-**Quick Links:**
-- [Player Site & Docs](https://thunder.john.rooney.scot)
-- [Latest Download](https://github.com/rooneyj9005/Thunder/releases/latest)
-- [FAQ](https://thunder.john.rooney.scot/faq.html)
-- [Server Setup Guide](https://thunder.john.rooney.scot/server.html)
-
----
+Thunder is a Minecraft Forge modpack designed for technical stability, performance, and ease of server management. This repository is for developers and server administrators.
 
 ## Table of Contents
-1. [For Players](#for-players)
-2. [For Server Admins](#for-server-admins)
-3. [For Developers & Contributors](#for-developers--contributors)
-4. [Release Process](#release-process)
-5. [Pack Contents](#pack-contents)
-6. [Licence and Ethos](#licence-and-ethos)
-
----
-
-## For Players
-
-- **How to Play:**
-	- Download the latest `.mrpack` from [the site](https://thunder.john.rooney.scot) or [GitHub Releases](https://github.com/rooneyj9005/Thunder/releases/latest).
-	- Import into Prism Launcher or any Modrinth-compatible launcher.
-	- See [install guide](https://thunder.john.rooney.scot/install.html) for step-by-step help.
-- **What’s in the pack?**
-	- Tech, magic, building, worldgen, performance, and utility mods. [Full list](https://thunder.john.rooney.scot/features.html).
-- **Need help?**
-	- [FAQ](https://thunder.john.rooney.scot/faq.html) | [Report bugs](https://github.com/rooneyj9005/Thunder/issues)
+1. [For Server Admins](#for-server-admins)
+2. [For Developers](#for-developers)
+3. [Release Process](#release-process)
+4. [Pack Management](#pack-management)
+5. [Licence and Ethos](#licence-and-ethos)
 
 ---
 
 ## For Server Admins
 
-- **Setup:**
-	- Use the provided `install.sh`/`startup.sh` (Linux) or `install.ps1`/`startup.ps1` (Windows) scripts.
-	- See [server setup guide](https://thunder.john.rooney.scot/server.html) for details.
-- **Auto-Update & Managed Files:**
-	- Thunder’s server scripts keep mods/configs up to date using packwiz. Only files listed in `pack.toml` and `index.toml` are managed—no personal or player data is touched.
-	- To skip auto-update for a run: `PACKWIZ_SKIP_UPDATE=true bash startup.sh` (Linux) or `./startup.ps1 -SkipPackUpdate` (PowerShell).
-- **Pterodactyl:**
-	- Import `pterodactyl.json` as an egg. It handles everything automatically.
+- Use `install.sh`/`startup.sh` (Linux) or `install.ps1`/`startup.ps1` (Windows) for setup and operation.
+- Scripts auto-update mods/configs using packwiz. Only files tracked in `pack.toml` and `index.toml` are managed.
+- To skip auto-update: `PACKWIZ_SKIP_UPDATE=true bash startup.sh` (Linux) or `./startup.ps1 -SkipPackUpdate` (PowerShell).
+- For Pterodactyl, import `pterodactyl.json` as an egg.
 
 ---
 
-## For Developers & Contributors
+## For Developers
 
-- **Getting Started:**
-	- Clone the repo:
-		```bash
-		git clone https://github.com/rooneyj9005/Thunder.git
-		cd Thunder
-		```
-	- Install [packwiz](https://packwiz.infra.link/) (or use the Windows binary from Releases).
-- **Adding/Updating Mods:**
-	- Use `packwiz modrinth add "mod name"` or specify version/project IDs as needed.
-	- After any change, run:
-		```bash
-		packwiz refresh
-		packwiz modrinth export
-		```
-- **Version Pinning:**
-	- Do not update Create or its addons casually. Check `mods/create.pw.toml` for the pinned version.
-- **Contributing:**
-	- Fork, branch, make changes, test with Prism Launcher, bump `pack.toml` version, and open a PR.
-- **Testing:**
-	- See [Testing and QA](https://thunder.john.rooney.scot/faq.html#testing) in the docs.
-- **More details:**
-	- See `CONTRIBUTING.md` for CI, release, and workflow details.
+- Clone the repo:
+	```bash
+	git clone https://github.com/rooneyj9005/Thunder.git
+	cd Thunder
+	```
+- Install [packwiz](https://packwiz.infra.link/) (or use the Windows binary from Releases).
+- Add or update mods with:
+	```bash
+	packwiz modrinth add "mod name"
+	packwiz refresh
+	packwiz modrinth export
+	```
+- Version pinning: Do not update Create or its addons without checking compatibility. See `mods/create.pw.toml` for pinned versions.
+- Bump `pack.toml` version after every change.
+- Test changes with Prism Launcher and verify server scripts on both Linux and Windows.
+- No public contributions yet; `CONTRIBUTING.md` will be added if needed.
 
 ---
-
 
 ## Release Process
 
-- Only release when the pack is tested and stable.
-- Checklist (see `CONTRIBUTING.md` for full details):
-	- [ ] **Line endings:** The CI workflow normalises `.sh` line endings to LF _before_ running `packwiz refresh` and `packwiz modrinth export`. This ensures the hashes in `index.toml` remain valid and prevents invalidation due to line ending changes.
-	- [ ] `packwiz refresh` and `packwiz modrinth export` succeed
-	- [ ] Fresh client import launches cleanly
-	- [ ] Server install/startup works on Linux and Windows
-	- [ ] No known critical issues
-	- [ ] `.packwizignore` excludes repo-only files
-	- [ ] Startup/update scripts included in export
-	- [ ] `.gitattributes` protects packwiz hashes
-	- [ ] Shell scripts are LF and pass syntax checks
-	- [ ] Docs and site match current behaviour
-	- [ ] Release is signed and notes are accurate
+<h3>Pre-Commit Checklist</h3>
+<form>
+<ul style="list-style: none; padding-left: 0;">
+	<li><input type="checkbox"> Have you removed all test assets (e.g. .mrpack files) from source control?</li>
+	<li><input type="checkbox"> Have you verified all shell scripts (.sh) use LF line endings and pass syntax checks?</li>
+	<li><input type="checkbox"> Have you run <code>packwiz refresh</code> and <code>packwiz modrinth export</code> successfully?</li>
+	<li><input type="checkbox"> Does a fresh client import, launch, allow changing settings, generate a new world, join a multiplayer Thunder server), and test basic mod functionality (contraptions, machines, etc.)?</li>
+	<li><input type="checkbox"> Does server install/startup work on both Linux and Windows, including auto-update scripts?</li>
+	<li><input type="checkbox"> Are all files tracked in <code>pack.toml</code> and <code>index.toml</code> correct and up to date?</li>
+	<li><input type="checkbox"> Is <code>.packwizignore</code> excluding all repo-only files and not blocking essential export content?</li>
+	<li><input type="checkbox"> Are startup/update scripts included in the export?</li>
+	<li><input type="checkbox"> Do docs and site match the current pack behaviour and version?</li>
+	<li><input type="checkbox"> Are all Mods stable, with no known major errors or problems?</li>
+	<li><input type="checkbox"> Are large files (e.g. .mrpack) excluded from source control and only attached via CI/CD?</li>
+	<li><input type="checkbox"> Is all code and tools (e.g. packwiz) sourced from GitHub, not random sites or direct downloads?</li>
+	<li><input type="checkbox"> Are all external CSS/JS loaded via CDN using the integrity attribute?</li>
+</ul>
+</form>
 
 ---
 

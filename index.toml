@@ -1,12 +1,8 @@
 hash-format = "sha256"
 
 [[files]]
-file = ".pagesignore"
-hash = "b9e024641b73162e7b0909f1e29eac3702509828728633cf4987d5e694eda544"
-
-[[files]]
 file = ".pteroignore"
-hash = "f4be67cdfdfd7323efe3cf7fd64065f556c7ed743937c79e3117d3dae5e30eae"
+hash = "38681abcfa33fe01835c2f1b1815812f460eaf1b78a618dfe809d7534e632a17"
 
 [[files]]
 file = "config/fml.toml"
@@ -113,26 +109,6 @@ file = "defaultconfigs/voicechat-server.toml"
 hash = "c12c8e2b495940755a8ca8ddc5ae87c09fea9e4f173b806a06a75f6db20e0475"
 
 [[files]]
-file = "faq.html"
-hash = "1eaa9ca8ba39458be1236e6a8d06bdcde7fef6b805ad6f0f765361d9d9e73072"
-
-[[files]]
-file = "features.html"
-hash = "79fe712d27e864232571ed96f71f6e432c0a57edcf566c99406f5db00222b782"
-
-[[files]]
-file = "functions.js"
-hash = "4335b5c34ab5368a72b1a89763dcc1cab9b31e467a77228b1d487e4b60a23e2f"
-
-[[files]]
-file = "index.html"
-hash = "381de0efa80582163b160534b9520c3af6de576bdc1b0eab66843cdaee8f1329"
-
-[[files]]
-file = "install.html"
-hash = "541d62c40496e7c6372e9a5d45bc784246fc024a303fdd5d64ec21707a789bf5"
-
-[[files]]
 file = "kubejs/server_scripts/fix_create_confectionery.js"
 hash = "ca116e69a979a551e1177de30c67760a92fefc80d0cd2623ba197d9125789bae"
 
@@ -194,6 +170,11 @@ metafile = true
 [[files]]
 file = "mods/attributefix.pw.toml"
 hash = "258431b158c3adc8e7bf4ac8ea9cec20def2e3c373294488d72c238bcbd7538a"
+metafile = true
+
+[[files]]
+file = "mods/ballistix.pw.toml"
+hash = "56c0a27d440a88995cfa074b13a0ab3a1934da3ad1d651431c805f7a98f1c68a"
 metafile = true
 
 [[files]]
@@ -717,11 +698,6 @@ hash = "14117b94c456598c9acece143c7a0da3cf56d13182d035a74a2da8a52dd19cbd"
 metafile = true
 
 [[files]]
-file = "mods/the-one-probe.pw.toml"
-hash = "6f61f95a26011b08a22c9b5efa41ce8508a3843e7edeb78769debb35a01a4809"
-metafile = true
-
-[[files]]
 file = "mods/thermal-expansion.pw.toml"
 hash = "21ef66049ba994e620e34e2fab8e99ca27ceef5882f76dbd6c31afed66de89c4"
 metafile = true
@@ -772,20 +748,12 @@ hash = "6341b8f60b7e1bc4f778e5077255e621819a48bc7324c2f2f43ae7ceac04b0ba"
 metafile = true
 
 [[files]]
-file = "server.html"
-hash = "2d8a286a17c54ca81244684a083156d07fc1106d98fb14519c73b00cd2159048"
-
-[[files]]
 file = "startup.ps1"
 hash = "05e28b6ed3f72fec81af00d2409b0f86d0619a8f399cb2e1764368dac9f484ed"
 
 [[files]]
 file = "startup.sh"
 hash = "83db436d619cdbd83fb680fcac8479d5dd196a8ab96e05816db41863897d95ef"
-
-[[files]]
-file = "stylesheet.css"
-hash = "5eb3aac41d14940bcc1fdda9cece5605970bfdebdbf7234eec5bbc7a189692cf"
 
 [[files]]
 file = "update.ps1"

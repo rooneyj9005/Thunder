@@ -1,5 +1,8 @@
 # See: https://git-scm.com/docs/gitignore
- /CNAME
+/*.html
+/*.css
+/*.js
+/CNAME
 /README.md
 /LICENSE
 /.git/
@@ -7,6 +10,7 @@
 /.gitattributes
 /.github/
 /.packwizignore
+/.pagesignore
 /pterodactyl.json
 /instance.cfg
 /install.sh

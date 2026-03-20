@@ -57,7 +57,7 @@ jobs:
             mkdir -p public
             rsync -av --include='.*' --exclude-from='.pagesignore' . public/
             if [ -f CNAME ]; then cp CNAME public/; fi
-            touch public/.nojekyll
+            if [ -f .nojekyll ]; then cp .nojekyll public/; fi
       - name: Setup Pages
         uses: actions/configure-pages@v5.0.0
       - name: Upload Pages artifact

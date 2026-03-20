@@ -49,9 +49,8 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release upload ${{ github.event.release.tag_name }} \
+          gh release upload ${{ github.event.release.tag_name }} --clobber \
             Thunder.mrpack install.sh install.ps1 startup.sh startup.ps1 update.sh update.ps1 pterodactyl.json packwiz.exe .pteroignore
-            --clobber
       - name: Stage Pages content
         run: |
           mkdir -p public

@@ -15,6 +15,16 @@ $ErrorActionPreference = "Stop"
 
 if ($Dir) { Set-Location $Dir }
 
+# Discover local JDK installed by install.ps1 if java is not on PATH
+if (-not (Get-Command java -ErrorAction SilentlyContinue)) {
+    $localJdk = Get-ChildItem -Directory -Filter "jdk-*" -ErrorAction SilentlyContinue | Select-Object -First 1
+    if ($localJdk) {
+        $env:JAVA_HOME = $localJdk.FullName
+        $env:PATH = "$($localJdk.FullName)\bin;$env:PATH"
+        Write-Host "Using local JDK at $($localJdk.Name)"
+    }
+}
+
 if ($VoicePort -lt 0 -or $VoicePort -gt 65535) {
     throw "VOICE_PORT must be between 0 and 65535 (0 to disable)."
 }

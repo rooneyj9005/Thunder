@@ -12,12 +12,6 @@
 /.github/
 /.packwizignore
 /pterodactyl.json
+/instance.cfg
 /install.sh
 /install.ps1
-
-# Keep these scripts in the exported pack (do not ignore):
-# /startup.sh
-# /startup.ps1
-# /update.sh
-# /update.ps1
-# /start-local.ps1

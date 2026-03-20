@@ -1,6 +1,10 @@
 hash-format = "sha256"
 
 [[files]]
+file = ".pteroignore"
+hash = "094e56adc49df3e68ffbf292e333aeff63b16abd8a8be31cc8921201d50b753d"
+
+[[files]]
 file = "config/fml.toml"
 hash = "0a19f827abac613bbce62232a2e661aec4b4be1f972dbd23f52b5eb6826a972a"
 
@@ -103,10 +107,6 @@ hash = "0730cd0a733e3f80ea1bf967b96f8fabd37bba2fe32d732e040f6b58b2096b1e"
 [[files]]
 file = "defaultconfigs/voicechat-server.toml"
 hash = "c12c8e2b495940755a8ca8ddc5ae87c09fea9e4f173b806a06a75f6db20e0475"
-
-[[files]]
-file = "instance.cfg"
-hash = "22c5af98f13406997784bc4a72097d0f76c48df63e2bd81725c74013154e3087"
 
 [[files]]
 file = "kubejs/server_scripts/fix_create_confectionery.js"
@@ -368,6 +368,11 @@ hash = "ec9b48d07fdb821f60236006aeb33bb129abcee2ba044611a4758e31b2fa0bca"
 metafile = true
 
 [[files]]
+file = "mods/framedblocks.pw.toml"
+hash = "9fd68ed0b2b69ddabb1cc6c6c13251c4894a7a017cdd80032d92759954270e15"
+metafile = true
+
+[[files]]
 file = "mods/ftb-chunks-compatibility-mod.pw.toml"
 hash = "78d30294130d53db3b1de3bc1d97b8c55e32744ec26fc10a676ce0b7835e010d"
 metafile = true
@@ -584,7 +589,7 @@ metafile = true
 
 [[files]]
 file = "mods/patchouli.pw.toml"
-hash = "dec2bc011d4ca1d451aaa3eea477f13366bfb13beba0716018f47d9331a50d8e"
+hash = "2242b76f7c4ee6d7f396a2d1380bee615d78408d00bff5cca38e4df777b18dc5"
 metafile = true
 
 [[files]]
@@ -744,7 +749,7 @@ metafile = true
 
 [[files]]
 file = "startup.ps1"
-hash = "e64429b7b3a535989cd1233d966407702519f23443453403feff6c01ea487d53"
+hash = "05e28b6ed3f72fec81af00d2409b0f86d0619a8f399cb2e1764368dac9f484ed"
 
 [[files]]
 file = "startup.sh"
@@ -752,7 +757,7 @@ hash = "83db436d619cdbd83fb680fcac8479d5dd196a8ab96e05816db41863897d95ef"
 
 [[files]]
 file = "update.ps1"
-hash = "69da5a212988cbbab2f339aa71fa65765c59c9ab7b533fb67fa5b0fa6b51f6af"
+hash = "6e2e838d08a735aceb49490a0379b1b1c6099e554dff3f9394b8b544f99c0bca"
 
 [[files]]
 file = "update.sh"

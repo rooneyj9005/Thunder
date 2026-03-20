@@ -1,11 +1,122 @@
+
 # Thunder Modpack
 [![Release Build](https://github.com/rooneyj9005/Thunder/actions/workflows/onRelease.yml/badge.svg)](https://github.com/rooneyj9005/Thunder/actions/workflows/onRelease.yml)
 
-Thunder is a Minecraft Forge modpack built for playing with friends. It combines technology, magic, and building mods into a cohesive experience that is optimised for server performance.
+Thunder is a Minecraft Forge modpack for friends and communities. It blends technology, magic, and building mods into a stable, performance-optimised experience.
 
-You can automate your base with **Create**, craft spells with **Ars Nouveau**, set up digital storage with **AE2**, and build with **Macaw's furniture** and **Chipped** blocks. There are 124 mods, all tested for stability.
+**Quick Links:**
+- [Player Site & Docs](https://thunder.john.rooney.scot)
+- [Latest Download](https://github.com/rooneyj9005/Thunder/releases/latest)
+- [FAQ](https://thunder.john.rooney.scot/faq.html)
+- [Server Setup Guide](https://thunder.john.rooney.scot/server.html)
 
-> **Looking to play?** Visit **[thunder.john.rooney.scot](https://thunder.john.rooney.scot)** for download links, installation instructions, and server setup guides. This README is for developers and contributors.
+---
+
+## Table of Contents
+1. [For Players](#for-players)
+2. [For Server Admins](#for-server-admins)
+3. [For Developers & Contributors](#for-developers--contributors)
+4. [Release Process](#release-process)
+5. [Pack Contents](#pack-contents)
+6. [Licence and Ethos](#licence-and-ethos)
+
+---
+
+## For Players
+
+- **How to Play:**
+	- Download the latest `.mrpack` from [the site](https://thunder.john.rooney.scot) or [GitHub Releases](https://github.com/rooneyj9005/Thunder/releases/latest).
+	- Import into Prism Launcher or any Modrinth-compatible launcher.
+	- See [install guide](https://thunder.john.rooney.scot/install.html) for step-by-step help.
+- **What’s in the pack?**
+	- Tech, magic, building, worldgen, performance, and utility mods. [Full list](https://thunder.john.rooney.scot/features.html).
+- **Need help?**
+	- [FAQ](https://thunder.john.rooney.scot/faq.html) | [Report bugs](https://github.com/rooneyj9005/Thunder/issues)
+
+---
+
+## For Server Admins
+
+- **Setup:**
+	- Use the provided `install.sh`/`startup.sh` (Linux) or `install.ps1`/`startup.ps1` (Windows) scripts.
+	- See [server setup guide](https://thunder.john.rooney.scot/server.html) for details.
+- **Auto-Update & Managed Files:**
+	- Thunder’s server scripts keep mods/configs up to date using packwiz. Only files listed in `pack.toml` and `index.toml` are managed—no personal or player data is touched.
+	- To skip auto-update for a run: `PACKWIZ_SKIP_UPDATE=true bash startup.sh` (Linux) or `./startup.ps1 -SkipPackUpdate` (PowerShell).
+- **Pterodactyl:**
+	- Import `pterodactyl.json` as an egg. It handles everything automatically.
+
+---
+
+## For Developers & Contributors
+
+- **Getting Started:**
+	- Clone the repo:
+		```bash
+		git clone https://github.com/rooneyj9005/Thunder.git
+		cd Thunder
+		```
+	- Install [packwiz](https://packwiz.infra.link/) (or use the Windows binary from Releases).
+- **Adding/Updating Mods:**
+	- Use `packwiz modrinth add "mod name"` or specify version/project IDs as needed.
+	- After any change, run:
+		```bash
+		packwiz refresh
+		packwiz modrinth export
+		```
+- **Version Pinning:**
+	- Do not update Create or its addons casually. Check `mods/create.pw.toml` for the pinned version.
+- **Contributing:**
+	- Fork, branch, make changes, test with Prism Launcher, bump `pack.toml` version, and open a PR.
+- **Testing:**
+	- See [Testing and QA](https://thunder.john.rooney.scot/faq.html#testing) in the docs.
+- **More details:**
+	- See `CONTRIBUTING.md` for CI, release, and workflow details.
+
+---
+
+
+## Release Process
+
+- Only release when the pack is tested and stable.
+- Checklist (see `CONTRIBUTING.md` for full details):
+	- [ ] **Line endings:** The CI workflow normalises `.sh` line endings to LF _before_ running `packwiz refresh` and `packwiz modrinth export`. This ensures the hashes in `index.toml` remain valid and prevents invalidation due to line ending changes.
+	- [ ] `packwiz refresh` and `packwiz modrinth export` succeed
+	- [ ] Fresh client import launches cleanly
+	- [ ] Server install/startup works on Linux and Windows
+	- [ ] No known critical issues
+	- [ ] `.packwizignore` excludes repo-only files
+	- [ ] Startup/update scripts included in export
+	- [ ] `.gitattributes` protects packwiz hashes
+	- [ ] Shell scripts are LF and pass syntax checks
+	- [ ] Docs and site match current behaviour
+	- [ ] Release is signed and notes are accurate
+
+---
+
+## Pack Contents
+
+- **Tech:** Create (plus addons), Mekanism, AE2, Refined Storage, Thermal Expansion, Modular Routers, CC: Tweaked, Mystical Agriculture
+- **Magic:** Ars Nouveau, Blood Magic, Hexerei, Apotheosis
+- **Building:** Macaw's suite, Chipped, Rechiseled, Immersive Paintings
+- **World Gen:** Biomes o' Plenty, Alex's Mobs, Oh The Trees You'll Grow
+- **Food:** Farmer's Delight, Create Confectionery, Better Farming Plus
+- **Performance & Polish:** Memory Leak Fix, Krypton, Canary, Ferrite Core, Dynamic Torches
+- **Utility & Server:** SecurityCraft, GriefLogger, LuckPerms, FTB Essentials, Xaero's Maps, Jade, Waystones, Simple Voice Chat, Lootr, Sophisticated Backpacks, WorldEdit
+
+See [features](https://thunder.john.rooney.scot/features.html) for the full list.
+
+---
+
+## Licence and Ethos
+
+This project is as open as any licence can allow. Do whatever you want with it: fork it, modify it, or redistribute your own flavour. If you genuinely improve the player experience, a pull request is appreciated, but never required.
+
+**The "No-Nonsense" Rules:**
+- No gambling or real-money mechanics
+- No chat spam or nag messages
+
+---
 
 ## Licence and Ethos
 
@@ -16,11 +127,12 @@ This project is as open as any licence can allow. Do whatever you want with it: 
 - **No gambling or real-money mechanics:** This pack is for fun, not monetisation.
 - **No chat spam or nag messages:** Update notifications or server advertisements are disabled. Staff-only notifications are fine; players deserve a clean, immersive experience.
 
+
 ## Important: Version Pinning
 
 **Do not update Create casually.** The pack is pinned to a specific Create line and addon compatibility depends on it.
 
-- Check the currently pinned versions in `mods/create.pw.toml` and `mods/create-slice-and-dice.pw.toml` before changing anything.
+- Check the currently pinned versions in `mods/create.pw.toml` before changing anything.
 - When adding new Create addons, confirm compatibility with the versions currently pinned in this repository.
 
 ## Getting Started (Developers)
@@ -40,7 +152,7 @@ Most mods can be added with a single command:
 packwiz modrinth add "mod name"
 ```
 
-For specific versions (required for Create addons):
+For specific versions:
 
 ```bash
 packwiz modrinth add --project-id "PROJECT_ID" --version-id "VERSION_ID"
@@ -48,14 +160,14 @@ packwiz modrinth add --project-id "PROJECT_ID" --version-id "VERSION_ID"
 
 ### Applying Changes
 
-Every time you add, remove, or update a mod, run:
+Every time you add, remove, or update a mod or config override, run:
 
 ```bash
 packwiz refresh
 packwiz modrinth export
 ```
 
-The `refresh` command updates hashes in the index, while `export` generates the `.mrpack` file for the Releases tab.
+The `refresh` command updates hashes in the index, while the `export` generates the `.mrpack` file.
 
 ## Testing and Quality Assurance
 
@@ -112,8 +224,6 @@ Both scripts accept a `-Dir` parameter to specify the install directory. All Thu
 ### Managed Files and Auto-Update
 
 Thunder server startup scripts are self-updating by default: each run of `startup.sh` / `startup.ps1` syncs files from `pack.toml` via packwiz.
-
-Prism-imported `.mrpack` instances also run a prelaunch sync path via `instance.cfg`, which calls `update.ps1` with `-PackwizSide client` before launch.
 
 We care about player privacy and safety first. Some users reasonably view any auto-updater as a potential backdoor. If you prefer full manual control, you can disable update sync at startup (examples below).
 
@@ -197,8 +307,8 @@ Only create a release when you are certain the code at this point is working, te
 
 <ul>
 	<li><input type="checkbox"> `.packwizignore` excludes repo-only files (`docs/`, `README`, `.github`, install helpers).</li>
-	<li><input type="checkbox"> `startup.sh`, `startup.ps1`, `update.sh`, `update.ps1`, and `instance.cfg` are included in export.</li>
-	<li><input type="checkbox"> `.gitattributes` still protects packwiz hashes (`*.toml -text`, `config/** -text`, `instance.cfg -text`).</li>
+	<li><input type="checkbox"> `startup.sh`, `startup.ps1`, `update.sh`, and `update.ps1` are included in export.</li>
+	<li><input type="checkbox"> `.gitattributes` still protects packwiz hashes (`*.toml -text`, `config/** -text`).</li>
 	<li><input type="checkbox"> Shell scripts are LF (`*.sh text eol=lf`) and pass basic syntax checks.</li>
 </ul>
 

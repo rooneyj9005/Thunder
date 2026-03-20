@@ -79,27 +79,29 @@
           The whole thing takes a couple of minutes. Here's what to do.
         </p>
 
-        <h2>Before you start</h2>
-        <p>You'll need three things:</p>
-        <ul>
-          <li>
-            <strong>Java 21.</strong>
-            Most launchers sort this out for you. If yours doesn't, grab it
-            from
-            <a href="https://adoptium.net">Adoptium</a>.
-          </li>
-          <li>
-            <strong>A launcher that supports Modrinth packs.</strong> We
-            recommend <a href="https://prismlauncher.org">Prism Launcher</a>.
-            It's free, open-source, and works on Windows, Mac, and Linux.
-            ATLauncher also works.
-          </li>
-          <li>
-            <strong>About 8 GB of RAM to spare.</strong> The pack runs 123 mods,
-            so it needs a bit of room to breathe. 6 GB is the bare minimum; 8 GB
-            is comfortable.
-          </li>
-        </ul>
+        <!-- Modal trigger for prerequisites -->
+        <button type="button" class="btn btn-info mb-3" data-bs-toggle="modal" data-bs-target="#prereqModal">
+          What do I need to start?
+        </button>
+
+        <!-- Modal for prerequisites -->
+        <div class="modal fade" id="prereqModal" tabindex="-1" aria-labelledby="prereqModalLabel" aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title" id="prereqModalLabel">Before you start</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body">
+                <ul>
+                  <li><strong>Java 21</strong> (most launchers handle this; if not, <a href="https://adoptium.net">download here</a>)</li>
+                  <li><strong>Modrinth-compatible launcher</strong> (e.g. <a href="https://prismlauncher.org">Prism Launcher</a>, ATLauncher)</li>
+                  <li><strong>8 GB RAM</strong> (6 GB minimum, 8 GB recommended)</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
 
         <h2>Installing the pack</h2>
 
@@ -141,11 +143,8 @@
           </div>
         </div>
 
-        <div class="callout">
-          <p>
-            The first launch takes longer than usual because it's downloading
-            123 mods. After that, it starts at normal speed.
-          </p>
+        <div class="alert alert-info mt-3" role="alert">
+          The first launch takes longer than usual because it's downloading 123 mods. After that, it starts at normal speed.
         </div>
 
         <h2>Giving it enough memory</h2>
@@ -166,43 +165,62 @@
           <li>Close and launch again.</li>
         </ol>
 
-        <div class="callout">
-          <p>
-            Don't go above 10 GB. It sounds counterintuitive, but giving Java
-            too much memory actually makes things worse because garbage
-            collection pauses get longer and you end up with frame drops. 8 GB
-            is the sweet spot.
-          </p>
+        <div class="alert alert-warning mt-3" role="alert">
+          Don't go above 10 GB. It sounds counterintuitive, but giving Java too much memory actually makes things worse because garbage collection pauses get longer and you end up with frame drops. 8 GB is the sweet spot.
         </div>
 
         <h2>Updating to a new version</h2>
-        <p>
-          If you imported the <code>.mrpack</code> into Prism Launcher,
-          updates are handled automatically. The instance includes a
-          prelaunch command (<code>update.ps1</code>) that syncs pack files
-          before every launch, so you stay up to date without doing anything.
-        </p>
-        <p>If you need to update manually:</p>
+        <p>The simplest way is to download the latest <code>.mrpack</code> and update in place. If you prefer, you can set up automatic updates instead -- see <strong>Optional: automatic updates</strong> below.</p>
+        <p>To update manually:</p>
         <ol>
           <li>
             Download the new <code>.mrpack</code> from the
             <a href="./index.html">home page</a>.
           </li>
           <li>
-            Import it in Prism Launcher (or any Modrinth-compatible launcher).
-            Creating a new instance is recommended for easy rollback.
-          </li>
-          <li>
-            Move your <code>saves</code> folder (and optionally
-            <code>options.txt</code>) into the new instance if needed.
+            In Prism Launcher, right-click the Thunder instance, choose
+            <strong>Edit</strong>, then on the <strong>Modrinth</strong> page
+            click <strong>Update from file</strong> and select the
+            <code>.mrpack</code> you downloaded. This updates mods and configs
+            in place without losing your saves or settings.
           </li>
         </ol>
+        <p>
+          Alternatively, you can import the <code>.mrpack</code> as a brand
+          new instance for easy rollback, and copy your <code>saves</code>
+          folder across afterwards.
+        </p>
         <p>
           Once you've confirmed the new version works, you can keep the old
           instance as a backup or remove it. Server operators should use the
           <code>startup.sh</code> or <code>startup.ps1</code> scripts instead
           -- see the <a href="./server.html">server setup guide</a>.
         </p>
+
+        <div class="accordion mt-4" id="advancedAccordion">
+          <div class="accordion-item">
+            <h2 class="accordion-header" id="autoUpdateHeading">
+              <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#autoUpdateCollapse" aria-expanded="false" aria-controls="autoUpdateCollapse">
+                Optional: automatic updates
+              </button>
+            </h2>
+            <div id="autoUpdateCollapse" class="accordion-collapse collapse" aria-labelledby="autoUpdateHeading" data-bs-parent="#advancedAccordion">
+              <div class="accordion-body">
+                <p>You can configure Prism Launcher to sync pack files before every launch. This keeps your mods up to date without re-importing.</p>
+                <ol>
+                  <li>Right-click the Thunder instance and choose <strong>Edit</strong>.</li>
+                  <li>Go to <strong>Settings</strong> and then <strong>Custom commands</strong>.</li>
+                  <li>Tick <strong>Custom Commands</strong> to enable overrides.</li>
+                  <li>In the <strong>Pre-launch command</strong> box, paste:<br /><code>powershell -NoProfile -ExecutionPolicy Bypass -File .\update.ps1 -PackwizSide client</code></li>
+                  <li>Close and launch. The pack will sync automatically from now on.</li>
+                </ol>
+                <div class="alert alert-info mt-2" role="alert">
+                  On Linux or macOS, use <code>bash ./update.sh</code> as the pre-launch command instead.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </main>
 

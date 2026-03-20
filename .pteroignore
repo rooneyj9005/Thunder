@@ -1,0 +1,16 @@
+mods/*.jar
+libraries/
+.packwiz/
+packwiz-installer-bootstrap.jar
+packwiz-installer.jar
+patchouli_books/
+rhino.local.properties
+unix_args.txt
+win_args.txt
+user_jvm_args.txt
+local/
+forge-*-installer.jar
+forge-*-installer.jar.log
+logs/
+crash-reports/
+.mixin.out/

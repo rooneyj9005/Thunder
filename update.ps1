@@ -13,6 +13,16 @@ $ErrorActionPreference = "Stop"
 
 if ($Dir) { Set-Location $Dir }
 
+# Discover local JDK installed by install.ps1 if java is not on PATH
+if (-not (Get-Command java -ErrorAction SilentlyContinue)) {
+    $localJdk = Get-ChildItem -Directory -Filter "jdk-*" -ErrorAction SilentlyContinue | Select-Object -First 1
+    if ($localJdk) {
+        $env:JAVA_HOME = $localJdk.FullName
+        $env:PATH = "$($localJdk.FullName)\bin;$env:PATH"
+        Write-Host "Using local JDK at $($localJdk.Name)"
+    }
+}
+
 function Test-Truthy([string]$Value) {
     return $Value -match '^(1|true|yes)$'
 }
@@ -39,7 +49,7 @@ if ($CleanInstall) {
     Remove-Item -Recurse -Force -ErrorAction SilentlyContinue mods, config/packwiz-installer.toml
 }
 
-function Ensure-PackwizBootstrap {
+function Install-PackwizBootstrap {
     $bootstrapJar = Join-Path (Get-Location) "packwiz-installer-bootstrap.jar"
     if (Test-Path $bootstrapJar) {
         return
@@ -56,7 +66,7 @@ function Ensure-PackwizBootstrap {
 }
 
 try {
-    Ensure-PackwizBootstrap
+    Install-PackwizBootstrap
 
     Write-Host "Syncing modpack via packwiz..."
     $packwizArgs = @("-jar", "packwiz-installer-bootstrap.jar", "-g", "-s", $PackwizSide)

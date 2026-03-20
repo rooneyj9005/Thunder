@@ -55,7 +55,7 @@ jobs:
       - name: Stage Pages content
         run: |
             mkdir -p public
-            rsync -av --include='.*' --exclude-from='.pagesignore' . public/
+            rsync -av --exclude-from='.pagesignore' . public/
             if [ -f CNAME ]; then cp CNAME public/; fi
             if [ -f .nojekyll ]; then cp .nojekyll public/; fi
       - name: Setup Pages

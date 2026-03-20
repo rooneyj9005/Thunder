@@ -11,6 +11,7 @@
 /.nojekyll
 /.packwizignore
 /.pagesignore
+/.pteroignore
 /pterodactyl.json
 /instance.cfg
 /install.sh

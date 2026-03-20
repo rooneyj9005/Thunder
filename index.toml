@@ -1,10 +1,6 @@
 hash-format = "sha256"
 
 [[files]]
-file = ".pteroignore"
-hash = "27e8ea9bbb44c1a590178b92c957e218f11978b776e3de93d6d33e185c684192"
-
-[[files]]
 file = "config/fml.toml"
 hash = "0a19f827abac613bbce62232a2e661aec4b4be1f972dbd23f52b5eb6826a972a"
 
@@ -710,6 +706,11 @@ metafile = true
 [[files]]
 file = "mods/untiled-entities.pw.toml"
 hash = "bfe9286fdf10305e5aae15c1afdfa90df6e117ab0a963cfa33a516db7e182fb5"
+metafile = true
+
+[[files]]
+file = "mods/voltaic.pw.toml"
+hash = "147b40366d43bfb6c894bb38a5795b767b6b1981d5c27a56c0f79ab2e6570eaf"
 metafile = true
 
 [[files]]

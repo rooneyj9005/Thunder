@@ -1,8 +1,12 @@
 hash-format = "sha256"
 
 [[files]]
+file = ".pagesignore"
+hash = "b9e024641b73162e7b0909f1e29eac3702509828728633cf4987d5e694eda544"
+
+[[files]]
 file = ".pteroignore"
-hash = "094e56adc49df3e68ffbf292e333aeff63b16abd8a8be31cc8921201d50b753d"
+hash = "f4be67cdfdfd7323efe3cf7fd64065f556c7ed743937c79e3117d3dae5e30eae"
 
 [[files]]
 file = "config/fml.toml"
@@ -107,6 +111,26 @@ hash = "0730cd0a733e3f80ea1bf967b96f8fabd37bba2fe32d732e040f6b58b2096b1e"
 [[files]]
 file = "defaultconfigs/voicechat-server.toml"
 hash = "c12c8e2b495940755a8ca8ddc5ae87c09fea9e4f173b806a06a75f6db20e0475"
+
+[[files]]
+file = "faq.html"
+hash = "1eaa9ca8ba39458be1236e6a8d06bdcde7fef6b805ad6f0f765361d9d9e73072"
+
+[[files]]
+file = "features.html"
+hash = "79fe712d27e864232571ed96f71f6e432c0a57edcf566c99406f5db00222b782"
+
+[[files]]
+file = "functions.js"
+hash = "4335b5c34ab5368a72b1a89763dcc1cab9b31e467a77228b1d487e4b60a23e2f"
+
+[[files]]
+file = "index.html"
+hash = "381de0efa80582163b160534b9520c3af6de576bdc1b0eab66843cdaee8f1329"
+
+[[files]]
+file = "install.html"
+hash = "541d62c40496e7c6372e9a5d45bc784246fc024a303fdd5d64ec21707a789bf5"
 
 [[files]]
 file = "kubejs/server_scripts/fix_create_confectionery.js"
@@ -748,12 +772,20 @@ hash = "6341b8f60b7e1bc4f778e5077255e621819a48bc7324c2f2f43ae7ceac04b0ba"
 metafile = true
 
 [[files]]
+file = "server.html"
+hash = "2d8a286a17c54ca81244684a083156d07fc1106d98fb14519c73b00cd2159048"
+
+[[files]]
 file = "startup.ps1"
 hash = "05e28b6ed3f72fec81af00d2409b0f86d0619a8f399cb2e1764368dac9f484ed"
 
 [[files]]
 file = "startup.sh"
 hash = "83db436d619cdbd83fb680fcac8479d5dd196a8ab96e05816db41863897d95ef"
+
+[[files]]
+file = "stylesheet.css"
+hash = "5eb3aac41d14940bcc1fdda9cece5605970bfdebdbf7234eec5bbc7a189692cf"
 
 [[files]]
 file = "update.ps1"

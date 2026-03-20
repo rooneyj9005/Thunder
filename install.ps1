@@ -36,14 +36,16 @@ if (-not $javaCmd) {
         Write-Host "Using existing local JDK at $($existingJdk.Name)"
         $env:JAVA_HOME = $existingJdk.FullName
         $env:PATH = "$($existingJdk.FullName)\bin;$env:PATH"
-    } else {
+    }
+    else {
         Write-Host "Java not found. Downloading Temurin 21..."
         $javaZip = "temurin-21.zip"
         try {
             Invoke-WebRequest -Uri "https://api.adoptium.net/v3/binary/latest/21/ga/windows/x64/jdk/hotspot/normal/eclipse" -OutFile $javaZip -TimeoutSec 300
             Expand-Archive -Path $javaZip -DestinationPath "." -Force
             Remove-Item $javaZip
-        } catch {
+        }
+        catch {
             Remove-Item -Force -ErrorAction SilentlyContinue $javaZip
             throw "Failed to download Temurin 21: $_"
         }
@@ -99,11 +101,13 @@ switch ($ModLoader) {
             if (Test-Path $argsFile) {
                 Copy-Item $argsFile "unix_args.txt" -Force
                 Write-Host "Copied unix_args.txt for Forge ${McVersion}-${resolvedVersion}"
-            } elseif (-not (Test-Path $ServerJarFile)) {
+            }
+            elseif (-not (Test-Path $ServerJarFile)) {
                 Write-Error "Forge installation produced neither unix_args.txt nor ${ServerJarFile}."
                 exit 1
             }
-        } finally {
+        }
+        finally {
             Remove-Item -Force -ErrorAction SilentlyContinue $installerJar, "${installerJar}.log"
         }
     }
@@ -121,7 +125,8 @@ switch ($ModLoader) {
         try {
             Invoke-WebRequest -Uri "https://meta.fabricmc.net/v2/versions/loader/${McVersion}/${loaderVersion}/${installerVersion}/server/jar" -OutFile $tmpJar -TimeoutSec 120
             Move-Item $tmpJar $ServerJarFile -Force
-        } catch {
+        }
+        catch {
             Remove-Item -Force -ErrorAction SilentlyContinue $tmpJar
             throw
         }
@@ -140,7 +145,8 @@ switch ($ModLoader) {
         try {
             Invoke-WebRequest -Uri "https://meta.quiltmc.org/v3/versions/loader/${McVersion}/${loaderVersion}/${installerVersion}/server/jar" -OutFile $tmpJar -TimeoutSec 120
             Move-Item $tmpJar $ServerJarFile -Force
-        } catch {
+        }
+        catch {
             Remove-Item -Force -ErrorAction SilentlyContinue $tmpJar
             throw
         }

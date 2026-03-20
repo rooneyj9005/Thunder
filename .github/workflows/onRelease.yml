@@ -51,22 +51,11 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release upload ${{ github.event.release.tag_name }} --clobber \
-            Thunder.mrpack install.sh install.ps1 startup.sh startup.ps1 update.sh update.ps1 pterodactyl.json packwiz.exe .pteroignore
+          gh release upload ${{ github.event.release.tag_name }} --clobber Thunder.mrpack install.sh install.ps1
       - name: Stage Pages content
         run: |
           mkdir -p public
-
-          cp -R docs/* public/
-
-          for file in pack.toml index.toml instance.cfg startup.sh startup.ps1 update.sh update.ps1 start-local.ps1; do
-            if [ -f "$file" ]; then cp "$file" public/; fi
-          done
-
-          for dir in mods config defaultconfigs kubejs resourcepacks; do
-            if [ -d "$dir" ]; then cp -R "$dir" public/; fi
-          done
-
+          rsync -av --exclude-from='.pagesignore' . public/
           if [ -f CNAME ]; then cp CNAME public/; fi
           touch public/.nojekyll
       - name: Setup Pages

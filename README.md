@@ -1,11 +1,11 @@
-
 # Thunder Modpack
-[![Release Build](https://github.com/rooneyj9005/Thunder/actions/workflows/onRelease.yml/badge.svg)](https://github.com/rooneyj9005/Thunder/actions/workflows/onRelease.yml)
 
+[![Release Build](https://github.com/rooneyj9005/Thunder/actions/workflows/onRelease.yml/badge.svg)](https://github.com/rooneyj9005/Thunder/actions/workflows/onRelease.yml)
 
 Thunder is a Minecraft Forge modpack designed for technical stability, performance, and ease of server management. This repository is for developers and server administrators.
 
 ## Table of Contents
+
 1. [For Server Admins](#for-server-admins)
 2. [For Developers](#for-developers)
 3. [Release Process](#release-process)
@@ -26,17 +26,17 @@ Thunder is a Minecraft Forge modpack designed for technical stability, performan
 ## For Developers
 
 - Clone the repo:
-	```bash
-	git clone https://github.com/rooneyj9005/Thunder.git
-	cd Thunder
-	```
+  ```bash
+  git clone https://github.com/rooneyj9005/Thunder.git
+  cd Thunder
+  ```
 - Install [packwiz](https://packwiz.infra.link/) (or use the Windows binary from Releases).
 - Add or update mods with:
-	```bash
-	packwiz modrinth add "mod name"
-	packwiz refresh
-	packwiz modrinth export
-	```
+  ```bash
+  packwiz modrinth add "mod name"
+  packwiz refresh
+  packwiz modrinth export
+  ```
 - Version pinning: Do not update Create or its addons without checking compatibility. See `mods/create.pw.toml` for pinned versions.
 - Bump `pack.toml` version after every change.
 - Test changes with Prism Launcher and verify server scripts on both Linux and Windows.
@@ -86,6 +86,7 @@ See [features](https://thunder.john.rooney.scot/features.html) for the full list
 This project is as open as any licence can allow. Do whatever you want with it: fork it, modify it, or redistribute your own flavour. If you genuinely improve the player experience, a pull request is appreciated, but never required.
 
 **The "No-Nonsense" Rules:**
+
 - No gambling or real-money mechanics
 - No chat spam or nag messages
 
@@ -99,7 +100,6 @@ This project is as open as any licence can allow. Do whatever you want with it: 
 
 - **No gambling or real-money mechanics:** This pack is for fun, not monetisation.
 - **No chat spam or nag messages:** Update notifications or server advertisements are disabled. Staff-only notifications are fine; players deserve a clean, immersive experience.
-
 
 ## Important: Version Pinning
 
@@ -115,7 +115,7 @@ git clone https://github.com/rooneyj9005/Thunder.git
 cd Thunder
 ```
 
-You will need [packwiz](https://packwiz.infra.link/) installed and available on your PATH. On Windows you can also use the release-hosted binary at [packwiz.exe](https://github.com/rooneyj9005/Thunder/releases/latest/download/packwiz.exe).
+You will need [packwiz](https://packwiz.infra.link/) installed and available on your PATH. On Windows you can also download the latest packwiz.exe from the Pages artifact at [https://thunder.john.rooney.scot/packwiz.exe](https://thunder.john.rooney.scot/packwiz.exe).
 
 ### Adding a Mod
 

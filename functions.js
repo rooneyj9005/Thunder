@@ -1,8 +1,10 @@
 "use strict";
 
 var RELEASES_URL = "https://github.com/rooneyj9005/Thunder/releases";
-var RELEASE_API_URL = "https://api.github.com/repos/rooneyj9005/Thunder/releases/latest";
-var MAIN_PACK_TOML_URL = "https://raw.githubusercontent.com/rooneyj9005/Thunder/main/pack.toml";
+var RELEASE_API_URL =
+  "https://api.github.com/repos/rooneyj9005/Thunder/releases/latest";
+var MAIN_PACK_TOML_URL =
+  "https://raw.githubusercontent.com/rooneyj9005/Thunder/main/pack.toml";
 
 var latestReleasePromise = null;
 
@@ -137,7 +139,10 @@ function updateHeaderVersionStatus() {
     var releaseData = results[0];
     var mainPackToml = results[1];
 
-    var releaseVersion = releaseData && releaseData.tag_name ? normalizeVersionTag(releaseData.tag_name) : null;
+    var releaseVersion =
+      releaseData && releaseData.tag_name
+        ? normalizeVersionTag(releaseData.tag_name)
+        : null;
     var mainVersion = parsePackVersionFromToml(mainPackToml);
 
     if (!releaseVersion && !mainVersion) {
@@ -145,7 +150,7 @@ function updateHeaderVersionStatus() {
         "bi-exclamation-triangle",
         "unavailable",
         "Version status unavailable",
-        "Could not read release tag or main pack version."
+        "Could not read release tag or main pack version.",
       );
       return null;
     }
@@ -155,7 +160,7 @@ function updateHeaderVersionStatus() {
         "bi-info-circle",
         "partial",
         "Version data partial",
-        "One of release or main version could not be resolved."
+        "One of release or main version could not be resolved.",
       );
       return {
         releaseVersion: releaseVersion,
@@ -168,14 +173,14 @@ function updateHeaderVersionStatus() {
         "bi-check-circle",
         "in-sync",
         "Release " + releaseVersion + " | Main " + mainVersion,
-        "Main and latest release are in sync."
+        "Main and latest release are in sync.",
       );
     } else {
       renderStatus(
         "bi-arrow-left-right",
         "out-of-sync",
         "Release " + releaseVersion + " | Main " + mainVersion,
-        "Main differs from latest release."
+        "Main differs from latest release.",
       );
     }
 
@@ -193,6 +198,7 @@ function initializeThunderPage() {
   ]);
 }
 
-window.updateDownloadButtonFromLatestRelease = updateDownloadButtonFromLatestRelease;
+window.updateDownloadButtonFromLatestRelease =
+  updateDownloadButtonFromLatestRelease;
 window.updateHeaderVersionStatus = updateHeaderVersionStatus;
 window.initializeThunderPage = initializeThunderPage;

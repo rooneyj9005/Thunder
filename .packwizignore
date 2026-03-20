@@ -1,9 +1,5 @@
-# .packwizignore uses the same syntax as .gitignore and is evaluated
-# relative to the pack root. Any path matched here will be omitted from
-# the exported .mrpack so clients never download it.
 # See: https://git-scm.com/docs/gitignore
-/docs/
-/CNAME
+ /CNAME
 /README.md
 /LICENSE
 /.git/

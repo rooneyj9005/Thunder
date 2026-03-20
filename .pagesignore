@@ -1,0 +1,13 @@
+# See: https://git-scm.com/docs/gitignore
+*.mrpack
+*.zip
+*.exe
+README.md
+LICENSE
+.git/
+.gitattributes
+.gitignore
+.github/
+.packwizignore
+.pagesignore
+CNAME

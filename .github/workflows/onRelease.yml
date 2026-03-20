@@ -54,10 +54,10 @@ jobs:
           gh release upload ${{ github.event.release.tag_name }} --clobber Thunder.mrpack install.sh install.ps1
       - name: Stage Pages content
         run: |
-          mkdir -p public
-          rsync -av --exclude-from='.pagesignore' . public/
-          if [ -f CNAME ]; then cp CNAME public/; fi
-          touch public/.nojekyll
+            mkdir -p public
+            rsync -av --include='.*' --exclude-from='.pagesignore' . public/
+            if [ -f CNAME ]; then cp CNAME public/; fi
+            touch public/.nojekyll
       - name: Setup Pages
         uses: actions/configure-pages@v5.0.0
       - name: Upload Pages artifact

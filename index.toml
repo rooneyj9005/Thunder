@@ -2,7 +2,7 @@ hash-format = "sha256"
 
 [[files]]
 file = ".pteroignore"
-hash = "38681abcfa33fe01835c2f1b1815812f460eaf1b78a618dfe809d7534e632a17"
+hash = "27e8ea9bbb44c1a590178b92c957e218f11978b776e3de93d6d33e185c684192"
 
 [[files]]
 file = "config/fml.toml"

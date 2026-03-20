@@ -8,6 +8,7 @@
 /.gitignore
 /.gitattributes
 /.github/
+/.nojekyll
 /.packwizignore
 /.pagesignore
 /pterodactyl.json

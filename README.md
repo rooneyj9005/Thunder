@@ -1,6 +1,6 @@
 # Thunder Modpack
 
-[![Release Build](https://github.com/rooneyj9005/Thunder/actions/workflows/onRelease.yml/badge.svg)](https://github.com/rooneyj9005/Thunder/actions/workflows/onRelease.yml)
+[![Release Build](https://github.com/rooneyj9005/Thunder/actions/workflows/release.yml/badge.svg)](https://github.com/rooneyj9005/Thunder/actions/workflows/release.yml)
 
 Thunder is a Minecraft Forge modpack focused on technical stability, performance, and practical server tooling.
 

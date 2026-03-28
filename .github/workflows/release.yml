@@ -21,17 +21,6 @@ jobs:
           if [ -n "$PACKWIZ_VERSION" ]; then
             echo "packwiz version: $PACKWIZ_VERSION"
           fi
-      - name: Compile packwiz.exe for Windows
-        run: |
-          GOOS=windows GOARCH=amd64 go install github.com/packwiz/packwiz@latest
-          cp "$(go env GOPATH)/bin/windows_amd64/packwiz.exe" .
-          test -f packwiz.exe
-      - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-artifacts
-          path: |
-            packwiz.exe
       - name: Normalize shell scripts to LF
         run: |
           sed -i 's/\r$//' install.sh startup.sh update.sh
@@ -50,6 +39,21 @@ jobs:
             exit 1
           fi
           mv -f "$EXPORTED_PACK" Thunder.mrpack
+      - name: Build packwiz binaries (artifacts only)
+        run: |
+          cp "$(go env GOPATH)/bin/packwiz" ./packwiz
+          test -f packwiz
+
+          GOOS=windows GOARCH=amd64 go install github.com/packwiz/packwiz@latest
+          cp "$(go env GOPATH)/bin/windows_amd64/packwiz.exe" ./packwiz.exe
+          test -f packwiz.exe
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts
+          path: |
+            packwiz
+            packwiz.exe
       - name: Upload to Release
         env:
           GH_TOKEN: ${{ github.token }}

@@ -14,7 +14,7 @@ if [[ -n "$SERVER_DIR" ]]; then
     cd "$SERVER_DIR"
 fi
 
-PACKWIZ_URL="${PACKWIZ_URL:-https://thunder.john.rooney.scot/pack.toml}"
+PACKWIZ_URL="${PACKWIZ_URL:-https://packwiz.thunder.john.rooney.scot/pack.toml}"
 PACKWIZ_SIDE="${PACKWIZ_SIDE:-server}"
 CLEAN_INSTALL="${CLEAN_INSTALL:-false}"
 
@@ -45,7 +45,12 @@ if [[ ! -f "packwiz-installer-bootstrap.jar" ]]; then
     echo "packwiz-installer-bootstrap.jar not found, downloading latest release..."
     PACKWIZ_BOOTSTRAP_URL=$(curl -sSfL --connect-timeout 30 --max-time 30 \
       https://api.github.com/repos/packwiz/packwiz-installer-bootstrap/releases/latest \
-      | jq -r '.assets[] | select(.name | endswith(".jar")) | .browser_download_url')
+      | jq -r '
+        .assets as $assets
+        | ($assets | map(select(.name == "packwiz-installer-bootstrap.jar")) | .[0].browser_download_url)
+          // ($assets | map(select((.name | endswith(".jar")) and ((.name | test("(sources|javadoc)\\.jar$")) | not))) | .[0].browser_download_url)
+          // empty
+      ')
     if [[ -z "$PACKWIZ_BOOTSTRAP_URL" ]]; then
         echo "ERROR: Failed to resolve packwiz-installer-bootstrap download URL." >&2
         exit 1

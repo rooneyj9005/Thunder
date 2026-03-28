@@ -2,7 +2,7 @@
 [CmdletBinding()]
 param(
     [string]$Dir = "",
-    [string]$PackwizUrl = "https://thunder.john.rooney.scot/pack.toml",
+    [string]$PackwizUrl = "https://packwiz.thunder.john.rooney.scot/pack.toml",
     [string]$PackwizSide = "server",
     [string]$PackwizExtraFlags = "",
     [switch]$CleanInstall,
@@ -57,7 +57,10 @@ function Install-PackwizBootstrap {
 
     Write-Host "packwiz-installer-bootstrap.jar not found, downloading latest release..."
     $release = Invoke-RestMethod -Uri "https://api.github.com/repos/packwiz/packwiz-installer-bootstrap/releases/latest" -TimeoutSec 30
-    $asset = $release.assets | Where-Object { $_.name -like "*.jar" } | Select-Object -First 1
+    $asset = $release.assets | Where-Object { $_.name -eq "packwiz-installer-bootstrap.jar" } | Select-Object -First 1
+    if (-not $asset) {
+        $asset = $release.assets | Where-Object { $_.name -like "*.jar" -and $_.name -notlike "*sources*.jar" -and $_.name -notlike "*javadoc*.jar" } | Select-Object -First 1
+    }
     if (-not $asset) {
         throw "Could not resolve packwiz-installer-bootstrap release asset."
     }

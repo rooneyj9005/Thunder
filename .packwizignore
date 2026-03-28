@@ -1,6 +1,3 @@
-/*.html
-/*.css
-/*.js
 /CNAME
 /README.md
 /LICENSE
@@ -10,9 +7,6 @@
 /.github/
 /.nojekyll
 /.packwizignore
-/.pagesignore
-/.pteroignore
 /pterodactyl.json
-/instance.cfg
 /install.sh
 /install.ps1

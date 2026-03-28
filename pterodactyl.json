@@ -21,7 +21,7 @@
   },
   "scripts": {
     "installation": {
-      "script": "#!/bin/bash\nset -euo pipefail\n\napt-get -q update\napt-get install -y --no-install-recommends curl ca-certificates\ncd /mnt/server\n\ncurl -sSfL --connect-timeout 30 --max-time 30 \\\n  https://github.com/rooneyj9005/Thunder/releases/latest/download/install.sh \\\n  | bash -s -- --container",
+      "script": "#!/bin/bash\nset -euo pipefail\n\napt-get -q update\napt-get install -y --no-install-recommends curl ca-certificates\ncd /mnt/server\n\ncurl -sSfLO --connect-timeout 30 --max-time 30 https://github.com/rooneyj9005/Thunder/releases/latest/download/install.sh\nbash install.sh --container",
       "container": "debian:bookworm-slim",
       "entrypoint": "bash"
     }
@@ -29,9 +29,9 @@
   "variables": [
     {
       "name": "Packwiz URL",
-      "description": "URL to the pack.toml file. Points to Thunder's GitHub Pages by default.",
+      "description": "URL to the pack.toml file. Points to Thunder's packwiz host by default.",
       "env_variable": "PACKWIZ_URL",
-      "default_value": "https://thunder.john.rooney.scot/pack.toml",
+      "default_value": "https://packwiz.thunder.john.rooney.scot/pack.toml",
       "user_viewable": true,
       "user_editable": false,
       "rules": "required|url",

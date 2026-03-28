@@ -2,7 +2,7 @@
 [CmdletBinding()]
 param(
     [string]$Dir = "",
-    [string]$PackwizUrl = "https://thunder.john.rooney.scot/pack.toml",
+    [string]$PackwizUrl = "https://packwiz.thunder.john.rooney.scot/pack.toml",
     [string]$PackwizSide = "server",
     [string]$PackwizExtraFlags = "",
     [switch]$SkipPackUpdate,
@@ -54,12 +54,12 @@ else {
 if ($VoicePort -ne 0) {
     $voiceDir = Join-Path "config" "voicechat"
     if (-not (Test-Path $voiceDir)) { New-Item -ItemType Directory -Path $voiceDir -Force | Out-Null }
-    Set-Content (Join-Path $voiceDir "voicechat-server.properties") "port=$VoicePort"
+    Set-Content -LiteralPath (Join-Path $voiceDir "voicechat-server.properties") -Value "port=$VoicePort" -Encoding ASCII
 }
 
 if (Test-Path "unix_args.txt") {
     $winArgs = (Get-Content "unix_args.txt") -replace "(?<=\.jar):", ";"
-    Set-Content "win_args.txt" $winArgs
+    Set-Content -LiteralPath "win_args.txt" -Value $winArgs -Encoding ASCII
     & java -Xms128M "-XX:MaxRAMPercentage=95.0" "@win_args.txt"
 }
 else {

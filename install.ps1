@@ -61,7 +61,10 @@ if (-not $javaCmd) {
 
 Write-Host "Fetching packwiz-installer-bootstrap..."
 $release = Invoke-RestMethod -Uri "https://api.github.com/repos/packwiz/packwiz-installer-bootstrap/releases/latest" -TimeoutSec 30
-$asset = $release.assets | Where-Object { $_.name -like "*.jar" } | Select-Object -First 1
+$asset = $release.assets | Where-Object { $_.name -eq "packwiz-installer-bootstrap.jar" } | Select-Object -First 1
+if (-not $asset) {
+    $asset = $release.assets | Where-Object { $_.name -like "*.jar" -and $_.name -notlike "*sources*.jar" -and $_.name -notlike "*javadoc*.jar" } | Select-Object -First 1
+}
 
 if (-not $asset) {
     Write-Error "Failed to resolve packwiz-installer-bootstrap download URL."
@@ -158,7 +161,7 @@ switch ($ModLoader) {
     }
 }
 
-$packwizUrl = if ($env:PACKWIZ_URL) { $env:PACKWIZ_URL } else { "https://thunder.john.rooney.scot/pack.toml" }
+$packwizUrl = if ($env:PACKWIZ_URL) { $env:PACKWIZ_URL } else { "https://packwiz.thunder.john.rooney.scot/pack.toml" }
 $packwizSide = if ($env:PACKWIZ_SIDE) { $env:PACKWIZ_SIDE } else { "server" }
 
 if ($packwizSide -notin @("server", "both")) {

@@ -14,7 +14,7 @@ if [[ -n "$SERVER_DIR" ]]; then
     cd "$SERVER_DIR"
 fi
 
-PACKWIZ_URL="${PACKWIZ_URL:-https://thunder.john.rooney.scot/pack.toml}"
+PACKWIZ_URL="${PACKWIZ_URL:-https://packwiz.thunder.john.rooney.scot/pack.toml}"
 PACKWIZ_SIDE="${PACKWIZ_SIDE:-server}"
 CLEAN_INSTALL="${CLEAN_INSTALL:-false}"
 PACKWIZ_SKIP_UPDATE="${PACKWIZ_SKIP_UPDATE:-false}"

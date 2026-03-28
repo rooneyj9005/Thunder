@@ -1,0 +1,5 @@
+[general]
+	modpackName = "Thunder"
+	modpackVersion = "0.8.0"
+	useMetadata = false
+	modpackProjectID = 0

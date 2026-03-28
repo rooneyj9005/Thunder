@@ -8,27 +8,30 @@ jobs:
     timeout-minutes: 10
     permissions:
       contents: write
-      pages: write
-      id-token: write
-    env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - uses: actions/checkout@v6.0.2
-      - uses: actions/setup-go@v6.3.0
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
         with:
           cache: false
           go-version: "stable"
       - name: Install packwiz
         run: |
           go install github.com/packwiz/packwiz@latest
+          PACKWIZ_VERSION="$(go list -m -f '{{.Version}}' github.com/packwiz/packwiz@latest 2>/dev/null || true)"
+          if [ -n "$PACKWIZ_VERSION" ]; then
+            echo "packwiz version: $PACKWIZ_VERSION"
+          fi
       - name: Compile packwiz.exe for Windows
         run: |
           GOOS=windows GOARCH=amd64 go install github.com/packwiz/packwiz@latest
           cp "$(go env GOPATH)/bin/windows_amd64/packwiz.exe" .
           test -f packwiz.exe
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts
+          path: |
+            packwiz.exe
       - name: Normalize shell scripts to LF
         run: |
           sed -i 's/\r$//' install.sh startup.sh update.sh
@@ -51,19 +54,4 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release upload ${{ github.event.release.tag_name }} --clobber Thunder.mrpack install.sh install.ps1
-      - name: Stage Pages content
-        run: |
-            mkdir -p public
-            rsync -av --exclude-from='.pagesignore' . public/
-            if [ -f CNAME ]; then cp CNAME public/; fi
-            if [ -f .nojekyll ]; then cp .nojekyll public/; fi
-      - name: Setup Pages
-        uses: actions/configure-pages@v5.0.0
-      - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v4.0.0
-        with:
-          path: public
-      - name: Deploy Pages
-        id: deployment
-        uses: actions/deploy-pages@v4.0.5
+          gh release upload ${{ github.event.release.tag_name }} --clobber Thunder.mrpack install.sh install.ps1 pterodactyl.json

@@ -13,7 +13,33 @@ done
 
 if [[ "$MODE" == "container" ]]; then
     apt-get -q update
-    apt-get install -y --no-install-recommends curl jq ca-certificates default-jre-headless
+    apt-get install -y --no-install-recommends curl jq ca-certificates
+
+    if ! command -v java >/dev/null 2>&1; then
+        if apt-get install -y --no-install-recommends openjdk-21-jre-headless; then
+            :
+        else
+            echo "openjdk-21-jre-headless not available, downloading Temurin 21 JRE..." >&2
+            apt-get install -y --no-install-recommends tar gzip
+
+            JAVA_TAR="temurin-21.tar.gz"
+            curl -sSfL --connect-timeout 30 --max-time 300 \
+              -o "$JAVA_TAR" \
+              "https://api.adoptium.net/v3/binary/latest/21/ga/linux/x64/jre/hotspot/normal/eclipse"
+            tar -xzf "$JAVA_TAR"
+            rm -f "$JAVA_TAR"
+
+            JRE_DIR="$(find . -maxdepth 1 -type d \\( -name 'jdk-21*' -o -name 'jre-21*' \\) -print -quit)"
+            JRE_DIR="${JRE_DIR#./}"
+            if [[ -z "$JRE_DIR" ]]; then
+                echo "ERROR: Temurin 21 archive did not contain an expected jdk-21* or jre-21* directory." >&2
+                exit 1
+            fi
+
+            export JAVA_HOME="$PWD/$JRE_DIR"
+            export PATH="$JAVA_HOME/bin:$PATH"
+        fi
+    fi
 fi
 
 if [[ "$MODE" == "container" ]]; then
@@ -25,7 +51,12 @@ fi
 echo "Fetching packwiz-installer-bootstrap..."
 PACKWIZ_BOOTSTRAP_URL=$(curl -sSfL --connect-timeout 30 --max-time 30 \
   https://api.github.com/repos/packwiz/packwiz-installer-bootstrap/releases/latest \
-  | jq -r '.assets[] | select(.name | endswith(".jar")) | .browser_download_url')
+  | jq -r '
+    .assets as $assets
+    | ($assets | map(select(.name == "packwiz-installer-bootstrap.jar")) | .[0].browser_download_url)
+      // ($assets | map(select((.name | endswith(".jar")) and ((.name | test("(sources|javadoc)\\.jar$")) | not))) | .[0].browser_download_url)
+      // empty
+  ')
 
 if [[ -z "$PACKWIZ_BOOTSTRAP_URL" ]]; then
   echo "ERROR: Failed to resolve packwiz-installer-bootstrap download URL." >&2
@@ -147,7 +178,7 @@ case "${MODLOADER}" in
     ;;
 esac
 
-PACKWIZ_URL="${PACKWIZ_URL:-https://thunder.john.rooney.scot/pack.toml}"
+PACKWIZ_URL="${PACKWIZ_URL:-https://packwiz.thunder.john.rooney.scot/pack.toml}"
 PACKWIZ_SIDE="${PACKWIZ_SIDE:-server}"
 
 if [[ "$PACKWIZ_SIDE" != "server" && "$PACKWIZ_SIDE" != "both" ]]; then

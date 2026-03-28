@@ -759,7 +759,7 @@ metafile = true
 
 [[files]]
 file = "startup.ps1"
-hash = "017e140f8c1e3fc68d60fc66fa43280353228c86bc5af1ce686706390940e09b"
+hash = "eb37a7062c8372d9230d9168b8bc639467dfd53f39d3cf0b71e3b3bf7a643990"
 
 [[files]]
 file = "startup.sh"
@@ -767,7 +767,7 @@ hash = "8d8f4716d31f131fcc50d36ee8126cb0e35562f76781c233796b3b659f35d3c4"
 
 [[files]]
 file = "update.ps1"
-hash = "32ca7f2a9868579d203c5b6842c08c18dff1104de5e7f6738796496e5b40d6d8"
+hash = "f44c49fc7d28db5c7e99231e48da891e4476981ae3c6ea1c4850af7bbfac197e"
 
 [[files]]
 file = "update.sh"

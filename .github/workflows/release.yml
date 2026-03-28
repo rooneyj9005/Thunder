@@ -1,4 +1,4 @@
-name: Build and Release Modpack
+name: Build Release Assets
 on:
   release:
     types: [published]

@@ -129,12 +129,11 @@ jobs:
         run: |
           set -euo pipefail
 
-          release_json="$(gh api "repos/${GITHUB_REPOSITORY}/releases/tags/${TAG_NAME}" 2>/dev/null || true)"
-
-          if [[ -n "$release_json" ]]; then
-            if [[ "$(jq -r '.prerelease' <<<"$release_json")" != "true" ]]; then
-              echo "Release $TAG_NAME is already stable; leaving it unchanged."
-              exit 0
+          release_json=""
+          if release_json="$(gh api "repos/${GITHUB_REPOSITORY}/releases/tags/${TAG_NAME}" 2>/dev/null)"; then
+            if [[ "$(jq -r '.prerelease // false' <<<"$release_json")" != "true" ]]; then
+              echo "ERROR: Release $TAG_NAME already exists as a stable release." >&2
+              exit 1
             fi
 
             gh release upload "$TAG_NAME" _ci/Thunder.mrpack install.sh install.ps1 pterodactyl.json --clobber

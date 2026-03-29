@@ -17,6 +17,10 @@ jobs:
   validate:
     runs-on: ubuntu-latest
     timeout-minutes: 90
+    env:
+      LOCAL_PACK_PAGES_DIR: ${{ runner.temp }}/pack-pages
+      LOCAL_PACK_HOST_LOG: ${{ runner.temp }}/pack-http-server.log
+      LOCAL_PACK_HOST_PID: ${{ runner.temp }}/pack-http-server.pid
 
     steps:
       - uses: actions/checkout@v4
@@ -53,14 +57,14 @@ jobs:
 
       - name: Prepare local pack metadata host
         shell: bash
-        run: bash ./.github/scripts/prepare-pack-pages-artifact.sh _ci/pages
+        run: bash ./.github/scripts/prepare-pack-pages-artifact.sh "$LOCAL_PACK_PAGES_DIR"
 
       - name: Start local pack metadata host
         shell: bash
         run: |
           set -euo pipefail
-          python3 -m http.server 8123 --bind 127.0.0.1 --directory _ci/pages > _ci/http-server.log 2>&1 &
-          echo $! > _ci/http-server.pid
+          python3 -m http.server 8123 --bind 127.0.0.1 --directory "$LOCAL_PACK_PAGES_DIR" > "$LOCAL_PACK_HOST_LOG" 2>&1 &
+          echo $! > "$LOCAL_PACK_HOST_PID"
 
           for attempt in {1..30}; do
             if curl -fsS http://127.0.0.1:8123/pack.toml >/dev/null; then
@@ -70,7 +74,7 @@ jobs:
           done
 
           echo "ERROR: Local pack metadata host did not start." >&2
-          cat _ci/http-server.log >&2 || true
+          cat "$LOCAL_PACK_HOST_LOG" >&2 || true
           exit 1
 
       - name: Validate pack build and update path
@@ -83,6 +87,6 @@ jobs:
         if: ${{ always() }}
         shell: bash
         run: |
-          if [[ -f _ci/http-server.pid ]]; then
-            kill "$(cat _ci/http-server.pid)" || true
+          if [[ -f "$LOCAL_PACK_HOST_PID" ]]; then
+            kill "$(cat "$LOCAL_PACK_HOST_PID")" || true
           fi

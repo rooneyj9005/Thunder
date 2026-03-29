@@ -29,33 +29,85 @@ if ($ServerJarFile -notmatch '^[A-Za-z0-9._-]+\.jar$') {
     throw "SERVER_JARFILE must be a simple .jar filename."
 }
 
-$javaCmd = Get-Command java -ErrorAction SilentlyContinue
-if (-not $javaCmd) {
-    $existingJdk = Get-ChildItem -Directory -Filter "jdk-*" -ErrorAction SilentlyContinue | Select-Object -First 1
-    if ($existingJdk) {
-        Write-Host "Using existing local JDK at $($existingJdk.Name)"
-        $env:JAVA_HOME = $existingJdk.FullName
-        $env:PATH = "$($existingJdk.FullName)\bin;$env:PATH"
+function Get-JavaMajorVersion {
+    if (-not (Get-Command java -ErrorAction SilentlyContinue)) {
+        return $null
     }
-    else {
-        Write-Host "Java not found. Downloading Temurin 21..."
-        $javaZip = "temurin-21.zip"
-        try {
-            Invoke-WebRequest -Uri "https://api.adoptium.net/v3/binary/latest/21/ga/windows/x64/jdk/hotspot/normal/eclipse" -OutFile $javaZip -TimeoutSec 300
-            Expand-Archive -Path $javaZip -DestinationPath "." -Force
-            Remove-Item $javaZip
+
+    $versionOutput = & java -version 2>&1
+    if ($LASTEXITCODE -ne 0) {
+        return $null
+    }
+
+    $firstLine = $versionOutput | Select-Object -First 1
+    if ($firstLine -match '"(?<version>[^"]+)"') {
+        $parts = $Matches.version.Split(".")
+        if ($parts[0] -eq "1" -and $parts.Length -gt 1) {
+            return $parts[1]
         }
-        catch {
-            Remove-Item -Force -ErrorAction SilentlyContinue $javaZip
-            throw "Failed to download Temurin 21: $_"
+        return $parts[0]
+    }
+
+    return $null
+}
+
+function Use-LocalJava21IfAvailable {
+    $localJava = Get-ChildItem -Directory -ErrorAction SilentlyContinue | Where-Object {
+        $_.Name -like "jdk-21*" -or $_.Name -like "jre-21*"
+    } | Select-Object -First 1
+
+    if (-not $localJava) {
+        return $false
+    }
+
+    Write-Host "Using local Java 21 at $($localJava.FullName)"
+    $env:JAVA_HOME = $localJava.FullName
+    $env:PATH = "$($localJava.FullName)\bin;$env:PATH"
+    return $true
+}
+
+function Install-Temurin21 {
+    Write-Host "Installing Temurin 21..."
+    $javaZip = "temurin-21.zip"
+    try {
+        Invoke-WebRequest -Uri "https://api.adoptium.net/v3/binary/latest/21/ga/windows/x64/jdk/hotspot/normal/eclipse" -OutFile $javaZip -TimeoutSec 300
+        Expand-Archive -Path $javaZip -DestinationPath "." -Force
+        Remove-Item $javaZip
+    }
+    catch {
+        Remove-Item -Force -ErrorAction SilentlyContinue $javaZip
+        throw "Failed to download Temurin 21: $_"
+    }
+
+    $jdkDir = Get-ChildItem -Directory -ErrorAction SilentlyContinue | Where-Object {
+        $_.Name -like "jdk-21*" -or $_.Name -like "jre-21*"
+    } | Select-Object -First 1
+    if (-not $jdkDir) {
+        throw "Temurin 21 archive did not contain an expected jdk-21* or jre-21* directory."
+    }
+
+    $env:JAVA_HOME = $jdkDir.FullName
+    $env:PATH = "$($jdkDir.FullName)\bin;$env:PATH"
+    Write-Host "Installed Temurin 21 to $($jdkDir.FullName)"
+}
+
+$javaMajor = Get-JavaMajorVersion
+if ($javaMajor -ne "21") {
+    if (-not (Use-LocalJava21IfAvailable)) {
+        if ($javaMajor) {
+            Write-Host "Java $javaMajor found. Switching to Temurin 21."
         }
-        $jdkDir = Get-ChildItem -Directory -Filter "jdk-21*" | Select-Object -First 1
-        if (-not $jdkDir) {
-            throw "Temurin 21 archive did not contain an expected jdk-21* directory."
+        else {
+            Write-Host "Java 21 not found locally."
         }
-        $env:JAVA_HOME = $jdkDir.FullName
-        $env:PATH = "$($jdkDir.FullName)\bin;$env:PATH"
-        Write-Host "Installed Temurin 21 to $($jdkDir.FullName)"
+
+        Install-Temurin21
+    }
+
+    $javaMajor = Get-JavaMajorVersion
+    if ($javaMajor -ne "21") {
+        $foundJava = if ($javaMajor) { $javaMajor } else { "none" }
+        throw "Java 21 is required; found Java $foundJava."
     }
 }
 

@@ -15,15 +15,60 @@ $ErrorActionPreference = "Stop"
 
 if ($Dir) { Set-Location $Dir }
 
-# Discover local JDK installed by install.ps1 if java is not on PATH
-if (-not (Get-Command java -ErrorAction SilentlyContinue)) {
-    $localJdk = Get-ChildItem -Directory -Filter "jdk-*" -ErrorAction SilentlyContinue | Select-Object -First 1
-    if ($localJdk) {
-        $env:JAVA_HOME = $localJdk.FullName
-        $env:PATH = "$($localJdk.FullName)\bin;$env:PATH"
-        Write-Host "Using local JDK at $($localJdk.Name)"
+function Get-JavaMajorVersion {
+    if (-not (Get-Command java -ErrorAction SilentlyContinue)) {
+        return $null
+    }
+
+    $versionOutput = & java -version 2>&1
+    if ($LASTEXITCODE -ne 0) {
+        return $null
+    }
+
+    $firstLine = $versionOutput | Select-Object -First 1
+    if ($firstLine -match '"(?<version>[^"]+)"') {
+        $parts = $Matches.version.Split(".")
+        if ($parts[0] -eq "1" -and $parts.Length -gt 1) {
+            return $parts[1]
+        }
+        return $parts[0]
+    }
+
+    return $null
+}
+
+function Use-LocalJava21IfAvailable {
+    $localJava = Get-ChildItem -Directory -ErrorAction SilentlyContinue | Where-Object {
+        $_.Name -like "jdk-21*" -or $_.Name -like "jre-21*"
+    } | Select-Object -First 1
+
+    if (-not $localJava) {
+        return $false
+    }
+
+    $env:JAVA_HOME = $localJava.FullName
+    $env:PATH = "$($localJava.FullName)\bin;$env:PATH"
+    Write-Host "Using local Java 21 at $($localJava.FullName)"
+    return $true
+}
+
+function Ensure-Java21 {
+    $javaMajor = Get-JavaMajorVersion
+    if ($javaMajor -eq "21") {
+        return
+    }
+
+    if (Use-LocalJava21IfAvailable) {
+        $javaMajor = Get-JavaMajorVersion
+    }
+
+    if ($javaMajor -ne "21") {
+        $foundJava = if ($javaMajor) { $javaMajor } else { "none" }
+        throw "Java 21 is required; found Java $foundJava."
     }
 }
+
+Ensure-Java21
 
 if ($VoicePort -lt 0 -or $VoicePort -gt 65535) {
     throw "VOICE_PORT must be between 0 and 65535 (0 to disable)."

@@ -14,6 +14,51 @@ if [[ -n "$SERVER_DIR" ]]; then
     cd "$SERVER_DIR"
 fi
 
+use_local_java21_if_available() {
+    local java_dir=""
+
+    java_dir="$(find . -maxdepth 1 -type d \( -name 'jdk-21*' -o -name 'jre-21*' \) -print -quit)"
+    java_dir="${java_dir#./}"
+
+    if [[ -z "$java_dir" ]]; then
+        return 1
+    fi
+
+    export JAVA_HOME="$PWD/$java_dir"
+    export PATH="$JAVA_HOME/bin:$PATH"
+    echo "Using local Java 21 runtime at $JAVA_HOME"
+    return 0
+}
+
+java_major_version() {
+    java -version 2>&1 | awk -F '"' '/version/ { split($2, parts, "."); if (parts[1] == 1 && parts[2] != "") { print parts[2]; } else { print parts[1]; } exit }'
+}
+
+ensure_java21() {
+    local major=""
+
+    if ! command -v java >/dev/null 2>&1; then
+        if ! use_local_java21_if_available; then
+            echo "ERROR: Java 21 is required." >&2
+            exit 1
+        fi
+    fi
+
+    major="$(java_major_version)"
+    if [[ "$major" != "21" ]]; then
+        if use_local_java21_if_available; then
+            major="$(java_major_version)"
+        fi
+    fi
+
+    if [[ "$major" != "21" ]]; then
+        echo "ERROR: Java 21 is required; found Java ${major:-unknown}." >&2
+        exit 1
+    fi
+}
+
+ensure_java21
+
 PACKWIZ_URL="${PACKWIZ_URL:-https://packwiz.thunder.john.rooney.scot/pack.toml}"
 PACKWIZ_SIDE="${PACKWIZ_SIDE:-server}"
 CLEAN_INSTALL="${CLEAN_INSTALL:-false}"

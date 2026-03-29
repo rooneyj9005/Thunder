@@ -9,8 +9,7 @@
   "description": "Pterodactyl egg for the Thunder modpack - a Minecraft 1.20.1 Forge modpack combining technology, magic, and building mods. Uses packwiz for automatic server-side mod synchronisation.",
   "features": ["eula", "java_version", "pid_limit"],
   "docker_images": {
-    "Java 21 (Recommended)": "ghcr.io/pterodactyl/yolks:java_21",
-    "Java 17": "ghcr.io/pterodactyl/yolks:java_17"
+    "Java 21": "ghcr.io/pterodactyl/yolks:java_21"
   },
   "startup": "bash startup.sh --container",
   "config": {
@@ -139,12 +138,12 @@
     },
     {
       "name": "Voice Chat Port",
-      "description": "UDP port for Simple Voice Chat. Must be open in your firewall and allocated in the panel.",
+      "description": "UDP port for Simple Voice Chat. Must be open in your firewall and allocated in the panel. Set to 0 to disable.",
       "env_variable": "VOICE_PORT",
       "default_value": "24454",
       "user_viewable": true,
-      "user_editable": false,
-      "rules": "required|integer|between:1024,65535",
+      "user_editable": true,
+      "rules": "required|integer|between:0,65535",
       "field_type": "text"
     }
   ]

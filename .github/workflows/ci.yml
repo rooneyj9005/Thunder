@@ -1,0 +1,88 @@
+name: Source CI
+
+on:
+  push:
+    tags-ignore:
+      - "*"
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: source-ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.24.0"
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Install latest packwiz
+        shell: bash
+        run: go install github.com/packwiz/packwiz@latest
+
+      - name: Ensure shellcheck is available
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! command -v shellcheck >/dev/null 2>&1; then
+            sudo apt-get update
+            sudo apt-get install -y shellcheck
+          fi
+
+      - name: Lint Bash scripts
+        shell: bash
+        run: bash ./.github/scripts/lint-shell.sh
+
+      - name: Validate PowerShell syntax
+        shell: pwsh
+        run: ./.github/scripts/lint-powershell.ps1
+
+      - name: Prepare local pack metadata host
+        shell: bash
+        run: bash ./.github/scripts/prepare-pack-pages-artifact.sh _ci/pages
+
+      - name: Start local pack metadata host
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m http.server 8123 --bind 127.0.0.1 --directory _ci/pages > _ci/http-server.log 2>&1 &
+          echo $! > _ci/http-server.pid
+
+          for attempt in {1..30}; do
+            if curl -fsS http://127.0.0.1:8123/pack.toml >/dev/null; then
+              exit 0
+            fi
+            sleep 1
+          done
+
+          echo "ERROR: Local pack metadata host did not start." >&2
+          cat _ci/http-server.log >&2 || true
+          exit 1
+
+      - name: Validate pack build and update path
+        env:
+          SMOKE_PACK_URL: http://127.0.0.1:8123/pack.toml
+        shell: bash
+        run: bash ./.github/scripts/validate-pack.sh
+
+      - name: Stop local pack metadata host
+        if: ${{ always() }}
+        shell: bash
+        run: |
+          if [[ -f _ci/http-server.pid ]]; then
+            kill "$(cat _ci/http-server.pid)" || true
+          fi

@@ -11,6 +11,58 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
+TARGET_DIR="$PWD"
+if [[ "$MODE" == "container" ]]; then
+    TARGET_DIR="${INSTALL_DIR:-/mnt/server}"
+elif [[ -n "$INSTALL_DIR" ]]; then
+    TARGET_DIR="$INSTALL_DIR"
+fi
+
+cd "$TARGET_DIR"
+
+use_local_java21_if_available() {
+    local java_dir=""
+
+    java_dir="$(find . -maxdepth 1 -type d \( -name 'jdk-21*' -o -name 'jre-21*' \) -print -quit)"
+    java_dir="${java_dir#./}"
+
+    if [[ -z "$java_dir" ]]; then
+        return 1
+    fi
+
+    export JAVA_HOME="$PWD/$java_dir"
+    export PATH="$JAVA_HOME/bin:$PATH"
+    echo "Using local Java 21 runtime at $JAVA_HOME"
+    return 0
+}
+
+java_major_version() {
+    java -version 2>&1 | awk -F '"' '/version/ { split($2, parts, "."); if (parts[1] == 1 && parts[2] != "") { print parts[2]; } else { print parts[1]; } exit }'
+}
+
+ensure_java21() {
+    local major=""
+
+    if ! command -v java >/dev/null 2>&1; then
+        if ! use_local_java21_if_available; then
+            echo "ERROR: Java 21 is required." >&2
+            exit 1
+        fi
+    fi
+
+    major="$(java_major_version)"
+    if [[ "$major" != "21" ]]; then
+        if use_local_java21_if_available; then
+            major="$(java_major_version)"
+        fi
+    fi
+
+    if [[ "$major" != "21" ]]; then
+        echo "ERROR: Java 21 is required; found Java ${major:-unknown}." >&2
+        exit 1
+    fi
+}
+
 if [[ "$MODE" == "container" ]]; then
     apt-get -q update
     apt-get install -y --no-install-recommends curl jq ca-certificates
@@ -29,7 +81,7 @@ if [[ "$MODE" == "container" ]]; then
             tar -xzf "$JAVA_TAR"
             rm -f "$JAVA_TAR"
 
-            JRE_DIR="$(find . -maxdepth 1 -type d \\( -name 'jdk-21*' -o -name 'jre-21*' \\) -print -quit)"
+            JRE_DIR="$(find . -maxdepth 1 -type d \( -name 'jdk-21*' -o -name 'jre-21*' \) -print -quit)"
             JRE_DIR="${JRE_DIR#./}"
             if [[ -z "$JRE_DIR" ]]; then
                 echo "ERROR: Temurin 21 archive did not contain an expected jdk-21* or jre-21* directory." >&2
@@ -42,11 +94,7 @@ if [[ "$MODE" == "container" ]]; then
     fi
 fi
 
-if [[ "$MODE" == "container" ]]; then
-    cd "${INSTALL_DIR:-/mnt/server}"
-elif [[ -n "$INSTALL_DIR" ]]; then
-    cd "$INSTALL_DIR"
-fi
+ensure_java21
 
 echo "Fetching packwiz-installer-bootstrap..."
 PACKWIZ_BOOTSTRAP_URL=$(curl -sSfL --connect-timeout 30 --max-time 30 \

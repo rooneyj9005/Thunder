@@ -1,6 +1,6 @@
 # Thunder Modpack
 
-[![Release Build](https://github.com/rooneyj9005/Thunder/actions/workflows/release.yml/badge.svg)](https://github.com/rooneyj9005/Thunder/actions/workflows/release.yml)
+[![Source CI](https://github.com/rooneyj9005/Thunder/actions/workflows/ci.yml/badge.svg)](https://github.com/rooneyj9005/Thunder/actions/workflows/ci.yml)
 
 Thunder is a Minecraft Forge modpack focused on technical stability, performance, and practical server tooling.
 
@@ -101,13 +101,15 @@ Anyone who wants the fuller player-facing tour is likely better served by the li
 
 The player-facing site lives in the separate [`Thunder-docs`](https://github.com/rooneyj9005/Thunder-docs) repository.
 
-This repository remains the source of truth for pack metadata, scripts, release assets, and packwiz content. The docs site reads release and pack metadata from here and from the packwiz host.
+This repository remains the source of truth for pack metadata, scripts, release assets, and packwiz content. The docs site reads stable release metadata from GitHub and pack metadata from the packwiz host.
 
 ## CI/CD
 
-- The release workflow installs packwiz via Go, builds `packwiz.exe`, exports `Thunder.mrpack`, uploads `packwiz.exe` as a workflow artifact, and uploads the public release assets including `pterodactyl.json`.
+- `ci.yml` runs on every push and pull request, checks pack metadata consistency, exports `Thunder.mrpack`, and smoke-tests the runtime update path against a locally served pack metadata build.
+- `prerelease.yml` runs for eligible `vX.Y.0` tag pushes, rebuilds and validates the pack, uploads helper binaries as workflow artifacts, and creates the GitHub prerelease with the public release assets including `pterodactyl.json`.
+- `publish-pack-pages.yml` runs only when a prerelease is promoted to a stable release, deploys the tagged pack metadata to GitHub Pages, smoke-tests the stable install path, and rolls Pages back while demoting the release if that smoke test fails.
 - Public release assets are limited to the files intended for players and server admins. Generated helper binaries are not distributed through Releases.
-- The Pterodactyl egg install step fetches `install.sh` from the latest release tag, and runtime uses the startup and update scripts bundled with the pack.
+- The Pterodactyl egg install step fetches `install.sh` from the latest stable release, and runtime uses the startup and update scripts bundled with the pack.
 - The documentation site is deployed separately from the `Thunder-docs` repository.
 
 ## Licence and Ethos

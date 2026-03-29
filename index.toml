@@ -2,115 +2,15 @@ hash-format = "sha256"
 
 [[files]]
 file = "config/bcc-common.toml"
-hash = "c13bc7a91b199613adf3e464041a16a782c55cee47fe1bfad6f0b804bf7d01b5"
-
-[[files]]
-file = "config/fml.toml"
-hash = "0a19f827abac613bbce62232a2e661aec4b4be1f972dbd23f52b5eb6826a972a"
+hash = "1b255caefb20e5c35aba8e37d5ebe659bf0963c716d0dbc11b0a021469a0ed57"
 
 [[files]]
 file = "config/logbegone.toml"
-hash = "2288cbc7022b5ed4b37d8e70e1c3ba5b048fad9ab2fb01071dfaa00686efd209"
-
-[[files]]
-file = "config/storagedrawers-common.v2.toml"
-hash = "ae662c5164151f8378a78f05b9cfed712d8f3e40ec9d9aa5019f7741218f41c2"
-
-[[files]]
-file = "defaultconfigs/cofh_core-server.toml"
-hash = "936cc6909e95faefe50b6aa94199e3c988fa027688f7860ac6040bcd0dcdf735"
-
-[[files]]
-file = "defaultconfigs/computercraft-server.toml"
-hash = "0d1194b2b7cc12c9c90653e5732f35561274f3cc50e12bef08e45340f3a2357b"
-
-[[files]]
-file = "defaultconfigs/copycats-server.toml"
-hash = "6eccc702431fd40b6a2ab45c6d9e15b881324a2cb3ff6e0dbb0a8c1ebf465409"
-
-[[files]]
-file = "defaultconfigs/create-server.toml"
-hash = "174341ce04648cda0b7757a78bbd2f3bc8fe789b81a35178f9dafeedc1d89f4d"
-
-[[files]]
-file = "defaultconfigs/create_connected-server.toml"
-hash = "991acdf040385cc4f0d83c4cdbfb0db64dceaad05709ec199573aec60dae8ddb"
-
-[[files]]
-file = "defaultconfigs/create_enchantment_industry-server.toml"
-hash = "16c2b6fbd8da6f0ec44a6b3c81cb95ab85805031c94f7f2c60aab3073006a2cb"
-
-[[files]]
-file = "defaultconfigs/createbigcannons-server.toml"
-hash = "cfed06c0bab62cc0a776ae6c4241f4858c050b585fad17ae3d0215798acf817f"
-
-[[files]]
-file = "defaultconfigs/curios-server.toml"
-hash = "31818944254f689e486489e6ca4fb63a8a409e099e5f3ef99bab39c4d6e8008a"
-
-[[files]]
-file = "defaultconfigs/forge-server.toml"
-hash = "dd89a047ff2f59d512be3b7538b98809698bd1ca2cffab2432668b92a018538e"
-
-[[files]]
-file = "defaultconfigs/ftbessentials.snbt"
-hash = "7d7d46b0f706594d187eeea649fad2e26183eb019cb77526ad0590a5e29d8e6f"
-
-[[files]]
-file = "defaultconfigs/jei-server.toml"
-hash = "9736d42f228f95c96c96b90b79b0988931caf7e1b6d455c982c1441371031979"
-
-[[files]]
-file = "defaultconfigs/openpartiesandclaims-default-player-config.toml"
-hash = "da381700fcb28e3c0f7338aef08355cdf7d2d6e217ee65d3830cbd5614fc8fca"
-
-[[files]]
-file = "defaultconfigs/openpartiesandclaims-expired-claim-config.toml"
-hash = "da381700fcb28e3c0f7338aef08355cdf7d2d6e217ee65d3830cbd5614fc8fca"
-
-[[files]]
-file = "defaultconfigs/openpartiesandclaims-server-claim-config.toml"
-hash = "da381700fcb28e3c0f7338aef08355cdf7d2d6e217ee65d3830cbd5614fc8fca"
-
-[[files]]
-file = "defaultconfigs/openpartiesandclaims-server.toml"
-hash = "c38727b9b8c3dd4076f06843c45d3cbaccdbe59ae0c82c4f1e4aa4c6e500904b"
-
-[[files]]
-file = "defaultconfigs/openpartiesandclaims-wilderness-config.toml"
-hash = "e68215f92eeeab1ac7741dcbed1dd12929c1cc1a34d65b27665e2adb98b19d82"
-
-[[files]]
-file = "defaultconfigs/railways-server.toml"
-hash = "8bb806db99040ea909537e1baa2c4621f136f4f85d15e2174cbe1754c62f66d8"
-
-[[files]]
-file = "defaultconfigs/refinedstorage-server.toml"
-hash = "6a42f3226391bd94a7a4e5e4f67565b2b93b1789180a64702befb70f96820a28"
-
-[[files]]
-file = "defaultconfigs/ritchiesprojectilelib-server.toml"
-hash = "e3d0ebc53b2ce6bf54296680c6914ae7fcbb7fb014d47f7f36259c49b5afee35"
-
-[[files]]
-file = "defaultconfigs/securitycraft-server.toml"
-hash = "e67ad64a5e56af5aca139fd5e0ce48edfab1b3cba1bb740e0e3402c57879c62c"
-
-[[files]]
-file = "defaultconfigs/sophisticatedbackpacks-server.toml"
-hash = "e6fff85bca9a229c0c0046addb52d273e6f22ca1c0ad87439c277354070000fc"
-
-[[files]]
-file = "defaultconfigs/thermal-server.toml"
-hash = "0730cd0a733e3f80ea1bf967b96f8fabd37bba2fe32d732e040f6b58b2096b1e"
-
-[[files]]
-file = "defaultconfigs/voicechat-server.toml"
-hash = "c12c8e2b495940755a8ca8ddc5ae87c09fea9e4f173b806a06a75f6db20e0475"
+hash = "93ea0b344cb7cb389b70ed89ea56c4d95afccf5d1ce81ff3a25ade96c8302971"
 
 [[files]]
 file = "kubejs/server_scripts/fix_create_confectionery.js"
-hash = "ca116e69a979a551e1177de30c67760a92fefc80d0cd2623ba197d9125789bae"
+hash = "ea244b1e901c426eaff454c73bf1b4985d80f7e0ce72e0129a17b1529541262e"
 
 [[files]]
 file = "mods/ae2.pw.toml"
@@ -759,16 +659,16 @@ metafile = true
 
 [[files]]
 file = "startup.ps1"
-hash = "eb37a7062c8372d9230d9168b8bc639467dfd53f39d3cf0b71e3b3bf7a643990"
+hash = "219959a84011d45b44f8161928867fe8582478dcf9c5a5074f44dbb0658dfef4"
 
 [[files]]
 file = "startup.sh"
-hash = "8d8f4716d31f131fcc50d36ee8126cb0e35562f76781c233796b3b659f35d3c4"
+hash = "0b07df5a5729177b895e0fbd27be0bb18452533f31cb3c91ca58ebde7e70b778"
 
 [[files]]
 file = "update.ps1"
-hash = "f44c49fc7d28db5c7e99231e48da891e4476981ae3c6ea1c4850af7bbfac197e"
+hash = "689db86d9b92a70b64e3d4ab368c7b400355a0c2c5194801b23634685e33b223"
 
 [[files]]
 file = "update.sh"
-hash = "75a8418c6461494515a6960fec393d50a862067ba1eee596868e60865d4b4ccb"
+hash = "0a65c00ef612d57c8145b6660f548c2fbb3f7acae6bf858c487749897af391a4"

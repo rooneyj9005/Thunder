@@ -1,0 +1,139 @@
+name: Publish Pack Metadata
+
+on:
+  release:
+    types:
+      - released
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pack-pages
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.release.tag_name }}
+          fetch-depth: 0
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Prepare Pages artifact
+        shell: bash
+        run: bash ./.github/scripts/prepare-pack-pages-artifact.sh _ci/pages
+
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          name: pack-pages
+          path: ./_ci/pages
+
+      - name: Deploy Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
+        with:
+          artifact_name: pack-pages
+
+      - name: Smoke test deployed install path
+        id: smoke
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          base_url="${{ steps.deployment.outputs.page_url }}"
+          if [[ -z "$base_url" ]]; then
+            echo "ERROR: Missing Pages deployment URL." >&2
+            exit 1
+          fi
+
+          bash ./.github/scripts/smoke-install.sh "${base_url%/}/pack.toml"
+          echo "ok=true" >> "$GITHUB_OUTPUT"
+
+      - name: Determine rollback tag
+        id: rollback
+        if: ${{ steps.smoke.outputs.ok != 'true' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CURRENT_TAG: ${{ github.event.release.tag_name }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          previous_tag="$(
+            gh api --paginate "repos/${GITHUB_REPOSITORY}/releases?per_page=100" \
+              | jq -sr --arg current "$CURRENT_TAG" '
+                  add
+                  | map(select(.draft == false and .prerelease == false and .tag_name != $current))
+                  | .[0].tag_name // empty
+                '
+          )"
+
+          echo "tag=${previous_tag}" >> "$GITHUB_OUTPUT"
+
+      - name: Check out rollback tag
+        if: ${{ steps.smoke.outputs.ok != 'true' && steps.rollback.outputs.tag != '' }}
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.rollback.outputs.tag }}
+          fetch-depth: 0
+
+      - name: Prepare rollback Pages artifact
+        if: ${{ steps.smoke.outputs.ok != 'true' && steps.rollback.outputs.tag != '' }}
+        shell: bash
+        run: bash ./.github/scripts/prepare-pack-pages-artifact.sh _ci/rollback-pages
+
+      - name: Upload rollback Pages artifact
+        if: ${{ steps.smoke.outputs.ok != 'true' && steps.rollback.outputs.tag != '' }}
+        uses: actions/upload-pages-artifact@v3
+        with:
+          name: pack-pages-rollback
+          path: ./_ci/rollback-pages
+
+      - name: Deploy rollback Pages artifact
+        if: ${{ steps.smoke.outputs.ok != 'true' && steps.rollback.outputs.tag != '' }}
+        uses: actions/deploy-pages@v4
+        with:
+          artifact_name: pack-pages-rollback
+
+      - name: Demote failed release back to prerelease
+        if: ${{ steps.smoke.outputs.ok != 'true' }}
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_ID: ${{ github.event.release.id }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh api "repos/${GITHUB_REPOSITORY}/releases/${RELEASE_ID}" \
+            --method PATCH \
+            -f prerelease=true \
+            -f make_latest=false >/dev/null
+
+      - name: Fail workflow after rollback
+        if: ${{ steps.smoke.outputs.ok != 'true' }}
+        shell: bash
+        run: |
+          if [[ -z "${{ steps.rollback.outputs.tag }}" ]]; then
+            echo "ERROR: Pack metadata smoke test failed and no previous stable release was available for rollback." >&2
+          else
+            echo "ERROR: Pack metadata smoke test failed. Pages were rolled back to ${{ steps.rollback.outputs.tag }} and the release was demoted back to prerelease." >&2
+          fi
+          exit 1

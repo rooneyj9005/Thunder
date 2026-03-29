@@ -8,7 +8,9 @@ param(
     [switch]$SkipPackUpdate,
     [switch]$CleanInstall,
     [string]$ServerJarFile = "server.jar",
-    [int]$VoicePort = 24454
+    [int]$VoicePort = 24454,
+    [Nullable[int]]$MemoryMiB = $null,
+    [Nullable[int]]$JvmMemoryMiB = $null
 )
 
 $ErrorActionPreference = "Stop"
@@ -140,6 +142,66 @@ function Ensure-SupportedJava {
 
 Ensure-SupportedJava
 
+function Resolve-NonNegativeMiB([string]$Name, [Nullable[int]]$ArgumentValue, [string]$EnvValue) {
+    if ($null -ne $ArgumentValue) {
+        if ($ArgumentValue -lt 0) {
+            throw "$Name must be a non-negative integer in MiB."
+        }
+
+        return $ArgumentValue
+    }
+
+    if (-not $EnvValue) {
+        return 0
+    }
+
+    if ($EnvValue -notmatch '^\d+$') {
+        throw "$Name must be a non-negative integer in MiB."
+    }
+
+    return [int]$EnvValue
+}
+
+function Get-AutomaticHeapMiB([int]$TotalMemoryMiB) {
+    $reserveMiB = [int][Math]::Floor($TotalMemoryMiB / 20)
+    if ($reserveMiB -lt 256) {
+        $reserveMiB = 256
+    }
+    elseif ($reserveMiB -gt 1024) {
+        $reserveMiB = 1024
+    }
+
+    $heapMiB = $TotalMemoryMiB - $reserveMiB
+    if ($heapMiB -lt 512) {
+        throw "--memory $TotalMemoryMiB does not leave enough room for a safe heap after JVM overhead. Use at least 768 MiB or set -JvmMemoryMiB explicitly."
+    }
+
+    return $heapMiB
+}
+
+function Get-JavaMemoryArgs([int]$ResolvedMemoryMiB, [int]$ResolvedJvmMemoryMiB) {
+    if ($ResolvedJvmMemoryMiB -gt 0) {
+        if ($ResolvedMemoryMiB -gt 0 -and $ResolvedJvmMemoryMiB -ge $ResolvedMemoryMiB) {
+            Write-Warning "-JvmMemoryMiB $ResolvedJvmMemoryMiB is at least the full advertised server memory of $ResolvedMemoryMiB MiB. This leaves no headroom for native JVM or container overhead."
+        }
+
+        Write-Host "Using exact JVM heap of $ResolvedJvmMemoryMiB MiB."
+        return @("-Xms$($ResolvedJvmMemoryMiB)M", "-Xmx$($ResolvedJvmMemoryMiB)M")
+    }
+
+    if ($ResolvedMemoryMiB -gt 0) {
+        $heapMiB = Get-AutomaticHeapMiB $ResolvedMemoryMiB
+        Write-Host "Using automatic JVM heap of $heapMiB MiB from $ResolvedMemoryMiB MiB total server memory."
+        return @("-Xms$($heapMiB)M", "-Xmx$($heapMiB)M")
+    }
+
+    return @("-Xms128M", "-XX:MaxRAMPercentage=95.0")
+}
+
+$resolvedMemoryMiB = Resolve-NonNegativeMiB "--memory" $MemoryMiB $env:SERVER_MEMORY
+$resolvedJvmMemoryMiB = Resolve-NonNegativeMiB "--jvm-memory" $JvmMemoryMiB $env:JVM_MEMORY
+$javaMemoryArgs = Get-JavaMemoryArgs $resolvedMemoryMiB $resolvedJvmMemoryMiB
+
 if ($VoicePort -lt 0 -or $VoicePort -gt 65535) {
     throw "VOICE_PORT must be between 0 and 65535 (0 to disable)."
 }
@@ -175,9 +237,9 @@ if ($VoicePort -ne 0) {
 if (Test-Path "unix_args.txt") {
     $winArgs = (Get-Content "unix_args.txt") -replace "(?<=\.jar):", ";"
     Set-Content -LiteralPath "win_args.txt" -Value $winArgs -Encoding ASCII
-    & java -Xms128M "-XX:MaxRAMPercentage=95.0" "@win_args.txt"
+    & java @javaMemoryArgs "@win_args.txt"
 }
 else {
-    & java -Xms128M "-XX:MaxRAMPercentage=95.0" -jar $ServerJarFile
+    & java @javaMemoryArgs -jar $ServerJarFile
 }
 exit $LASTEXITCODE

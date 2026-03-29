@@ -12,7 +12,7 @@
     "Java 17": "ghcr.io/pterodactyl/yolks:java_17",
     "Java 21": "ghcr.io/pterodactyl/yolks:java_21"
   },
-  "startup": "bash startup.sh --container",
+  "startup": "bash startup.sh --container --memory {{SERVER_MEMORY}} --jvm-memory {{JVM_MEMORY}}",
   "config": {
     "files": "{\n    \"server.properties\": {\n        \"parser\": \"properties\",\n        \"find\": {\n            \"server-ip\": \"0.0.0.0\",\n            \"server-port\": \"{{server.build.default.port}}\",\n            \"enable-rcon\": \"{{ENABLE_RCON}}\",\n            \"rcon.port\": \"{{RCON_PORT}}\",\n            \"rcon.password\": \"{{RCON_PASS}}\",\n            \"broadcast-rcon-to-ops\": \"false\"\n        }\n    }\n}",
     "startup": "{\n    \"done\": \"Done (\"\n}",
@@ -95,6 +95,16 @@
       "user_viewable": true,
       "user_editable": true,
       "rules": "required|string|in:true,false",
+      "field_type": "text"
+    },
+    {
+      "name": "Exact JVM Memory",
+      "description": "Exact Java heap size in MiB. Set to 0 to derive the heap automatically from the panel memory allocation while leaving headroom for native overhead.",
+      "env_variable": "JVM_MEMORY",
+      "default_value": "0",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|integer|between:0,262144",
       "field_type": "text"
     },
     {

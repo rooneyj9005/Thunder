@@ -22,6 +22,8 @@ pack_name="$(extract_pack_value name)"
 pack_version="$(extract_pack_value version)"
 bcc_name="$(extract_bcc_value modpackName)"
 bcc_version="$(extract_bcc_value modpackVersion)"
+normalized_pack_version="${pack_version#v}"
+normalized_bcc_version="${bcc_version#v}"
 
 if [[ -z "$pack_name" || -z "$pack_version" ]]; then
   echo "ERROR: Could not read pack name/version from pack.toml." >&2
@@ -38,14 +40,20 @@ if [[ "$pack_name" != "$bcc_name" ]]; then
   exit 1
 fi
 
-if [[ "$pack_version" != "$bcc_version" ]]; then
-  echo "ERROR: pack.toml version '$pack_version' does not match config/bcc-common.toml version '$bcc_version'." >&2
+if [[ "$normalized_pack_version" != "$normalized_bcc_version" ]]; then
+  echo "ERROR: pack.toml version '$pack_version' does not match config/bcc-common.toml version '$bcc_version' after normalising an optional leading v." >&2
   exit 1
 fi
 
-if [[ -n "$EXPECTED_TAG" && "$EXPECTED_TAG" != "v$pack_version" ]]; then
-  echo "ERROR: Tag '$EXPECTED_TAG' does not match pack version 'v$pack_version'." >&2
-  exit 1
+if [[ -n "$EXPECTED_TAG" ]]; then
+  if [[ "$EXPECTED_TAG" =~ ^v[0-9]+(\.[0-9]+)+$ ]]; then
+    if [[ "$EXPECTED_TAG" != "v$normalized_pack_version" ]]; then
+      echo "ERROR: Tag '$EXPECTED_TAG' does not match pack version 'v$normalized_pack_version'." >&2
+      exit 1
+    fi
+  else
+    echo "Info: Skipping tag/version check for non-version tag '$EXPECTED_TAG'."
+  fi
 fi
 
 for managed_shell in startup.sh update.sh; do

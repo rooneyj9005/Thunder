@@ -9,6 +9,7 @@
   "description": "Pterodactyl egg for the Thunder modpack - a Minecraft 1.20.1 Forge modpack combining technology, magic, and building mods. Uses packwiz for automatic server-side mod synchronisation.",
   "features": ["eula", "java_version", "pid_limit"],
   "docker_images": {
+    "Java 17": "ghcr.io/pterodactyl/yolks:java_17",
     "Java 21": "ghcr.io/pterodactyl/yolks:java_21"
   },
   "startup": "bash startup.sh --container",

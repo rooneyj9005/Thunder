@@ -14,7 +14,29 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  lint:
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - windows-latest
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Lint Bash scripts
+        shell: bash
+        run: bash ./.github/scripts/lint-shell.sh
+
+      - name: Validate PowerShell syntax
+        shell: pwsh
+        run: ./.github/scripts/lint-powershell.ps1
+
   validate:
+    needs: lint
     runs-on: ubuntu-latest
     timeout-minutes: 90
 
@@ -33,23 +55,6 @@ jobs:
       - name: Install latest packwiz
         shell: bash
         run: go install github.com/packwiz/packwiz@latest
-
-      - name: Ensure shellcheck is available
-        shell: bash
-        run: |
-          set -euo pipefail
-          if ! command -v shellcheck >/dev/null 2>&1; then
-            sudo apt-get update
-            sudo apt-get install -y shellcheck
-          fi
-
-      - name: Lint Bash scripts
-        shell: bash
-        run: bash ./.github/scripts/lint-shell.sh
-
-      - name: Validate PowerShell syntax
-        shell: pwsh
-        run: ./.github/scripts/lint-powershell.ps1
 
       - name: Prepare local pack metadata host
         shell: bash

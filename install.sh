@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -euo pipefail
 
 MODE="server"
@@ -20,6 +20,11 @@ fi
 
 cd "$TARGET_DIR"
 
+java_is_supported() {
+    local major="${1:-}"
+    [[ "$major" == "17" || "$major" == "21" ]]
+}
+
 use_local_java21_if_available() {
     local java_dir=""
 
@@ -40,79 +45,79 @@ java_major_version() {
     java -version 2>&1 | awk -F '"' '/version/ { split($2, parts, "."); if (parts[1] == 1 && parts[2] != "") { print parts[2]; } else { print parts[1]; } exit }'
 }
 
-ensure_java21() {
+temurin_linux_arch() {
+    case "$(uname -m)" in
+        x86_64|amd64) printf '%s\n' "x64" ;;
+        aarch64|arm64) printf '%s\n' "aarch64" ;;
+        *)
+            echo "ERROR: Unsupported Linux architecture for Temurin 21: $(uname -m)." >&2
+            return 1
+            ;;
+    esac
+}
+
+install_local_java21() {
+    local arch="" java_archive=""
+
+    arch="$(temurin_linux_arch)"
+    java_archive="temurin-21-${arch}.tar.gz"
+
+    rm -f "$java_archive"
+    curl -sSfL --connect-timeout 30 --max-time 300 \
+      -o "$java_archive" \
+      "https://api.adoptium.net/v3/binary/latest/21/ga/linux/${arch}/jre/hotspot/normal/eclipse"
+    tar -xzf "$java_archive"
+    rm -f "$java_archive"
+
+    if ! use_local_java21_if_available; then
+        echo "ERROR: Temurin 21 archive did not contain an expected jdk-21* or jre-21* directory." >&2
+        exit 1
+    fi
+}
+
+ensure_supported_java() {
     local major=""
 
-    if ! command -v java >/dev/null 2>&1; then
-        if ! use_local_java21_if_available; then
-            echo "ERROR: Java 21 is required." >&2
-            exit 1
+    if command -v java >/dev/null 2>&1; then
+        major="$(java_major_version)"
+        if java_is_supported "$major"; then
+            return 0
         fi
     fi
 
+    if use_local_java21_if_available; then
+        major="$(java_major_version)"
+        if java_is_supported "$major"; then
+            return 0
+        fi
+    fi
+
+    if [[ -n "$major" ]]; then
+        echo "Java $major found. Switching to local Temurin 21."
+    else
+        echo "No supported Java runtime found. Downloading local Temurin 21."
+    fi
+
+    install_local_java21
     major="$(java_major_version)"
-    if [[ "$major" != "21" ]]; then
-        if use_local_java21_if_available; then
-            major="$(java_major_version)"
-        fi
-    fi
 
     if [[ "$major" != "21" ]]; then
-        echo "ERROR: Java 21 is required; found Java ${major:-unknown}." >&2
+        echo "ERROR: Java 17 or Java 21 is required; found Java ${major:-unknown}." >&2
         exit 1
     fi
 }
 
 if [[ "$MODE" == "container" ]]; then
     apt-get -q update
-    apt-get install -y --no-install-recommends curl jq ca-certificates
-
-    if ! command -v java >/dev/null 2>&1; then
-        if apt-get install -y --no-install-recommends openjdk-21-jre-headless; then
-            :
-        else
-            echo "openjdk-21-jre-headless not available, downloading Temurin 21 JRE..." >&2
-            apt-get install -y --no-install-recommends tar gzip
-
-            JAVA_TAR="temurin-21.tar.gz"
-            curl -sSfL --connect-timeout 30 --max-time 300 \
-              -o "$JAVA_TAR" \
-              "https://api.adoptium.net/v3/binary/latest/21/ga/linux/x64/jre/hotspot/normal/eclipse"
-            tar -xzf "$JAVA_TAR"
-            rm -f "$JAVA_TAR"
-
-            JRE_DIR="$(find . -maxdepth 1 -type d \( -name 'jdk-21*' -o -name 'jre-21*' \) -print -quit)"
-            JRE_DIR="${JRE_DIR#./}"
-            if [[ -z "$JRE_DIR" ]]; then
-                echo "ERROR: Temurin 21 archive did not contain an expected jdk-21* or jre-21* directory." >&2
-                exit 1
-            fi
-
-            export JAVA_HOME="$PWD/$JRE_DIR"
-            export PATH="$JAVA_HOME/bin:$PATH"
-        fi
-    fi
+    apt-get install -y --no-install-recommends curl ca-certificates tar gzip
 fi
 
-ensure_java21
+ensure_supported_java
 
 echo "Fetching packwiz-installer-bootstrap..."
-PACKWIZ_BOOTSTRAP_URL=$(curl -sSfL --connect-timeout 30 --max-time 30 \
-  https://api.github.com/repos/packwiz/packwiz-installer-bootstrap/releases/latest \
-  | jq -r '
-    .assets as $assets
-    | ($assets | map(select(.name == "packwiz-installer-bootstrap.jar")) | .[0].browser_download_url)
-      // ($assets | map(select((.name | endswith(".jar")) and ((.name | test("(sources|javadoc)\\.jar$")) | not))) | .[0].browser_download_url)
-      // empty
-  ')
-
-if [[ -z "$PACKWIZ_BOOTSTRAP_URL" ]]; then
-  echo "ERROR: Failed to resolve packwiz-installer-bootstrap download URL." >&2
-  exit 1
-fi
-
 curl -sSfL --connect-timeout 30 --max-time 120 \
-  -o packwiz-installer-bootstrap.jar "$PACKWIZ_BOOTSTRAP_URL"
+  -o packwiz-installer-bootstrap.jar \
+  "https://github.com/packwiz/packwiz-installer-bootstrap/releases/latest/download/packwiz-installer-bootstrap.jar"
 echo "Downloaded packwiz-installer-bootstrap.jar"
 
 MODLOADER="${MODLOADER:-forge}"

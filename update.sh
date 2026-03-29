@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 set -euo pipefail
 
 SERVER_DIR=""
@@ -13,6 +13,11 @@ done
 if [[ -n "$SERVER_DIR" ]]; then
     cd "$SERVER_DIR"
 fi
+
+java_is_supported() {
+    local major="${1:-}"
+    [[ "$major" == "17" || "$major" == "21" ]]
+}
 
 use_local_java21_if_available() {
     local java_dir=""
@@ -34,30 +39,69 @@ java_major_version() {
     java -version 2>&1 | awk -F '"' '/version/ { split($2, parts, "."); if (parts[1] == 1 && parts[2] != "") { print parts[2]; } else { print parts[1]; } exit }'
 }
 
-ensure_java21() {
-    local major=""
+temurin_linux_arch() {
+    case "$(uname -m)" in
+        x86_64|amd64) printf '%s\n' "x64" ;;
+        aarch64|arm64) printf '%s\n' "aarch64" ;;
+        *)
+            echo "ERROR: Unsupported Linux architecture for Temurin 21: $(uname -m)." >&2
+            return 1
+            ;;
+    esac
+}
 
-    if ! command -v java >/dev/null 2>&1; then
-        if ! use_local_java21_if_available; then
-            echo "ERROR: Java 21 is required." >&2
-            exit 1
-        fi
-    fi
+install_local_java21() {
+    local arch="" java_archive=""
 
-    major="$(java_major_version)"
-    if [[ "$major" != "21" ]]; then
-        if use_local_java21_if_available; then
-            major="$(java_major_version)"
-        fi
-    fi
+    arch="$(temurin_linux_arch)"
+    java_archive="temurin-21-${arch}.tar.gz"
 
-    if [[ "$major" != "21" ]]; then
-        echo "ERROR: Java 21 is required; found Java ${major:-unknown}." >&2
+    rm -f "$java_archive"
+    curl -sSfL --connect-timeout 30 --max-time 300 \
+      -o "$java_archive" \
+      "https://api.adoptium.net/v3/binary/latest/21/ga/linux/${arch}/jre/hotspot/normal/eclipse"
+    tar -xzf "$java_archive"
+    rm -f "$java_archive"
+
+    if ! use_local_java21_if_available; then
+        echo "ERROR: Temurin 21 archive did not contain an expected jdk-21* or jre-21* directory." >&2
         exit 1
     fi
 }
 
-ensure_java21
+ensure_supported_java() {
+    local major=""
+
+    if command -v java >/dev/null 2>&1; then
+        major="$(java_major_version)"
+        if java_is_supported "$major"; then
+            return 0
+        fi
+    fi
+
+    if use_local_java21_if_available; then
+        major="$(java_major_version)"
+        if java_is_supported "$major"; then
+            return 0
+        fi
+    fi
+
+    if [[ -n "$major" ]]; then
+        echo "Java $major found. Switching to local Temurin 21."
+    else
+        echo "No supported Java runtime found. Downloading local Temurin 21."
+    fi
+
+    install_local_java21
+    major="$(java_major_version)"
+
+    if [[ "$major" != "21" ]]; then
+        echo "ERROR: Java 17 or Java 21 is required; found Java ${major:-unknown}." >&2
+        exit 1
+    fi
+}
+
+ensure_supported_java
 
 PACKWIZ_URL="${PACKWIZ_URL:-https://packwiz.thunder.john.rooney.scot/pack.toml}"
 PACKWIZ_SIDE="${PACKWIZ_SIDE:-server}"
@@ -88,20 +132,9 @@ fi
 
 if [[ ! -f "packwiz-installer-bootstrap.jar" ]]; then
     echo "packwiz-installer-bootstrap.jar not found, downloading latest release..."
-    PACKWIZ_BOOTSTRAP_URL=$(curl -sSfL --connect-timeout 30 --max-time 30 \
-      https://api.github.com/repos/packwiz/packwiz-installer-bootstrap/releases/latest \
-      | jq -r '
-        .assets as $assets
-        | ($assets | map(select(.name == "packwiz-installer-bootstrap.jar")) | .[0].browser_download_url)
-          // ($assets | map(select((.name | endswith(".jar")) and ((.name | test("(sources|javadoc)\\.jar$")) | not))) | .[0].browser_download_url)
-          // empty
-      ')
-    if [[ -z "$PACKWIZ_BOOTSTRAP_URL" ]]; then
-        echo "ERROR: Failed to resolve packwiz-installer-bootstrap download URL." >&2
-        exit 1
-    fi
     curl -sSfL --connect-timeout 30 --max-time 120 \
-      -o packwiz-installer-bootstrap.jar "$PACKWIZ_BOOTSTRAP_URL"
+      -o packwiz-installer-bootstrap.jar \
+      "https://github.com/packwiz/packwiz-installer-bootstrap/releases/latest/download/packwiz-installer-bootstrap.jar"
 fi
 
 echo "Syncing modpack via packwiz..."

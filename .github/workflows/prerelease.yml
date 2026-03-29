@@ -3,7 +3,7 @@ name: Build Prerelease
 on:
   push:
     tags:
-      - "v*.*.0"
+      - "**"
 
 permissions:
   contents: write
@@ -13,28 +13,7 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  guard:
-    runs-on: ubuntu-latest
-    outputs:
-      allowed: ${{ steps.check.outputs.allowed }}
-
-    steps:
-      - name: Check tag shape
-        id: check
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          if [[ "${GITHUB_REF_NAME}" =~ ^v[0-9]+\.[0-9]+\.0$ ]]; then
-            echo "allowed=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "allowed=false" >> "$GITHUB_OUTPUT"
-            echo "Skipping prerelease automation for tag ${GITHUB_REF_NAME}; only vX.Y.0 tags are eligible."
-          fi
-
   prerelease:
-    needs: guard
-    if: ${{ needs.guard.outputs.allowed == 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 90
 
@@ -55,15 +34,6 @@ jobs:
       - name: Install latest packwiz
         shell: bash
         run: go install github.com/packwiz/packwiz@latest
-
-      - name: Ensure shellcheck is available
-        shell: bash
-        run: |
-          set -euo pipefail
-          if ! command -v shellcheck >/dev/null 2>&1; then
-            sudo apt-get update
-            sudo apt-get install -y shellcheck
-          fi
 
       - name: Lint Bash scripts
         shell: bash

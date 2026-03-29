@@ -26,6 +26,8 @@ packwiz refresh
 packwiz modrinth export
 ```
 
+If `shellcheck` is not already available, `lint-shell.sh` will fetch a local copy of the latest release into `_ci/tools` and use that instead.
+
 A few expectations tend to matter more than anything else:
 
 - Please treat every repository content change as versioned work. `pack.toml` should move with the change.
@@ -56,6 +58,7 @@ The scripts are designed around the same general ideas on both platforms:
 
 - the install step fetches Forge and packwiz bootstrap tooling
 - the startup step can sync the pack before launch
+- the current server runtime accepts Java 17 or Java 21 on both Linux and Windows, with local Temurin 21 bootstrapped if the host has neither
 - only exact indexed paths are pack-managed
 - `pterodactyl.json` remains the public panel import asset
 - the published pack metadata is expected to come from `https://packwiz.thunder.john.rooney.scot/pack.toml`
@@ -68,22 +71,30 @@ Testing them in a separate empty directory is usually the safest approach, rathe
 
 The checklist below is intended as the go/no-go release checklist for the pack repository.
 
-- [ ] Any temporary test assets such as stray `.mrpack` exports have been kept out of source control.
-- [ ] `pack.toml`, `index.toml`, and `config/bcc-common.toml` all reflect the intended release state.
-- [ ] `packwiz refresh` and `packwiz modrinth export` both complete successfully.
-- [ ] Shell scripts still use LF line endings.
-- [ ] A fresh client import launches cleanly, reaches the main menu, and can join a Thunder server.
-- [ ] Server install and startup still behave sensibly on both Linux and Windows.
-- [ ] `startup.sh`, `startup.ps1`, `update.sh`, and `update.ps1` are still included in the export.
-- [ ] `.packwizignore` still excludes repository-only files without excluding anything the pack genuinely needs.
-- [ ] `pterodactyl.json` is still present as a public release asset.
-- [ ] Generated helper binaries remain in CI artifacts rather than GitHub release assets.
-- [ ] The docs site and the pack repository still agree on install, update, server, and release behaviour.
-- [ ] The docs site still points at the correct packwiz host, and the scripts do too.
-- [ ] If user-facing behaviour changed, the docs repository has been updated or consciously checked.
-- [ ] The live docs site, or a local preview of it, still makes sense for the new release, including download links, server guidance, and version-status checks.
-- [ ] The chosen version bump matches the kind of change being released.
-- [ ] A major release still represents a production-ready state rather than a hopeful one.
+<ul>
+  <li><label><input type="checkbox" /> I have checked that temporary release-test files such as stray <code>.mrpack</code> exports are not in source control.</label></li>
+  <li><label><input type="checkbox" /> I have checked that <code>pack.toml</code> reflects the intended release version and state.</label></li>
+  <li><label><input type="checkbox" /> I have checked that <code>config/bcc-common.toml</code> reflects the intended pack name and displayed version.</label></li>
+  <li><label><input type="checkbox" /> I have checked that <code>index.toml</code> matches the current pack-managed contents.</label></li>
+  <li><label><input type="checkbox" /> I have checked that <code>packwiz refresh</code> completed successfully.</label></li>
+  <li><label><input type="checkbox" /> I have checked that <code>packwiz modrinth export</code> completed successfully.</label></li>
+  <li><label><input type="checkbox" /> I have checked that the release install/update path can pull the published pack metadata successfully.</label></li>
+  <li><label><input type="checkbox" /> I have checked that <code>startup.sh</code> and <code>update.sh</code> still use LF line endings.</label></li>
+  <li><label><input type="checkbox" /> I have checked that a fresh client import launches cleanly and reaches the main menu.</label></li>
+  <li><label><input type="checkbox" /> I have checked that a fresh client import can join a Thunder server.</label></li>
+  <li><label><input type="checkbox" /> I have checked that server install and startup behave correctly on Linux.</label></li>
+  <li><label><input type="checkbox" /> I have checked that server install and startup behave correctly on Windows.</label></li>
+  <li><label><input type="checkbox" /> I have checked that <code>startup.sh</code>, <code>startup.ps1</code>, <code>update.sh</code>, and <code>update.ps1</code> are included in the export.</label></li>
+  <li><label><input type="checkbox" /> I have checked that <code>.packwizignore</code> excludes repository-only files without excluding files the pack genuinely needs to ship.</label></li>
+  <li><label><input type="checkbox" /> I have checked that <code>pterodactyl.json</code> is present as a public release asset.</label></li>
+  <li><label><input type="checkbox" /> I have checked that generated helper binaries remain CI artifacts and are not being published as release assets.</label></li>
+  <li><label><input type="checkbox" /> I have checked that the docs site and the pack repository still agree on install, update, server, and release behaviour.</label></li>
+  <li><label><input type="checkbox" /> I have checked that the docs site and the scripts still point at the correct packwiz host.</label></li>
+  <li><label><input type="checkbox" /> I have checked that any user-facing behaviour change has been reflected in the docs repository or consciously reviewed there.</label></li>
+  <li><label><input type="checkbox" /> I have checked that the live docs site, or a local preview of it, still makes sense for this release, including download links, server guidance, and version-status checks.</label></li>
+  <li><label><input type="checkbox" /> I have checked that the chosen version bump matches the kind of change in this release.</label></li>
+  <li><label><input type="checkbox" /> I have checked that, if this is a major release, it is genuinely production-ready rather than a hopeful milestone.</label></li>
+</ul>
 
 ## Pack Contents
 
@@ -105,8 +116,8 @@ This repository remains the source of truth for pack metadata, scripts, release 
 
 ## CI/CD
 
-- `ci.yml` runs on every push and pull request, checks pack metadata consistency, exports `Thunder.mrpack`, and smoke-tests the runtime update path against a locally served pack metadata build.
-- `prerelease.yml` runs for eligible `vX.Y.0` tag pushes, rebuilds and validates the pack, uploads helper binaries as workflow artifacts, and creates the GitHub prerelease with the public release assets including `pterodactyl.json`.
+- `ci.yml` runs Bash and PowerShell lint on both Windows and Linux, then on Linux checks pack metadata consistency, exports `Thunder.mrpack`, and smoke-tests the runtime update path against a locally served pack metadata build.
+- `prerelease.yml` runs for any tag push, rebuilds and validates the pack, uploads helper binaries as workflow artifacts, and creates the GitHub prerelease with the public release assets including `pterodactyl.json`. Version-shaped tags are still checked against `pack.toml`; ad-hoc tags are useful for smoke-testing the release pipeline.
 - `publish-pack-pages.yml` runs only when a prerelease is promoted to a stable release, deploys the tagged pack metadata to GitHub Pages, smoke-tests the stable install path, and rolls Pages back while demoting the release if that smoke test fails.
 - Public release assets are limited to the files intended for players and server admins. Generated helper binaries are not distributed through Releases.
 - The Pterodactyl egg install step fetches `install.sh` from the latest stable release, and runtime uses the startup and update scripts bundled with the pack.

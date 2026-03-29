@@ -16,25 +16,57 @@ $ErrorActionPreference = "Stop"
 if ($Dir) { Set-Location $Dir }
 
 function Get-JavaMajorVersion {
-    if (-not (Get-Command java -ErrorAction SilentlyContinue)) {
+    $javaCommand = Get-Command java -CommandType Application -ErrorAction SilentlyContinue | Select-Object -First 1
+    if (-not $javaCommand) {
         return $null
     }
 
-    $versionOutput = & java -version 2>&1
-    if ($LASTEXITCODE -ne 0) {
-        return $null
-    }
+    $stdoutPath = Join-Path ([System.IO.Path]::GetTempPath()) ([System.IO.Path]::GetRandomFileName())
+    $stderrPath = Join-Path ([System.IO.Path]::GetTempPath()) ([System.IO.Path]::GetRandomFileName())
 
-    $firstLine = $versionOutput | Select-Object -First 1
-    if ($firstLine -match '"(?<version>[^"]+)"') {
-        $parts = $Matches.version.Split(".")
-        if ($parts[0] -eq "1" -and $parts.Length -gt 1) {
-            return $parts[1]
+    try {
+        $process = Start-Process -FilePath $javaCommand.Source -ArgumentList "-version" -NoNewWindow -Wait -PassThru `
+            -RedirectStandardOutput $stdoutPath -RedirectStandardError $stderrPath
+
+        if ($process.ExitCode -ne 0) {
+            return $null
         }
-        return $parts[0]
-    }
 
-    return $null
+        $versionOutput = @()
+        if (Test-Path $stderrPath) {
+            $versionOutput += Get-Content -LiteralPath $stderrPath -ErrorAction SilentlyContinue
+        }
+        if (Test-Path $stdoutPath) {
+            $versionOutput += Get-Content -LiteralPath $stdoutPath -ErrorAction SilentlyContinue
+        }
+
+        $firstLine = $versionOutput | Select-Object -First 1
+        if ($firstLine -match '"(?<version>[^"]+)"') {
+            $parts = $Matches.version.Split(".")
+            if ($parts[0] -eq "1" -and $parts.Length -gt 1) {
+                return $parts[1]
+            }
+            return $parts[0]
+        }
+
+        return $null
+    }
+    finally {
+        Remove-Item -Force -ErrorAction SilentlyContinue $stdoutPath, $stderrPath
+    }
+}
+
+function Test-SupportedJavaVersion([string]$Version) {
+    return $Version -in @("17", "21")
+}
+
+function Get-TemurinArch {
+    $arch = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString()
+    switch ($arch) {
+        "X64" { return "x64" }
+        "Arm64" { return "aarch64" }
+        default { throw "Unsupported Windows architecture for Temurin 21: $arch." }
+    }
 }
 
 function Use-LocalJava21IfAvailable {
@@ -52,9 +84,35 @@ function Use-LocalJava21IfAvailable {
     return $true
 }
 
-function Ensure-Java21 {
+function Install-Temurin21 {
+    Write-Host "Installing Temurin 21..."
+    $arch = Get-TemurinArch
+    $javaZip = "temurin-21-$arch.zip"
+    try {
+        Invoke-WebRequest -Uri "https://api.adoptium.net/v3/binary/latest/21/ga/windows/$arch/jre/hotspot/normal/eclipse" -OutFile $javaZip -TimeoutSec 300
+        Expand-Archive -Path $javaZip -DestinationPath "." -Force
+        Remove-Item $javaZip
+    }
+    catch {
+        Remove-Item -Force -ErrorAction SilentlyContinue $javaZip
+        throw "Failed to download Temurin 21: $_"
+    }
+
+    $jdkDir = Get-ChildItem -Directory -ErrorAction SilentlyContinue | Where-Object {
+        $_.Name -like "jdk-21*" -or $_.Name -like "jre-21*"
+    } | Select-Object -First 1
+    if (-not $jdkDir) {
+        throw "Temurin 21 archive did not contain an expected jdk-21* or jre-21* directory."
+    }
+
+    $env:JAVA_HOME = $jdkDir.FullName
+    $env:PATH = "$($jdkDir.FullName)\bin;$env:PATH"
+    Write-Host "Installed Temurin 21 to $($jdkDir.FullName)"
+}
+
+function Ensure-SupportedJava {
     $javaMajor = Get-JavaMajorVersion
-    if ($javaMajor -eq "21") {
+    if (Test-SupportedJavaVersion $javaMajor) {
         return
     }
 
@@ -62,13 +120,25 @@ function Ensure-Java21 {
         $javaMajor = Get-JavaMajorVersion
     }
 
+    if (-not (Test-SupportedJavaVersion $javaMajor)) {
+        if ($javaMajor) {
+            Write-Host "Java $javaMajor found. Switching to Temurin 21."
+        }
+        else {
+            Write-Host "No supported Java runtime found locally. Installing Temurin 21."
+        }
+
+        Install-Temurin21
+        $javaMajor = Get-JavaMajorVersion
+    }
+
     if ($javaMajor -ne "21") {
         $foundJava = if ($javaMajor) { $javaMajor } else { "none" }
-        throw "Java 21 is required; found Java $foundJava."
+        throw "Java 17 or Java 21 is required; found Java $foundJava."
     }
 }
 
-Ensure-Java21
+Ensure-SupportedJava
 
 if ($VoicePort -lt 0 -or $VoicePort -gt 65535) {
     throw "VOICE_PORT must be between 0 and 65535 (0 to disable)."

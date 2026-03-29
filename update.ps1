@@ -11,28 +11,100 @@ param(
 
 $ErrorActionPreference = "Stop"
 
-if ($Dir) { Set-Location $Dir }
+$defaultDir = if ($Dir) {
+    $Dir
+}
+elseif ($PSScriptRoot) {
+    $PSScriptRoot
+}
+elseif ($PSCommandPath) {
+    Split-Path -Parent $PSCommandPath
+}
+else {
+    (Get-Location).Path
+}
+
+Set-Location $defaultDir
+
+function Get-JavaMajorVersionFromCommand([string]$JavaCommandPath) {
+    if (-not $JavaCommandPath -or -not (Test-Path -LiteralPath $JavaCommandPath -PathType Leaf)) {
+        return $null
+    }
+
+    $stdoutPath = Join-Path ([System.IO.Path]::GetTempPath()) ([System.IO.Path]::GetRandomFileName())
+    $stderrPath = Join-Path ([System.IO.Path]::GetTempPath()) ([System.IO.Path]::GetRandomFileName())
+
+    try {
+        $process = Start-Process -FilePath $JavaCommandPath -ArgumentList "-version" -NoNewWindow -Wait -PassThru `
+            -RedirectStandardOutput $stdoutPath -RedirectStandardError $stderrPath
+
+        if ($process.ExitCode -ne 0) {
+            return $null
+        }
+
+        $versionOutput = @()
+        if (Test-Path $stderrPath) {
+            $versionOutput += Get-Content -LiteralPath $stderrPath -ErrorAction SilentlyContinue
+        }
+        if (Test-Path $stdoutPath) {
+            $versionOutput += Get-Content -LiteralPath $stdoutPath -ErrorAction SilentlyContinue
+        }
+
+        $firstLine = $versionOutput | Select-Object -First 1
+        if ($firstLine -match '"(?<version>[^"]+)"') {
+            $parts = $Matches.version.Split(".")
+            if ($parts[0] -eq "1" -and $parts.Length -gt 1) {
+                return $parts[1]
+            }
+            return $parts[0]
+        }
+
+        return $null
+    }
+    finally {
+        Remove-Item -Force -ErrorAction SilentlyContinue $stdoutPath, $stderrPath
+    }
+}
 
 function Get-JavaMajorVersion {
-    if (-not (Get-Command java -ErrorAction SilentlyContinue)) {
+    $javaCommand = Get-Command java -CommandType Application -ErrorAction SilentlyContinue | Select-Object -First 1
+    if (-not $javaCommand) {
         return $null
     }
 
-    $versionOutput = & java -version 2>&1
-    if ($LASTEXITCODE -ne 0) {
-        return $null
+    return Get-JavaMajorVersionFromCommand $javaCommand.Source
+}
+
+function Test-SupportedJavaVersion([string]$Version) {
+    return $Version -in @("17", "21")
+}
+
+function Get-TemurinArch {
+    $arch = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString()
+    switch ($arch) {
+        "X64" { return "x64" }
+        "Arm64" { return "aarch64" }
+        default { throw "Unsupported Windows architecture for Temurin 21: $arch." }
+    }
+}
+
+function Use-LauncherJavaIfAvailable {
+    if (-not $env:INST_JAVA) {
+        return $false
     }
 
-    $firstLine = $versionOutput | Select-Object -First 1
-    if ($firstLine -match '"(?<version>[^"]+)"') {
-        $parts = $Matches.version.Split(".")
-        if ($parts[0] -eq "1" -and $parts.Length -gt 1) {
-            return $parts[1]
-        }
-        return $parts[0]
+    $launcherJava = $env:INST_JAVA.Trim('"')
+    $launcherMajor = Get-JavaMajorVersionFromCommand $launcherJava
+    if (-not (Test-SupportedJavaVersion $launcherMajor)) {
+        return $false
     }
 
-    return $null
+    $launcherBinDir = Split-Path -Parent $launcherJava
+    $launcherHome = Split-Path -Parent $launcherBinDir
+    $env:JAVA_HOME = $launcherHome
+    $env:PATH = "$launcherBinDir;$env:PATH"
+    Write-Host "Using launcher Java at $launcherJava"
+    return $true
 }
 
 function Use-LocalJava21IfAvailable {
@@ -50,9 +122,39 @@ function Use-LocalJava21IfAvailable {
     return $true
 }
 
-function Ensure-Java21 {
+function Install-Temurin21 {
+    Write-Host "Installing Temurin 21..."
+    $arch = Get-TemurinArch
+    $javaZip = "temurin-21-$arch.zip"
+    try {
+        Invoke-WebRequest -Uri "https://api.adoptium.net/v3/binary/latest/21/ga/windows/$arch/jre/hotspot/normal/eclipse" -OutFile $javaZip -TimeoutSec 300
+        Expand-Archive -Path $javaZip -DestinationPath "." -Force
+        Remove-Item $javaZip
+    }
+    catch {
+        Remove-Item -Force -ErrorAction SilentlyContinue $javaZip
+        throw "Failed to download Temurin 21: $_"
+    }
+
+    $jdkDir = Get-ChildItem -Directory -ErrorAction SilentlyContinue | Where-Object {
+        $_.Name -like "jdk-21*" -or $_.Name -like "jre-21*"
+    } | Select-Object -First 1
+    if (-not $jdkDir) {
+        throw "Temurin 21 archive did not contain an expected jdk-21* or jre-21* directory."
+    }
+
+    $env:JAVA_HOME = $jdkDir.FullName
+    $env:PATH = "$($jdkDir.FullName)\bin;$env:PATH"
+    Write-Host "Installed Temurin 21 to $($jdkDir.FullName)"
+}
+
+function Ensure-SupportedJava {
+    if (Use-LauncherJavaIfAvailable) {
+        return
+    }
+
     $javaMajor = Get-JavaMajorVersion
-    if ($javaMajor -eq "21") {
+    if (Test-SupportedJavaVersion $javaMajor) {
         return
     }
 
@@ -60,13 +162,25 @@ function Ensure-Java21 {
         $javaMajor = Get-JavaMajorVersion
     }
 
+    if (-not (Test-SupportedJavaVersion $javaMajor)) {
+        if ($javaMajor) {
+            Write-Host "Java $javaMajor found. Switching to Temurin 21."
+        }
+        else {
+            Write-Host "No supported Java runtime found locally. Installing Temurin 21."
+        }
+
+        Install-Temurin21
+        $javaMajor = Get-JavaMajorVersion
+    }
+
     if ($javaMajor -ne "21") {
         $foundJava = if ($javaMajor) { $javaMajor } else { "none" }
-        throw "Java 21 is required; found Java $foundJava."
+        throw "Java 17 or Java 21 is required; found Java $foundJava."
     }
 }
 
-Ensure-Java21
+Ensure-SupportedJava
 
 function Test-Truthy([string]$Value) {
     return $Value -match '^(1|true|yes)$'
@@ -101,16 +215,7 @@ function Install-PackwizBootstrap {
     }
 
     Write-Host "packwiz-installer-bootstrap.jar not found, downloading latest release..."
-    $release = Invoke-RestMethod -Uri "https://api.github.com/repos/packwiz/packwiz-installer-bootstrap/releases/latest" -TimeoutSec 30
-    $asset = $release.assets | Where-Object { $_.name -eq "packwiz-installer-bootstrap.jar" } | Select-Object -First 1
-    if (-not $asset) {
-        $asset = $release.assets | Where-Object { $_.name -like "*.jar" -and $_.name -notlike "*sources*.jar" -and $_.name -notlike "*javadoc*.jar" } | Select-Object -First 1
-    }
-    if (-not $asset) {
-        throw "Could not resolve packwiz-installer-bootstrap release asset."
-    }
-
-    Invoke-WebRequest -Uri $asset.browser_download_url -OutFile $bootstrapJar -TimeoutSec 120
+    Invoke-WebRequest -Uri "https://github.com/packwiz/packwiz-installer-bootstrap/releases/latest/download/packwiz-installer-bootstrap.jar" -OutFile $bootstrapJar -TimeoutSec 120
 }
 
 try {

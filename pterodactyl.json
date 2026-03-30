@@ -12,7 +12,7 @@
     "Java 17": "ghcr.io/pterodactyl/yolks:java_17",
     "Java 21": "ghcr.io/pterodactyl/yolks:java_21"
   },
-  "startup": "bash startup.sh --container --memory {{SERVER_MEMORY}} --jvm-memory {{JVM_MEMORY}}",
+  "startup": "bash startup.sh --container --memory {{SERVER_MEMORY}}",
   "config": {
     "files": "{\n    \"server.properties\": {\n        \"parser\": \"properties\",\n        \"find\": {\n            \"server-ip\": \"0.0.0.0\",\n            \"server-port\": \"{{server.build.default.port}}\",\n            \"enable-rcon\": \"{{ENABLE_RCON}}\",\n            \"rcon.port\": \"{{RCON_PORT}}\",\n            \"rcon.password\": \"{{RCON_PASS}}\",\n            \"broadcast-rcon-to-ops\": \"false\"\n        }\n    }\n}",
     "startup": "{\n    \"done\": \"Done (\"\n}",

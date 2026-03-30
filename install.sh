@@ -246,5 +246,5 @@ fi
 
 echo "Syncing modpack via packwiz..."
 java -jar packwiz-installer-bootstrap.jar -g -s "${PACKWIZ_SIDE}" "${PACKWIZ_URL}"
-
+chmod +x *.sh
 echo "Server installation complete."

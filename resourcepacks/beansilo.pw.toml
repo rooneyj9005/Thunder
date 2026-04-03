@@ -3,8 +3,8 @@ filename = "BeanSilo-1.3.zip"
 side = "both"
 
 [download]
-hash-format = "sha1"
-hash = "bd0c2a6093ed09a3dde8d5ee4c403af3fc742d63"
+hash-format = "sha512"
+hash = "9f9944dd44af238c2ccc6afa18453f89cecaf3104db69f8e3f98f60178256e79550bb260aab6a25a6500d617b7a55ee5d28c24eb37b87e95af128392c4cf5c35"
 mode = "metadata:curseforge"
 
 [update]

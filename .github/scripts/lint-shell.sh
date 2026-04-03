@@ -14,6 +14,46 @@ latest_shellcheck_tag() {
     printf '%s\n' "${latest_url##*/}"
 }
 
+native_path() {
+    path=$1
+
+    if command -v cygpath >/dev/null 2>&1; then
+        cygpath -w "${path}"
+        return 0
+    fi
+
+    printf '%s\n' "${path}"
+}
+
+extract_zip_archive() {
+    archive_path=$1
+    extract_dir=$2
+
+    if command -v unzip >/dev/null 2>&1; then
+        unzip -q "${archive_path}" -d "${extract_dir}"
+        return 0
+    fi
+
+    if command -v powershell.exe >/dev/null 2>&1; then
+        archive_path_native=$(native_path "${archive_path}")
+        extract_dir_native=$(native_path "${extract_dir}")
+        powershell.exe -NoProfile -ExecutionPolicy Bypass \
+            -Command "Expand-Archive -LiteralPath '${archive_path_native}' -DestinationPath '${extract_dir_native}' -Force" >/dev/null
+        return 0
+    fi
+
+    if command -v pwsh >/dev/null 2>&1; then
+        archive_path_native=$(native_path "${archive_path}")
+        extract_dir_native=$(native_path "${extract_dir}")
+        pwsh -NoProfile -Command \
+            "Expand-Archive -LiteralPath '${archive_path_native}' -DestinationPath '${extract_dir_native}' -Force" >/dev/null
+        return 0
+    fi
+
+    printf '%s\n' "ERROR: Could not find unzip or PowerShell to unpack ${archive_path##*/}." >&2
+    return 1
+}
+
 bootstrap_shellcheck() {
     version=$(latest_shellcheck_tag)
     extract_dir="${TOOLS_DIR}/shellcheck/${version}"
@@ -52,18 +92,7 @@ bootstrap_shellcheck() {
             archive_path="${TOOLS_DIR}/${archive_name}"
             curl -fsSL -o "${archive_path}" \
                 "https://github.com/koalaman/shellcheck/releases/latest/download/${archive_name}"
-
-            if command -v powershell.exe >/dev/null 2>&1; then
-                powershell.exe -NoProfile -ExecutionPolicy Bypass \
-                    -Command "Expand-Archive -LiteralPath '${archive_path}' -DestinationPath '${extract_dir}' -Force" >/dev/null
-            elif command -v pwsh >/dev/null 2>&1; then
-                pwsh -NoProfile -Command \
-                    "Expand-Archive -LiteralPath '${archive_path}' -DestinationPath '${extract_dir}' -Force" >/dev/null
-            else
-                printf '%s\n' "ERROR: Could not find PowerShell to unpack the shellcheck zip." >&2
-                return 1
-            fi
-
+            extract_zip_archive "${archive_path}" "${extract_dir}"
             rm -f "${archive_path}"
             ;;
         *)

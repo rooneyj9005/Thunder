@@ -1,5 +1,6 @@
 /.git/
 /.github/
+/_ci/
 /.gitattributes
 /.gitignore
 /.packwizignore

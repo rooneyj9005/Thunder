@@ -1,4 +1,4 @@
-name: Publish Pack Metadata
+name: Deploy
 
 on:
   release:

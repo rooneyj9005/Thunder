@@ -2,8 +2,8 @@
 [CmdletBinding()]
 param(
     [string]$Dir = "",
-    [string]$PackwizUrl = "https://packwiz.thunder.john.rooney.scot/pack.toml",
-    [string]$PackwizSide = "server",
+    [string]$PackwizUrl = "",
+    [string]$PackwizSide = "",
     [string]$PackwizExtraFlags = "",
     [switch]$CleanInstall,
     [switch]$Strict
@@ -186,24 +186,41 @@ function Test-Truthy([string]$Value) {
     return $Value -match '^(1|true|yes)$'
 }
 
+function Resolve-StringSetting([string]$ArgumentValue, [string]$EnvValue, [string]$DefaultValue) {
+    if ($ArgumentValue) {
+        return $ArgumentValue
+    }
+
+    if ($EnvValue) {
+        return $EnvValue
+    }
+
+    return $DefaultValue
+}
+
 if (Test-Truthy "$env:PACKWIZ_SKIP_UPDATE") {
     Write-Host "Skipping packwiz sync (PACKWIZ_SKIP_UPDATE enabled)."
     exit 0
 }
 
-if ($PackwizSide -notin @("client", "server", "both")) {
-    throw "PACKWIZ_SIDE must be 'client', 'server', or 'both'."
+$resolvedPackwizUrl = Resolve-StringSetting $PackwizUrl $env:PACKWIZ_URL "https://packwiz.thunder.john.rooney.scot/pack.toml"
+$resolvedPackwizSide = Resolve-StringSetting $PackwizSide $env:PACKWIZ_SIDE "server"
+$resolvedPackwizExtraFlags = Resolve-StringSetting $PackwizExtraFlags $env:PACKWIZ_EXTRA_FLAGS ""
+$resolvedCleanInstall = $CleanInstall -or (Test-Truthy "$env:CLEAN_INSTALL")
+
+if ($resolvedPackwizSide -notin @("server", "both")) {
+    throw "PACKWIZ_SIDE must be 'server' or 'both'."
 }
 
-if ($PackwizUrl -match "\s") {
+if ($resolvedPackwizUrl -match "\s") {
     throw "PACKWIZ_URL must not contain whitespace."
 }
 
-if ($PackwizExtraFlags -match "[;|&`$()<>{}]" -or $PackwizExtraFlags -match "[\r\n]") {
-    throw "PACKWIZ_EXTRA_FLAGS contains unsupported characters."
+if ($resolvedPackwizExtraFlags -match '[^A-Za-z0-9.,/:=_+\- ]') {
+    throw "PACKWIZ_EXTRA_FLAGS may only contain letters, numbers, spaces, and the characters . , / : = _ + -."
 }
 
-if ($CleanInstall) {
+if ($resolvedCleanInstall) {
     Write-Host "Clean install - wiping mods and packwiz config..."
     Remove-Item -Recurse -Force -ErrorAction SilentlyContinue mods, config/packwiz-installer.toml
 }
@@ -222,9 +239,9 @@ try {
     Install-PackwizBootstrap
 
     Write-Host "Syncing modpack via packwiz..."
-    $packwizArgs = @("-jar", "packwiz-installer-bootstrap.jar", "-g", "-s", $PackwizSide)
-    if ($PackwizExtraFlags) { $packwizArgs += $PackwizExtraFlags -split " " }
-    $packwizArgs += $PackwizUrl
+    $packwizArgs = @("-jar", "packwiz-installer-bootstrap.jar", "-g", "-s", $resolvedPackwizSide)
+    if ($resolvedPackwizExtraFlags) { $packwizArgs += $resolvedPackwizExtraFlags -split " " }
+    $packwizArgs += $resolvedPackwizUrl
 
     & java @packwizArgs
     if ($LASTEXITCODE -ne 0) { throw "packwiz-installer-bootstrap failed with exit code $LASTEXITCODE" }

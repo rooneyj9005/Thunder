@@ -663,15 +663,15 @@ hash = "7f006d6a504da974c530102af5763008c47f31ca52f3b70e3b069ec10d5cc44f"
 
 [[files]]
 file = "startup.ps1"
-hash = "4693879988bf74422a0512eac512d70e840eea115e98e1b5ef3da36ab457fd3b"
+hash = "906dcd1d425ccf5ef9261601f3bc3d230698ffbe8d470c06d70a534b6c8cdb8a"
 
 [[files]]
 file = "startup.sh"
-hash = "be9b516814079fd8611de636f76f90c880ea8159ca0311045b7071f968025f4e"
+hash = "4b0fe87a95ef004499d23265eca0200a263082dadfb8bbd95b2a0437c171c6ed"
 
 [[files]]
 file = "update.ps1"
-hash = "23a346f395d1bde3d2aa0a514941aaddc968f2bc1b076f15c65ff0a0eb81d089"
+hash = "c87c35abb6ad96ae864aed729535f699eccd6d5690aa0ca12922d85a28fa88ad"
 
 [[files]]
 file = "update.sh"

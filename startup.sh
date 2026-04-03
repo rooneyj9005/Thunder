@@ -99,6 +99,8 @@ build_java_memory_args() {
 build_java_memory_args
 validate_boolean_value "CLEAN_INSTALL" "${CLEAN_INSTALL}"
 validate_boolean_value "PACKWIZ_SKIP_UPDATE" "${PACKWIZ_SKIP_UPDATE}"
+ENABLE_VOICE_CHAT=${ENABLE_VOICE_CHAT:-true}
+validate_boolean_value "ENABLE_VOICE_CHAT" "${ENABLE_VOICE_CHAT}"
 
 case ${PACKWIZ_SKIP_UPDATE} in
     true|1|yes)
@@ -138,10 +140,20 @@ if [ "${VOICE_PORT}" -gt 65535 ]; then
     die "VOICE_PORT must be an integer between 0 and 65535 (0 to disable)."
 fi
 
-if [ "${VOICE_PORT}" != "0" ]; then
-    mkdir -p config/voicechat
-    printf '%s\n' "port=${VOICE_PORT}" > config/voicechat/voicechat-server.properties
-fi
+VOICE_CONFIG_FILE=config/voicechat/voicechat-server.properties
+case ${ENABLE_VOICE_CHAT} in
+    true|1|yes)
+        if [ "${VOICE_PORT}" = "0" ]; then
+            rm -f "${VOICE_CONFIG_FILE}"
+        else
+            mkdir -p config/voicechat
+            printf '%s\n' "port=${VOICE_PORT}" > "${VOICE_CONFIG_FILE}"
+        fi
+        ;;
+    *)
+        rm -f "${VOICE_CONFIG_FILE}"
+        ;;
+esac
 
 if [ "${JAVA_MEMORY_MODE}" = "exact" ]; then
     if [ -f unix_args.txt ]; then

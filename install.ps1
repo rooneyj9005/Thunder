@@ -2,16 +2,33 @@
 [CmdletBinding()]
 param(
     [string]$Dir = ".",
-    [string]$ModLoader = "forge",
-    [string]$McVersion = "1.20.1",
+    [string]$ModLoader = "",
+    [string]$McVersion = "",
     [string]$ForgeVersion = "",
-    [string]$ServerJarFile = "server.jar"
+    [string]$ServerJarFile = ""
 )
 
 $ErrorActionPreference = "Stop"
 $ProgressPreference = "SilentlyContinue"
 
 Set-Location $Dir
+
+function Resolve-StringSetting([string]$ArgumentValue, [string]$EnvValue, [string]$DefaultValue) {
+    if ($ArgumentValue) {
+        return $ArgumentValue
+    }
+
+    if ($EnvValue) {
+        return $EnvValue
+    }
+
+    return $DefaultValue
+}
+
+$ModLoader = Resolve-StringSetting $ModLoader $env:MODLOADER "forge"
+$McVersion = Resolve-StringSetting $McVersion $env:MC_VERSION "1.20.1"
+$ForgeVersion = Resolve-StringSetting $ForgeVersion $env:FORGE_VERSION ""
+$ServerJarFile = Resolve-StringSetting $ServerJarFile $env:SERVER_JARFILE "server.jar"
 
 if ($ModLoader -notin @("forge", "fabric", "quilt")) {
     throw "MODLOADER must be 'forge', 'fabric', or 'quilt'."

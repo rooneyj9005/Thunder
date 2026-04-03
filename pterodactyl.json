@@ -14,7 +14,7 @@
   },
   "startup": "bash startup.sh --container --memory {{SERVER_MEMORY}}",
   "config": {
-    "files": "{\n    \"server.properties\": {\n        \"parser\": \"properties\",\n        \"find\": {\n            \"server-ip\": \"0.0.0.0\",\n            \"server-port\": \"{{server.build.default.port}}\",\n            \"enable-rcon\": \"{{ENABLE_RCON}}\",\n            \"rcon.port\": \"{{RCON_PORT}}\",\n            \"rcon.password\": \"{{RCON_PASS}}\",\n            \"broadcast-rcon-to-ops\": \"false\"\n        }\n    }\n}",
+    "files": "{\n    \"server.properties\": {\n        \"parser\": \"properties\",\n        \"find\": {\n            \"server-ip\": \"0.0.0.0\",\n            \"server-port\": \"{{server.build.default.port}}\",\n            \"enable-rcon\": \"{{env.ENABLE_RCON}}\",\n            \"rcon.port\": \"{{env.RCON_PORT}}\",\n            \"rcon.password\": \"{{env.RCON_PASS}}\",\n            \"broadcast-rcon-to-ops\": \"false\"\n        }\n    }\n}",
     "startup": "{\n    \"done\": \"Done (\"\n}",
     "logs": "{}",
     "stop": "stop"
@@ -119,21 +119,21 @@
     },
     {
       "name": "Enable RCON",
-      "description": "Enable the Minecraft RCON protocol for remote console access.",
+      "description": "Enable the Minecraft RCON protocol for remote console access. Requires a dedicated allocated panel port to be reachable externally.",
       "env_variable": "ENABLE_RCON",
       "default_value": "false",
       "user_viewable": true,
-      "user_editable": false,
+      "user_editable": true,
       "rules": "required|string|in:true,false",
       "field_type": "text"
     },
     {
       "name": "RCON Port",
-      "description": "Port for RCON connections. Must not conflict with the game port.",
+      "description": "TCP port for RCON connections. Allocate this port in the panel and avoid conflicts with the game port.",
       "env_variable": "RCON_PORT",
       "default_value": "25575",
       "user_viewable": true,
-      "user_editable": false,
+      "user_editable": true,
       "rules": "required|integer|between:1024,65535",
       "field_type": "text"
     },
@@ -148,8 +148,18 @@
       "field_type": "text"
     },
     {
+      "name": "Enable Voice Chat",
+      "description": "Enable Simple Voice Chat support. Requires the chosen port to be allocated in the panel and allowed through the firewall to be reachable externally.",
+      "env_variable": "ENABLE_VOICE_CHAT",
+      "default_value": "true",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|string|in:true,false",
+      "field_type": "text"
+    },
+    {
       "name": "Voice Chat Port",
-      "description": "UDP port for Simple Voice Chat. Must be open in your firewall and allocated in the panel. Set to 0 to disable.",
+      "description": "UDP port for Simple Voice Chat when enabled. Must be allowed through the firewall and allocated in the panel. Set to 0 to disable.",
       "env_variable": "VOICE_PORT",
       "default_value": "24454",
       "user_viewable": true,

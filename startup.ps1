@@ -2,13 +2,14 @@
 [CmdletBinding()]
 param(
     [string]$Dir = "",
-    [string]$PackwizUrl = "https://packwiz.thunder.john.rooney.scot/pack.toml",
-    [string]$PackwizSide = "server",
+    [string]$PackwizUrl = "",
+    [string]$PackwizSide = "",
     [string]$PackwizExtraFlags = "",
     [switch]$SkipPackUpdate,
     [switch]$CleanInstall,
-    [string]$ServerJarFile = "server.jar",
-    [int]$VoicePort = 24454,
+    [string]$ServerJarFile = "",
+    [Nullable[int]]$VoicePort = $null,
+    [string]$EnableVoiceChat = "",
     [Nullable[int]]$MemoryMiB = $null,
     [Nullable[int]]$JvmMemoryMiB = $null
 )
@@ -198,17 +199,74 @@ function Get-JavaMemoryArgs([int]$ResolvedMemoryMiB, [int]$ResolvedJvmMemoryMiB)
     return @("-Xms128M", "-XX:MaxRAMPercentage=95.0")
 }
 
+function Resolve-StringSetting([string]$ArgumentValue, [string]$EnvValue, [string]$DefaultValue) {
+    if ($ArgumentValue) {
+        return $ArgumentValue
+    }
+
+    if ($EnvValue) {
+        return $EnvValue
+    }
+
+    return $DefaultValue
+}
+
+function Resolve-BooleanSetting([string]$Name, [string]$ArgumentValue, [string]$EnvValue, [string]$DefaultValue) {
+    $candidate = if ($ArgumentValue) {
+        $ArgumentValue
+    }
+    elseif ($EnvValue) {
+        $EnvValue
+    }
+    else {
+        $DefaultValue
+    }
+
+    switch -Regex ($candidate) {
+        '^(1|true|yes)$' { return $true }
+        '^(0|false|no)$' { return $false }
+        default { throw "$Name must be one of: true, false, 1, 0, yes, or no." }
+    }
+}
+
+function Resolve-NonNegativeSetting([string]$Name, [Nullable[int]]$ArgumentValue, [string]$EnvValue, [int]$DefaultValue) {
+    if ($null -ne $ArgumentValue) {
+        if ($ArgumentValue -lt 0) {
+            throw "$Name must be a non-negative integer."
+        }
+
+        return $ArgumentValue
+    }
+
+    if (-not $EnvValue) {
+        return $DefaultValue
+    }
+
+    if ($EnvValue -notmatch '^\d+$') {
+        throw "$Name must be a non-negative integer."
+    }
+
+    return [int]$EnvValue
+}
+
 $resolvedMemoryMiB = Resolve-NonNegativeMiB "--memory" $MemoryMiB $env:SERVER_MEMORY
 $resolvedJvmMemoryMiB = Resolve-NonNegativeMiB "--jvm-memory" $JvmMemoryMiB $env:JVM_MEMORY
+$resolvedPackwizUrl = Resolve-StringSetting $PackwizUrl $env:PACKWIZ_URL "https://packwiz.thunder.john.rooney.scot/pack.toml"
+$resolvedPackwizSide = Resolve-StringSetting $PackwizSide $env:PACKWIZ_SIDE "server"
+$resolvedPackwizExtraFlags = Resolve-StringSetting $PackwizExtraFlags $env:PACKWIZ_EXTRA_FLAGS ""
+$resolvedServerJarFile = Resolve-StringSetting $ServerJarFile $env:SERVER_JARFILE "server.jar"
+$resolvedVoicePort = Resolve-NonNegativeSetting "VOICE_PORT" $VoicePort $env:VOICE_PORT 24454
+$resolvedCleanInstall = $CleanInstall -or ($env:CLEAN_INSTALL -match '^(1|true|yes)$')
 $javaMemoryArgs = Get-JavaMemoryArgs $resolvedMemoryMiB $resolvedJvmMemoryMiB
+$enableVoiceChat = Resolve-BooleanSetting "ENABLE_VOICE_CHAT" $EnableVoiceChat $env:ENABLE_VOICE_CHAT "true"
 
-if ($VoicePort -lt 0 -or $VoicePort -gt 65535) {
+if ($resolvedVoicePort -gt 65535) {
     throw "VOICE_PORT must be between 0 and 65535 (0 to disable)."
 }
 
 $skipByEnv = $env:PACKWIZ_SKIP_UPDATE -match '^(1|true|yes)$'
 if ($SkipPackUpdate -or $skipByEnv) {
-    if ($CleanInstall) {
+    if ($resolvedCleanInstall) {
         Write-Host "Clean install - wiping mods and packwiz config..."
         Remove-Item -Recurse -Force -ErrorAction SilentlyContinue mods, config/packwiz-installer.toml
     }
@@ -221,17 +279,20 @@ else {
     }
 
     & $updateScript `
-        -PackwizUrl $PackwizUrl `
-        -PackwizSide $PackwizSide `
-        -PackwizExtraFlags $PackwizExtraFlags `
-        -CleanInstall:$CleanInstall `
+        -PackwizUrl $resolvedPackwizUrl `
+        -PackwizSide $resolvedPackwizSide `
+        -PackwizExtraFlags $resolvedPackwizExtraFlags `
+        -CleanInstall:$resolvedCleanInstall `
         -Strict
 }
 
-if ($VoicePort -ne 0) {
+if ($enableVoiceChat -and $resolvedVoicePort -ne 0) {
     $voiceDir = Join-Path "config" "voicechat"
     if (-not (Test-Path $voiceDir)) { New-Item -ItemType Directory -Path $voiceDir -Force | Out-Null }
-    Set-Content -LiteralPath (Join-Path $voiceDir "voicechat-server.properties") -Value "port=$VoicePort" -Encoding ASCII
+    Set-Content -LiteralPath (Join-Path $voiceDir "voicechat-server.properties") -Value "port=$resolvedVoicePort" -Encoding ASCII
+}
+else {
+    Remove-Item -LiteralPath (Join-Path "config" "voicechat" "voicechat-server.properties") -Force -ErrorAction SilentlyContinue
 }
 
 if (Test-Path "unix_args.txt") {
@@ -240,6 +301,6 @@ if (Test-Path "unix_args.txt") {
     & java @javaMemoryArgs "@win_args.txt"
 }
 else {
-    & java @javaMemoryArgs -jar $ServerJarFile
+    & java @javaMemoryArgs -jar $resolvedServerJarFile
 }
 exit $LASTEXITCODE

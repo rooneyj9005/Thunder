@@ -23,12 +23,12 @@ jobs:
     timeout-minutes: 120
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           ref: ${{ github.event.release.tag_name }}
           fetch-depth: 0
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: "21"
@@ -91,7 +91,7 @@ jobs:
 
       - name: Check out rollback tag
         if: ${{ steps.smoke.outputs.ok != 'true' && steps.rollback.outputs.tag != '' }}
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           ref: ${{ steps.rollback.outputs.tag }}
           fetch-depth: 0

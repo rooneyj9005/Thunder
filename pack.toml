@@ -1,12 +1,12 @@
 name = "Thunder"
 author = "https://github.com/rooneyj9005"
-version = "0.9.8"
+version = "0.10.0"
 pack-format = "packwiz:1.1.0"
 
 [index]
 file = "index.toml"
 hash-format = "sha256"
-hash = "8878b4b1235ebee8d25de432214ca7eeed1702d10225dc7c4c92630125f75036"
+hash = "a657189b727798d754dc9b834e276bd84a48028044e6f5432ff513c9f7beef33"
 
 [versions]
 forge = "47.4.13"

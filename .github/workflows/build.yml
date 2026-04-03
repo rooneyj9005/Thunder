@@ -6,6 +6,7 @@ on:
       - "**"
 
 permissions:
+  actions: read
   contents: write
 
 concurrency:
@@ -13,7 +14,56 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  await-checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Wait for Checks on tagged commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG_SHA: ${{ github.sha }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          for attempt in {1..60}; do
+            runs_json="$(
+              gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/checks.yml/runs?head_sha=${TAG_SHA}&event=push&branch=development&per_page=20"
+            )"
+
+            run_count="$(jq '.workflow_runs | length' <<<"$runs_json")"
+            if [[ "$run_count" -gt 0 ]]; then
+              latest_run="$(jq '.workflow_runs | sort_by(.run_number) | last' <<<"$runs_json")"
+              run_id="$(jq -r '.id' <<<"$latest_run")"
+              run_url="$(jq -r '.html_url' <<<"$latest_run")"
+              status="$(jq -r '.status' <<<"$latest_run")"
+              conclusion="$(jq -r '.conclusion // empty' <<<"$latest_run")"
+
+              echo "Checks run ${run_id} is ${status}${conclusion:+ with conclusion ${conclusion}}."
+
+              if [[ "$status" == "completed" ]]; then
+                if [[ "$conclusion" == "success" ]]; then
+                  exit 0
+                fi
+
+                echo "ERROR: Checks for tagged commit ${TAG_SHA} on development completed with conclusion '${conclusion}'. See ${run_url}" >&2
+                exit 1
+              fi
+            else
+              echo "No Checks run found yet for commit ${TAG_SHA} on development."
+            fi
+
+            if [[ "$attempt" -eq 60 ]]; then
+              echo "ERROR: Timed out waiting for Checks on development for commit ${TAG_SHA}." >&2
+              exit 1
+            fi
+
+            sleep 10
+          done
+
   prerelease:
+    needs: await-checks
     runs-on: ubuntu-latest
     timeout-minutes: 90
 

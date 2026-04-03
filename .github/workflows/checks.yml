@@ -2,8 +2,8 @@ name: Checks
 
 on:
   push:
-    tags-ignore:
-      - "*"
+    branches:
+      - development
   pull_request:
 
 permissions:

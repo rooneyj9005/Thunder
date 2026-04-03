@@ -1,8 +1,8 @@
 # Thunder Modpack
 
-[![Pack Checks](https://github.com/rooneyj9005/Thunder/actions/workflows/ci.yml/badge.svg?branch=development&event=push)](https://github.com/rooneyj9005/Thunder/actions/workflows/ci.yml)
-[![Prerelease Build](https://github.com/rooneyj9005/Thunder/actions/workflows/prerelease.yml/badge.svg?event=push)](https://github.com/rooneyj9005/Thunder/actions/workflows/prerelease.yml)
-[![Deploy Pack Metadata](https://github.com/rooneyj9005/Thunder/actions/workflows/publish-pack-pages.yml/badge.svg?event=release)](https://github.com/rooneyj9005/Thunder/actions/workflows/publish-pack-pages.yml)
+[![Development Checks](https://github.com/rooneyj9005/Thunder/actions/workflows/checks.yml/badge.svg?branch=development&event=push)](https://github.com/rooneyj9005/Thunder/actions/workflows/checks.yml)
+[![Release Build](https://github.com/rooneyj9005/Thunder/actions/workflows/build.yml/badge.svg?event=push)](https://github.com/rooneyj9005/Thunder/actions/workflows/build.yml)
+[![Release Deploy](https://github.com/rooneyj9005/Thunder/actions/workflows/deploy.yml/badge.svg?event=release)](https://github.com/rooneyj9005/Thunder/actions/workflows/deploy.yml)
 
 Thunder is a Minecraft Forge modpack focused on technical stability, performance, and practical server tooling.
 
@@ -118,9 +118,9 @@ This repository remains the source of truth for pack metadata, scripts, release 
 
 ## CI/CD
 
-- `ci.yml` runs Bash and PowerShell lint on both Windows and Linux, then on Linux checks pack metadata consistency, exports `Thunder.mrpack`, and smoke-tests the runtime update path against a locally served pack metadata build.
-- `prerelease.yml` runs for any tag push, rebuilds and validates the pack, uploads helper binaries as workflow artifacts, and creates the GitHub prerelease with the public release assets including `pterodactyl.json`. Version-shaped tags are still checked against `pack.toml`; ad-hoc tags are useful for smoke-testing the release pipeline.
-- `publish-pack-pages.yml` runs only when a prerelease is promoted to a stable release, deploys the tagged pack metadata to GitHub Pages, smoke-tests the stable install path, and rolls Pages back while demoting the release if that smoke test fails.
+- `checks.yml` runs on pushes to `development` and on pull requests, linting Bash and PowerShell on both Windows and Linux before validating pack metadata consistency and the runtime update path.
+- `build.yml` runs for tag pushes, waits for `checks.yml` to succeed on the tagged `development` commit, then rebuilds and validates the pack, uploads helper binaries as workflow artifacts, and creates the GitHub prerelease with the public release assets including `pterodactyl.json`. Version-shaped tags are still checked against `pack.toml`; ad-hoc tags are useful for smoke-testing the release pipeline.
+- `deploy.yml` runs only when a prerelease is promoted to a stable release, deploys the tagged pack metadata to GitHub Pages, smoke-tests the stable install path, and rolls Pages back while demoting the release if that smoke test fails.
 - Public release assets are limited to the files intended for players and server admins. Generated helper binaries are not distributed through Releases.
 - The Pterodactyl egg reinstall path uses the currently imported egg definition, then fetches `install.sh` from the latest stable release. Runtime uses the startup and update scripts bundled with the pack, and optional RCON or Simple Voice Chat ports still need matching panel allocations and firewall rules to be reachable.
 - The documentation site is deployed separately from the `Thunder-docs` repository.

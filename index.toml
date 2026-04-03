@@ -2,7 +2,7 @@ hash-format = "sha256"
 
 [[files]]
 file = "config/bcc-common.toml"
-hash = "84b203cfa4e275d5a6b5fd117a3c51174a2380cb0674814af683de8edf839254"
+hash = "95ae5380fcea995c0bd3662c886aad40fe88c960ce66ab10483b1ed13af45e3d"
 
 [[files]]
 file = "config/logbegone.toml"
@@ -659,7 +659,7 @@ metafile = true
 
 [[files]]
 file = "runtime-common.sh"
-hash = "3ddda0c10de5e7a50f0f81b8fd9f7aa2c0f773bda9ad9150050b519ef255f408"
+hash = "7f006d6a504da974c530102af5763008c47f31ca52f3b70e3b069ec10d5cc44f"
 
 [[files]]
 file = "startup.ps1"
@@ -667,7 +667,7 @@ hash = "4693879988bf74422a0512eac512d70e840eea115e98e1b5ef3da36ab457fd3b"
 
 [[files]]
 file = "startup.sh"
-hash = "522abed09c4c0e54cf446afc47a46215e392ae5d2a334205a2010b8b366eb664"
+hash = "be9b516814079fd8611de636f76f90c880ea8159ca0311045b7071f968025f4e"
 
 [[files]]
 file = "update.ps1"

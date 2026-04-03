@@ -193,5 +193,6 @@ fi
 
 printf '%s\n' "Syncing modpack via packwiz..."
 java -jar packwiz-installer-bootstrap.jar -g -s "${PACKWIZ_SIDE}" "${PACKWIZ_URL}"
-chmod +x -- ./*.sh
+ensure_executable_file "./startup.sh"
+ensure_executable_file "./update.sh"
 printf '%s\n' "Server installation complete."

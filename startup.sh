@@ -114,10 +114,13 @@ case ${PACKWIZ_SKIP_UPDATE} in
         printf '%s\n' "Skipping packwiz sync (PACKWIZ_SKIP_UPDATE enabled)."
         ;;
     *)
+        STARTUP_SCRIPT=${SCRIPT_DIR}/startup.sh
         UPDATE_SCRIPT=${SCRIPT_DIR}/update.sh
-        [ -f "${UPDATE_SCRIPT}" ] || die "Could not find '${UPDATE_SCRIPT}'."
+        ensure_executable_file "${UPDATE_SCRIPT}"
         CURRENT_DIR=$(pwd)
         "${UPDATE_SCRIPT}" --dir "${CURRENT_DIR}"
+        ensure_executable_file "${STARTUP_SCRIPT}"
+        ensure_executable_file "${UPDATE_SCRIPT}"
         ;;
 esac
 

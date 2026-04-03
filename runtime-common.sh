@@ -5,6 +5,18 @@ die() {
     exit 1
 }
 
+ensure_executable_file() {
+    path=$1
+
+    [ -f "${path}" ] || die "Could not find '${path}'."
+
+    if [ -x "${path}" ]; then
+        return 0
+    fi
+
+    chmod +x -- "${path}" || die "Could not mark '${path}' as executable."
+}
+
 use_local_java21_if_available() {
     for java_dir in ./jdk-21* ./jre-21*; do
         [ -d "${java_dir}" ] || continue

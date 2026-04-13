@@ -478,6 +478,11 @@ hash = "e6de05ff93544874f2e8a8f6646def228e877aad97396d14e43b9996849a4eab"
 metafile = true
 
 [[files]]
+file = "mods/numismatics.pw.toml"
+hash = "63504f8d1db513fa1a78c214d824be5a9ddba732850a461cae0bb1029b8462b7"
+metafile = true
+
+[[files]]
 file = "mods/oh-the-trees-youll-grow.pw.toml"
 hash = "d948acee031db5a8190fe05f2f2434584e6a4323c4ced6be03d2de091a05f9ba"
 metafile = true

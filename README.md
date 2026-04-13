@@ -93,6 +93,7 @@ The checklist below is intended as the go/no-go release checklist for the pack r
   <li><label><input type="checkbox" /> I have checked that the docs site and the pack repository still agree on install, update, server, and release behaviour.</label></li>
   <li><label><input type="checkbox" /> I have checked that the docs site and the scripts still point at the correct packwiz host.</label></li>
   <li><label><input type="checkbox" /> I have checked that any user-facing behaviour change has been reflected in the docs repository or consciously reviewed there.</label></li>
+  <li><label><input type="checkbox" /> I have checked that all <code>data-mod-count</code> fallback values in docs are in sync with the actual mod count (search <code>docs/*.md</code> for <code>data-mod-count</code>).</label></li>
   <li><label><input type="checkbox" /> I have checked that the live docs site, or a local preview of it, still makes sense for this release, including download links, server guidance, and version-status checks.</label></li>
   <li><label><input type="checkbox" /> I have checked that the chosen version bump matches the kind of change in this release.</label></li>
   <li><label><input type="checkbox" /> I have checked that, if this is a major release, it is genuinely production-ready rather than a hopeful milestone.</label></li>

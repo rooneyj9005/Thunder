@@ -1,6 +1,6 @@
 name = "Thunder"
 author = "https://github.com/rooneyj9005"
-version = "0.11.1"
+version = "0.11.2"
 pack-format = "packwiz:1.1.0"
 
 [index]

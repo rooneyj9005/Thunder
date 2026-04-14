@@ -4,8 +4,8 @@ side = "both"
 
 [download]
 url = "https://cdn.modrinth.com/data/v8jzRtAt/versions/UDbRAGQU/%5B1.20.1%5D%20SecurityCraft%20v1.10.1.jar"
-hash-format = "sha512"
-hash = "81776fca953ffdd919c33bbf3b72290c2e6a462600af8aed3ad1fd08c2a61d712deb160a04302faa66a098565029cb947aad0b1c3a1981dd84a24f58aa9f6d17"
+hash-format = "sha256"
+hash = "ec601ba570c5351c353fc1ee0eb2f4823d1c026d265a96d3ec802070a50b6ebd"
 
 [update]
 [update.modrinth]

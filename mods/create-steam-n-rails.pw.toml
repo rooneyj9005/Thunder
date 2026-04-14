@@ -4,8 +4,8 @@ side = "both"
 
 [download]
 url = "https://cdn.modrinth.com/data/ZzjhlDgM/versions/nWkRaqjI/Steam_Rails-1.6.12-alpha%2Bforge-mc1.20.1.jar"
-hash-format = "sha512"
-hash = "3db572293c8c040977348192604051f283fc86eda42ded49154a5becb08a0ca24fee3dda51119793831a4651de2bc293e8862081cd0b05e8d87912c148f49c72"
+hash-format = "sha256"
+hash = "ff1bac0d72d6ff302d675feeaf657b3b3f059c56cf0fb11368761fe13329dd78"
 
 [update]
 [update.modrinth]

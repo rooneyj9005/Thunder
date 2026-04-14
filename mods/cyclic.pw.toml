@@ -4,8 +4,8 @@ side = "both"
 
 [download]
 url = "https://cdn.modrinth.com/data/UcVTWyCI/versions/62VIVDxg/Cyclic-1.20.1-1.13.5.jar"
-hash-format = "sha512"
-hash = "a9fcdecd598bb240d3926e93e4241ad0f85119bedcbf51201e724a26e7a58d3701d604ee7fd2ec5ac99a9a08e4fe8919fb3c61571aac733908a0b6f6487c2d91"
+hash-format = "sha256"
+hash = "7a61e7667e353d46486387da8028624b098bbde0fa49b5707ec87a7a54137dd7"
 
 [update]
 [update.modrinth]

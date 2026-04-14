@@ -4,8 +4,8 @@ side = "client"
 
 [download]
 url = "https://cdn.modrinth.com/data/5A34Stj8/versions/5J8TMODW/ponderjs-1.20.1-2.1.0.jar"
-hash-format = "sha512"
-hash = "a51a284792c9344d7e79ee9c3b982edecbf9208021d5e8fa5d2957fe59cf6413e89846934b04c18737a465a5c8229931a4071d9e45e550be50de97e525f5485c"
+hash-format = "sha256"
+hash = "a3d42dcd63133b7542599b5e12ecb67e0719ea19dc28a1f3e3365a1ad7df5978"
 
 [update]
 [update.modrinth]

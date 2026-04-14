@@ -4,8 +4,8 @@ side = "both"
 
 [download]
 url = "https://cdn.modrinth.com/data/Ce6I4WUE/versions/uxe1WQp4/Mekanism-1.20.1-10.4.16.80.jar"
-hash-format = "sha512"
-hash = "a838bb3fa5550ba3589a81005fde2ca04b5d33417ae65a8060bbc46ba948dec2d16ab0871a55e73e0ca39651b33814eb508b5b85d337e6ed8874b79383f3e6f0"
+hash-format = "sha256"
+hash = "3b0d191fa4a45e662f9725991d76a30192f30186abb2ba694b873b5f7b9358d2"
 
 [update]
 [update.modrinth]

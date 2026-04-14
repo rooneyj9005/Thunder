@@ -4,8 +4,8 @@ side = "both"
 
 [download]
 url = "https://cdn.modrinth.com/data/B3pb093D/versions/PdGBsNte/ritchiesprojectilelib-2.1.1%2Bmc.1.20.1-forge.jar"
-hash-format = "sha512"
-hash = "454e1808261940dc135ed8af4f0fa44296ec502b985104e42178146adc539a29cd7c56369c075f78d60da4f9465229aceaafa8f5724a008205aa65b5a81e4419"
+hash-format = "sha256"
+hash = "5531ec454792f98993fa29d55f8810444ba3e9ef8f04331c5811b84ec8d0c3dc"
 
 [update]
 [update.modrinth]

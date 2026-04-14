@@ -4,8 +4,8 @@ side = "server"
 
 [download]
 url = "https://cdn.modrinth.com/data/Gi02250Z/versions/DnzrwvfD/almanac-1.20.x-forge-1.0.2.jar"
-hash-format = "sha512"
-hash = "58c4dea50fcb17593e2c97a23ce101c62b5b32e2fd71d4bbf323f2778d4474c991caba7234ecf4d06f1e246ccb9ad7f67f2fa73f023cd80ef55333e2ed952f43"
+hash-format = "sha256"
+hash = "b8e0b42329c11739201d132bc99720e8205badc4ce862b30e4eec04b833e3419"
 
 [update]
 [update.modrinth]

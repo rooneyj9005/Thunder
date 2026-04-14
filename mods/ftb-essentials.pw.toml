@@ -3,8 +3,8 @@ filename = "ftb-essentials-forge-2001.2.3.jar"
 side = "both"
 
 [download]
-hash-format = "sha512"
-hash = "757d0be9a356ed7852a22af51b7057144119a94c384792392d2516d46f4d3a5f6b8c672c5f907c450475a365c468ea7175a469a19cf989f7af3b5336b42b52e7"
+hash-format = "sha256"
+hash = "dcbec178981988fc67e8838e8eba948325988221941daa6e5dd65441974b39f0"
 mode = "metadata:curseforge"
 
 [update]

@@ -4,8 +4,8 @@ side = "both"
 
 [download]
 url = "https://cdn.modrinth.com/data/TKB6INcv/versions/Hw2aD01e/ars_nouveau-1.20.1-4.12.7-all.jar"
-hash-format = "sha512"
-hash = "f3e3abf260fb3ef4c5b6b7324c055802135f82f4c550986f4e93b1a186c9b495cd8b6396ed89ab088b95e6176c0b9e290ccc69a528c521cd1bff19935ac36836"
+hash-format = "sha256"
+hash = "1f1debc282a0c379c1141f2840ea294eede6f6b544c589663f40bbe17b59a1af"
 
 [update]
 [update.modrinth]

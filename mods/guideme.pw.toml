@@ -4,8 +4,8 @@ side = "both"
 
 [download]
 url = "https://cdn.modrinth.com/data/Ck4E7v7R/versions/9YGnKYDF/guideme-20.1.14.jar"
-hash-format = "sha512"
-hash = "15311cb0607205d2da3eb369499b8523bd0d8fa41e30c87c0b0e5756df5ea2123389262e6883f66e6c7b1d43d68e20cdfec73b31c202df8fbb99fa80d4fe7b1d"
+hash-format = "sha256"
+hash = "a0ba5a0288dab6e413f1456de8dd162f9479146ee681569837f6d6b17930a0e2"
 
 [update]
 [update.modrinth]

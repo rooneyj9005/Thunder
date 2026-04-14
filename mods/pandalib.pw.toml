@@ -4,8 +4,8 @@ side = "both"
 
 [download]
 url = "https://cdn.modrinth.com/data/mEEGbEIu/versions/W9C2CFxo/pandalib-forge-mc1.20-0.5.2-SNAPSHOT.jar"
-hash-format = "sha512"
-hash = "94d8744dc8fac0b68508eb398ba3c16ef83750b6bb21a917e112df43058a4a9cc4aefc798d2e2f9e0ca81755812a0b2e422c1631a60f651cee514c03e9a4fe60"
+hash-format = "sha256"
+hash = "1595c586e9c3e7e9a455d23b1686cc82f8d9e11578efd86a10a7031995301390"
 
 [update]
 [update.modrinth]

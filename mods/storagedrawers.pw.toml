@@ -4,8 +4,8 @@ side = "both"
 
 [download]
 url = "https://cdn.modrinth.com/data/guitPqEi/versions/8raubcF4/StorageDrawers-forge-1.20.1-12.14.3.jar"
-hash-format = "sha512"
-hash = "074c9da64873ffaffc80f0abfbbc6decbed4cb5615a94b226344719728432312e7268ed8f088371466d7594813541fbb2a46dc7d08c9d1f3c1416f89dac2bdaf"
+hash-format = "sha256"
+hash = "fead68d01b16ac9fb58d0cc6ee50042df8a2fe6df16443e5db6155e0b2da0c29"
 
 [update]
 [update.modrinth]

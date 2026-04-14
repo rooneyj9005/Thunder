@@ -4,8 +4,8 @@ side = "both"
 
 [download]
 url = "https://cdn.modrinth.com/data/cYvmbMbJ/versions/pasnT3ZG/better_farming_plus-0.3.0-forge-1.20.1.jar"
-hash-format = "sha512"
-hash = "bb75c1b2960efdbc5617070dc0ff05e5f010126b63bc0d00b98698d72e077e229cdf7d1b7c0bd34ec3f966f946949a6f114723c1494bdf43f03d4c04ef19a19a"
+hash-format = "sha256"
+hash = "19866f4772eabfcf667aa5a34161b15adbe8d05556046a0b9935e4a8362ff81b"
 
 [update]
 [update.modrinth]

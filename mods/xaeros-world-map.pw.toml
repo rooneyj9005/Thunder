@@ -4,8 +4,8 @@ side = "both"
 
 [download]
 url = "https://cdn.modrinth.com/data/NcUtCpym/versions/vUbAYOnm/xaeroworldmap-forge-1.20.1-1.40.11.jar"
-hash-format = "sha512"
-hash = "210376e3377a7c75ecd5ccaa509cf1d574ff5e2fb833ac93060423efd6104a0a435bd0e8804ee2d17f9bd60bd0d1267cfe9ee42435db18f12f4f87aca67c8900"
+hash-format = "sha256"
+hash = "d41ea1366e36f79f1b38efb44920fa9354a929eee070c493bda60b0c5cc2b16a"
 
 [update]
 [update.modrinth]

@@ -4,8 +4,8 @@ side = "server"
 
 [download]
 url = "https://cdn.modrinth.com/data/BmoKrzHq/versions/UZfIGXcU/bfcmod-1.20.1-2.0.2.jar"
-hash-format = "sha512"
-hash = "e30375585d821b2d352b9a943251a1f8b40c3acc3f75374787aa76186aa3bd081216dec3070cd16c0969d62893d72080bcab70895f5ab696e24200c53fd3d7d7"
+hash-format = "sha256"
+hash = "1e166574dcfb6ecc13286aa943556d865e1840e2de3c915b20589710c785cfaf"
 
 [update]
 [update.modrinth]

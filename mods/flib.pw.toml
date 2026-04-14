@@ -4,8 +4,8 @@ side = "both"
 
 [download]
 url = "https://cdn.modrinth.com/data/FAUSd09K/versions/Qv28YacJ/flib-1.20.1-0.0.14.jar"
-hash-format = "sha512"
-hash = "c5239a820cda3527794af6a59f3d26e9fc6ec82259aefc4774562fb6db75dfb287ee47bcc05d1857e423a6744c44610f77b4ac1bc5a95fe35674296a420cf0da"
+hash-format = "sha256"
+hash = "f97825d7652e06edcb18d8a199082205e907060669e7b83a59ed97de1f037b95"
 
 [update]
 [update.modrinth]

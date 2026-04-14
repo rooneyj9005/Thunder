@@ -4,8 +4,8 @@ side = "both"
 
 [download]
 url = "https://cdn.modrinth.com/data/1KLyhGRz/versions/FMUX4THT/item-filters-forge-2001.1.0-build.53.jar"
-hash-format = "sha512"
-hash = "4bed10d923a6b6b03614a019a50a5676f4dc89213b6143a77f5af4c759fa7f9940e45a81192e07717efbb3c917324b2e33343c1db3a6ed61171ccebb4b09832f"
+hash-format = "sha256"
+hash = "42e2f0d10468f8c97ef18ff47ba7a46f78322c600b8b2aec051a45b0378fad6b"
 
 [update]
 [update.modrinth]

@@ -4,8 +4,8 @@ side = "server"
 
 [download]
 url = "https://cdn.modrinth.com/data/8oGVUFuX/versions/lXYmV1xl/grieflogger-1.2.4-1.20.1-forge.jar"
-hash-format = "sha512"
-hash = "19a9758373474b2884c3c86edfefada198832e705e051e73ad5148936812f1100d82cf9c2693778763099c333a797a01ba2e5ef1643074532ad9f4cfbc9394d9"
+hash-format = "sha256"
+hash = "5c416c2158c4f3b3a257a0e9d1dafa73e11830464a71548df9e4173ae60f9794"
 
 [update]
 [update.modrinth]

@@ -4,8 +4,8 @@ side = "both"
 
 [download]
 url = "https://cdn.modrinth.com/data/HXF82T3G/versions/jxUqRzSD/BiomesOPlenty-forge-1.20.1-19.0.0.96.jar"
-hash-format = "sha512"
-hash = "d23b4526f80ed88b9253b4cb28f9f2675744dcabfee9e19f3e33f5870b84b7fa1e3104ff1201d0b4408d6a8354195cbedee1ed42100c9778e1ffd32ddab5e55e"
+hash-format = "sha256"
+hash = "84bbfe8fa25a453dae3a8e6c46e8e129f48f7d9df58e33bb7f3d28b90f591b3f"
 
 [update]
 [update.modrinth]

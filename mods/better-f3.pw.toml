@@ -4,8 +4,8 @@ side = "client"
 
 [download]
 url = "https://cdn.modrinth.com/data/V8TerSIX/versions/mqn0XAIr/betterf3-1.20.1-1.0.jar"
-hash-format = "sha512"
-hash = "99b1784c619ff837b92e8888cad524ee9ab4333bf8891c4cba145c3fcb71f8113c018577509bdb254c71424df4cb71f6c24fab5449abdf7e20e780676c316d5b"
+hash-format = "sha256"
+hash = "621b3a3cb5a8b70bd7d50e2f670fd292f901ecc3005b0eebbfde6dba12e2a8a5"
 
 [update]
 [update.modrinth]

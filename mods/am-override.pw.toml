@@ -4,8 +4,8 @@ side = "client"
 
 [download]
 url = "https://cdn.modrinth.com/data/2UavtGuR/versions/o8TBr6W0/amoverride-1.0-all.jar"
-hash-format = "sha512"
-hash = "0dbf08b6e71dcbcfc0abdb2c37c1fd905a708cf5dfc28ea36ab9a1579a71d9a9f0cecd192e79d9a1e041fd7725df6e6f71719ee662871994c0df2bc15e93384e"
+hash-format = "sha256"
+hash = "3cbc79fc7a232f3892e51aab838edf4073523f9bbcb0443c6c9f5f2a001e87e7"
 
 [update]
 [update.modrinth]

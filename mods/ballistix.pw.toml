@@ -4,8 +4,8 @@ side = "both"
 
 [download]
 url = "https://cdn.modrinth.com/data/XeEYk41R/versions/uiULspJt/Ballistix-1.20.1-1.0.1-0.jar"
-hash-format = "sha512"
-hash = "56b84bc68172a8c9bba79df9efcc8cea2f9c1990fc094fb36716933bf749344c150318ae03660803247c506368f28827915c0051278c8e030a57b85e43e41c3b"
+hash-format = "sha256"
+hash = "c3295030637602deef0e75cf1ff017da229b381b0195867a81358a80493072c9"
 
 [update]
 [update.modrinth]

@@ -4,8 +4,8 @@ side = "server"
 
 [download]
 url = "https://cdn.modrinth.com/data/g8NOG5OR/versions/b8sPhh9m/Oh-The-Trees-Youll-Grow-forge-1.20.1-1.4.2.jar"
-hash-format = "sha512"
-hash = "c614b78b302ceb38804cfd43a5a0997320976d31e0909105ea9a0f3a078181b84e9b86cb6ed1ff7563e9cb019c5e1849ada459aa0b01ac172195123609e1495d"
+hash-format = "sha256"
+hash = "dd760642d8ab4720977e45cdceabfeec20343c6f597f54c95c5fef8098c7dbd5"
 
 [update]
 [update.modrinth]

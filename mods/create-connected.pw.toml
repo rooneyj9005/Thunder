@@ -4,8 +4,8 @@ side = "both"
 
 [download]
 url = "https://cdn.modrinth.com/data/Vg5TIO6d/versions/HMzC945H/create_connected-1.1.7-mc1.20.1-all.jar"
-hash-format = "sha512"
-hash = "647418a320bf722c280b452df54e78dc5deb351ac586ffb2fb8a89ae4784771c4bd4ee17c16efc15d8d705e299521aaa6150bb9e3ab6962fe1c23312c87d2328"
+hash-format = "sha256"
+hash = "0c511a206709c465bdb5471eaf72f70925c71a4f0b797d9f9ace84ae8f0b6f01"
 
 [update]
 [update.modrinth]

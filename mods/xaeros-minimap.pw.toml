@@ -4,8 +4,8 @@ side = "both"
 
 [download]
 url = "https://cdn.modrinth.com/data/1bokaNcj/versions/iMXAV165/xaerominimap-forge-1.20.1-25.3.10.jar"
-hash-format = "sha512"
-hash = "ad7d8e38419c91f77ac09a77c3972256977458ef50c5560b1d11f293b2a6ff4d04dee8ebfaa2688776c3db9a64e946f835229ebd0d89391e39bee5ad16bebd0a"
+hash-format = "sha256"
+hash = "dd118045c4daa8e27614f576d515ba5b07e4ccae060b6b1a536437f155879c7b"
 
 [update]
 [update.modrinth]

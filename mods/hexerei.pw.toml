@@ -4,8 +4,8 @@ side = "both"
 
 [download]
 url = "https://cdn.modrinth.com/data/IQSOHVhI/versions/z5SfvrzM/hexerei-0.4.2.3.jar"
-hash-format = "sha512"
-hash = "44c6a9263f175c2cb0e6ee2b4372cdb53f7904bd7585a634b81bae221e8a7284aa30b733813f48de3550c97009219898663e28d06b2210fb1ad9596e9f484141"
+hash-format = "sha256"
+hash = "419db9f15af0ac694dc53a9cc99fa97c3a0ef787ae3d43d9aff87d2030e3f556"
 
 [update]
 [update.modrinth]

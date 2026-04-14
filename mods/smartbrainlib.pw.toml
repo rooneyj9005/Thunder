@@ -4,8 +4,8 @@ side = "server"
 
 [download]
 url = "https://cdn.modrinth.com/data/PuyPazRT/versions/YkeJNm33/SmartBrainLib-forge-1.20.1-1.15.jar"
-hash-format = "sha512"
-hash = "51754d743b86bf89da5c15a1c2b733f4b3713bf2aa7e6bd4d920cd36bc7923f2de316903fbe0d675a37f848929508c0e418dec1ecf7e87342f547fe32e75f8f4"
+hash-format = "sha256"
+hash = "dc1f5497e1a175397fa10ea84170d8311c71b592976128700fb008139dde55d4"
 
 [update]
 [update.modrinth]

@@ -2,7 +2,7 @@ hash-format = "sha256"
 
 [[files]]
 file = "config/bcc-common.toml"
-hash = "5aa02fbcf3e665ff7090f7c427b7709dc23173e8b6986fa7e57adc895cd96f2e"
+hash = "175bf4cd01d070fd9ebeed03deecb1f81fef23a70c6ad1a2e59f6f801568d011"
 
 [[files]]
 file = "config/logbegone.toml"
@@ -254,7 +254,7 @@ metafile = true
 
 [[files]]
 file = "mods/enchantment-descriptions.pw.toml"
-hash = "78370ae52e87fdd72c5a988bed40674d1a7a9bc8a7d69e899f6a4fa91901925d"
+hash = "60c712cc541a109ebef9675bb441ef20d79eeee8b0395ee28e5e15cce2947223"
 metafile = true
 
 [[files]]
@@ -369,7 +369,7 @@ metafile = true
 
 [[files]]
 file = "mods/krypton-fnp.pw.toml"
-hash = "046be11686a9f13ce9ec8f87ff3b75274b93df8dd431b3c0f9748c1011944e69"
+hash = "4ff8a3b2534e1baddb070511dc8208aa26fba2baf7a17ec2bbf066e8d762eef6"
 metafile = true
 
 [[files]]
@@ -639,12 +639,12 @@ metafile = true
 
 [[files]]
 file = "mods/xaeros-minimap.pw.toml"
-hash = "dd9c8d955749815ea13a1e500711926fd631bab441ceda04994ac84d1cdd52a6"
+hash = "0f4c36a62455f7a78f36b8768f2fd980e558d9a18552c6ee00e9d090b51de341"
 metafile = true
 
 [[files]]
 file = "mods/xaeros-world-map.pw.toml"
-hash = "c610e4f3a315259f44c6c2ce05503e93c7525a43a21d13f0e0661062cb82bede"
+hash = "ceef63cdf36c1e23cc00a78aa9b81a13a34fc02cea9ccdf2ec35d0558cff72e5"
 metafile = true
 
 [[files]]

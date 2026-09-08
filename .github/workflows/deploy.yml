@@ -35,7 +35,7 @@ jobs:
 
       - name: Prepare Pages artifact
         shell: bash
-        run: bash ./.github/scripts/prepare-pack-pages-artifact.sh tmp/pages
+        run: bash ./.github/scripts/build-pages.sh tmp/pages
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
@@ -65,7 +65,7 @@ jobs:
             exit 1
           fi
 
-          bash ./.github/scripts/test-install.sh "${base_url%/}/pack.toml"
+          bash ./.github/scripts/deploy-install.sh "${base_url%/}/pack.toml"
           echo "ok=true" >> "$GITHUB_OUTPUT"
 
       - name: Determine rollback tag
@@ -99,7 +99,7 @@ jobs:
       - name: Prepare rollback Pages artifact
         if: ${{ steps.install_test.outputs.ok != 'true' && steps.rollback.outputs.tag != '' }}
         shell: bash
-        run: bash ./.github/scripts/prepare-pack-pages-artifact.sh tmp/rollback-pages
+        run: bash ./.github/scripts/build-pages.sh tmp/rollback-pages
 
       - name: Upload rollback Pages artifact
         if: ${{ steps.install_test.outputs.ok != 'true' && steps.rollback.outputs.tag != '' }}

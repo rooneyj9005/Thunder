@@ -80,5 +80,5 @@ if [[ -n "$TEST_PACK_URL" ]]; then
   rm -rf "$test_dir"
   mkdir -p "$test_dir"
   PACKWIZ_URL="$TEST_PACK_URL" PACKWIZ_SIDE=server bash "$ROOT_DIR/tools/update.sh" --dir "$test_dir"
-  bash "$ROOT_DIR/.github/scripts/check-install.sh" "$test_dir" server
+  bash "$ROOT_DIR/.github/scripts/checks-install.sh" "$test_dir" server
 fi

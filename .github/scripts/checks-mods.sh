@@ -11,7 +11,7 @@ set -euo pipefail
 # the side rule (an absent side means both) lives in one place instead of being
 # reimplemented either side of the fence.
 #
-# Usage: expected-mods.sh <server|client|both>
+# Usage: checks-mods.sh <server|client|both>
 
 if [[ $# -ne 1 ]]; then
   echo "Usage: $0 <server|client|both>" >&2

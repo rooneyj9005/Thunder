@@ -21,4 +21,4 @@ mkdir -p "$WORK_DIR"
 
 PACKWIZ_URL="$PACK_URL" PACKWIZ_SIDE=server bash "$ROOT_DIR/tools/install.sh" --dir "$WORK_DIR"
 
-bash "$ROOT_DIR/.github/scripts/check-install.sh" "$WORK_DIR" server --forge
+bash "$ROOT_DIR/.github/scripts/checks-install.sh" "$WORK_DIR" server --forge

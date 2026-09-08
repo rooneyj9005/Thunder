@@ -200,11 +200,6 @@ exit_reason() {
 # Waiting
 # ---------------------------------------------------------------------------
 
-# Set by wait_for_marker and read by whichever driver called it, so the caller
-# can explain a failure without guessing.
-WAIT_REASON=""
-WAIT_MATCHED=""
-
 # Watches one container until its log holds READY_PATTERN, or something says the
 # run is over. The heartbeat exists because a long wait with no output is
 # indistinguishable from a hang. A repeated line is the shape of a stall, and
@@ -212,9 +207,9 @@ WAIT_MATCHED=""
 #
 # Usage: wait_for_marker <container> <log-path> <ready-re> <fatal-re> <timeout>
 #
-# WAIT_REASON and WAIT_MATCHED are the return channel, read by the driver that
-# sourced this file, so shellcheck cannot see the use from here.
-# shellcheck disable=SC2034
+# Returns 0 and prints the line that matched, or returns 1 and prints why it
+# gave up. Progress goes to stderr so the caller can capture stdout for that
+# one answer.
 wait_for_marker() {
     marker_name=$1
     marker_log=$2
@@ -222,27 +217,24 @@ wait_for_marker() {
     marker_fatal=$4
     marker_limit=$5
 
-    WAIT_REASON=""
-    WAIT_MATCHED=""
-
     marker_waited=0
     marker_previous=""
     marker_stalled=0
 
     while [ "${marker_waited}" -lt "${marker_limit}" ]; do
         if container_file_grep "${marker_name}" "${marker_log}" "${marker_ready}"; then
-            WAIT_MATCHED=$(container_file_match "${marker_name}" "${marker_log}" "${marker_ready}")
+            container_file_match "${marker_name}" "${marker_log}" "${marker_ready}"
             return 0
         fi
 
         if [ -n "${marker_fatal}" ] &&
             container_file_grep "${marker_name}" "${marker_log}" "${marker_fatal}"; then
-            WAIT_REASON="the run failed outright (matched: $(container_file_match "${marker_name}" "${marker_log}" "${marker_fatal}"))"
+            say "the run failed outright (matched: $(container_file_match "${marker_name}" "${marker_log}" "${marker_fatal}"))"
             return 1
         fi
 
         if ! container_running "${marker_name}"; then
-            WAIT_REASON="the container stopped before it was ready: $(exit_reason "${marker_name}")"
+            say "the container stopped before it was ready: $(exit_reason "${marker_name}")"
             return 1
         fi
 
@@ -252,10 +244,10 @@ wait_for_marker() {
 
             if [ "${marker_current}" = "${marker_previous}" ]; then
                 marker_stalled=$((marker_stalled + HEARTBEAT_INTERVAL))
-                say "    ${marker_waited}s: no new output for ${marker_stalled}s. Still: ${marker_current}"
+                say "    ${marker_waited}s: no new output for ${marker_stalled}s. Still: ${marker_current}" >&2
             else
                 marker_stalled=0
-                say "    ${marker_waited}s: ${marker_current}"
+                say "    ${marker_waited}s: ${marker_current}" >&2
             fi
             marker_previous=${marker_current}
         fi
@@ -264,7 +256,7 @@ wait_for_marker() {
         marker_waited=$((marker_waited + POLL_INTERVAL))
     done
 
-    WAIT_REASON="nothing matched within ${marker_limit}s"
+    say "nothing matched within ${marker_limit}s"
     return 1
 }
 
@@ -272,7 +264,7 @@ wait_for_marker() {
 # What the pack says should be installed
 # ---------------------------------------------------------------------------
 
-# What the pack says a correct instance holds comes from expected-mods.sh, which
+# What the pack says a correct instance holds comes from checks-mods.sh, which
 # the CI install checks use too, so the side rule is worked out in one place. A
 # missing jar means the sync did not finish; an unexpected one means a removed
 # mod is still in the volume from an earlier run.
@@ -281,7 +273,7 @@ check_mod_set() {
     check_side=$2
     check_dir=$3
 
-    bash "${ROOT_DIR}/.github/scripts/expected-mods.sh" "${check_side}" \
+    bash "${ROOT_DIR}/.github/scripts/checks-mods.sh" "${check_side}" \
         > "${WORK_DIR}/expected" ||
         die "Could not work out which mods the pack expects on the ${check_side} side."
     volume_run "${check_volume}" "ls -1 '${check_dir}' 2>/dev/null" |

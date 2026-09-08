@@ -29,11 +29,11 @@ jobs:
 
       - name: Lint Bash scripts
         shell: bash
-        run: bash ./.github/scripts/lint-shell.sh
+        run: bash ./.github/scripts/checks-shell.sh
 
       - name: Validate PowerShell syntax
         shell: pwsh
-        run: ./.github/scripts/lint-powershell.ps1
+        run: ./.github/scripts/checks-powershell.ps1
 
   validate:
     needs: lint
@@ -61,7 +61,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          bash ./.github/scripts/prepare-pack-pages-artifact.sh "$RUNNER_TEMP/pack-pages"
+          bash ./.github/scripts/build-pages.sh "$RUNNER_TEMP/pack-pages"
 
       - name: Start local pack metadata host
         shell: bash
@@ -85,7 +85,7 @@ jobs:
         env:
           TEST_PACK_URL: http://127.0.0.1:8123/pack.toml
         shell: bash
-        run: bash ./.github/scripts/validate-pack.sh
+        run: bash ./.github/scripts/checks-pack.sh
 
       - name: Stop local pack metadata host
         if: ${{ always() }}

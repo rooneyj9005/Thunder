@@ -28,7 +28,7 @@ packwiz refresh
 packwiz modrinth export
 ```
 
-If `shellcheck` is not already available, `lint-shell.sh` will fetch a local copy of the latest release into `tmp/tools` and use that instead.
+If `shellcheck` is not already available, `checks-shell.sh` will fetch a local copy of the latest release into `tmp/tools` and use that instead.
 
 A few expectations tend to matter more than anything else:
 

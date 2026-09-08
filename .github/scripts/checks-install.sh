@@ -7,7 +7,7 @@ set -euo pipefail
 # empty directory a pass. The deploy workflow rolls Pages back on that result,
 # and it needs to mean something.
 #
-# Usage: check-install.sh <dir> <server|client|both> [--forge]
+# Usage: checks-install.sh <dir> <server|client|both> [--forge]
 #
 #   --forge  also require the Forge server install (unix_args.txt or server.jar).
 #            tools/install.sh produces it; tools/update.sh does not.
@@ -56,7 +56,7 @@ trap 'rm -f "$expected_file" "$actual_file" "$missing_file" "$unexpected_file"' 
 
 # Invoked through bash because the scripts in this repo are not marked
 # executable, the same way the workflows call this one.
-bash "$SCRIPT_DIR/expected-mods.sh" "$SIDE" > "$expected_file"
+bash "$SCRIPT_DIR/checks-mods.sh" "$SIDE" > "$expected_file"
 
 if [[ -d "$TARGET_DIR/mods" ]]; then
   find "$TARGET_DIR/mods" -maxdepth 1 -name '*.jar' -printf '%f\n' | sort > "$actual_file"

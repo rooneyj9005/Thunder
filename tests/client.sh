@@ -110,10 +110,14 @@ esac
 CEILING=$((MEMORY + OVERHEAD))
 WORK_DIR=$(mktemp -d)
 OWN_PACK_HOST=0
+CLEANED=0
 
-# Invoked by the EXIT trap below, which shellcheck does not follow.
-# shellcheck disable=SC2329
 cleanup() {
+    # The EXIT trap and the explicit call below can both reach this, so it runs
+    # once and is a no-op after that.
+    [ "${CLEANED}" -eq 0 ] || return 0
+    CLEANED=1
+
     rm -rf "${WORK_DIR}"
 
     [ "${OWN_PACK_HOST}" -eq 1 ] && stop_pack_host
@@ -126,17 +130,10 @@ cleanup() {
     dk rm -f "${CONTAINER}" >/dev/null 2>&1 || true
 }
 
-# Invoked by the INT and TERM traps below.
-# shellcheck disable=SC2329
-interrupted() {
-    say "" >&2
-    say "Interrupted. Tearing down so nothing is left holding memory." >&2
-    cleanup
-    exit 130
-}
-
-trap cleanup EXIT
-trap interrupted INT TERM
+# The INT and TERM handler only announces itself and exits. Exiting fires the
+# EXIT trap, which is what actually tears the run down.
+trap 'cleanup' EXIT
+trap 'say "" >&2; say "Interrupted. Tearing down so nothing is left holding memory." >&2; exit 130' INT TERM
 
 require_docker
 check_budget "$((CEILING + 256))"
@@ -285,6 +282,10 @@ fi
 
 summarise_problems "${VOLUME}" "logs/latest.log"
 collect_logs "${VOLUME}" "client-logs.zip" "logs" "crash-reports" "options.txt"
+
+# Everything worth keeping is out of the container now, so stop holding memory
+# while the result is printed. The EXIT trap still covers every earlier exit.
+cleanup
 
 ELAPSED=$(($(date +%s) - STARTED))
 

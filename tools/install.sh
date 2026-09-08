@@ -122,10 +122,15 @@ case ${MODLOADER} in
 
         java -jar installer.jar --installServer
 
+        # Copied, not symlinked. A panel's permissions pass, its SFTP layer and
+        # most backup tooling all treat symlinks differently from files, and
+        # losing this one leaves a server that cannot boot at all with no clue
+        # as to why. The file is a few hundred bytes.
         ARGS_FILE="libraries/net/minecraftforge/forge/${MC_VERSION}-${RESOLVED_VERSION}/unix_args.txt"
         if [ -f "${ARGS_FILE}" ]; then
-            ln -sf "${ARGS_FILE}" unix_args.txt
-            printf '%s\n' "Linked unix_args.txt for Forge ${MC_VERSION}-${RESOLVED_VERSION}"
+            rm -f unix_args.txt
+            cp "${ARGS_FILE}" unix_args.txt
+            printf '%s\n' "Wrote unix_args.txt for Forge ${MC_VERSION}-${RESOLVED_VERSION}"
         elif [ ! -f "${SERVER_JARFILE}" ]; then
             die "Forge installation produced neither unix_args.txt nor ${SERVER_JARFILE}."
         fi

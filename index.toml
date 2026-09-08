@@ -15,7 +15,7 @@ hash = "6ad11b0f52be1a2e5b285c48a13667916ab7922dcfbc3f616fd72f8e77867677"
 
 [[files]]
 file = "functions.sh"
-hash = "df653d458fe733c0fa37db8ec6e9863c16f64678508784521538478ccfca2843"
+hash = "5fd67c648951c9304e9f66a9d72a4cb54c00697b478eee57b420d072370f1519"
 
 [[files]]
 file = "kubejs/server_scripts/fix_create_confectionery.js"
@@ -683,11 +683,11 @@ preserve = true
 
 [[files]]
 file = "startup.ps1"
-hash = "2bb247450f5623ad607c3e6de58762143acc5dab0761c2b50e6a23b33038feeb"
+hash = "b15654cec2d65dadc4179fe9ab446c3d0e7f06f493344411fd9ec43e524e03bf"
 
 [[files]]
 file = "startup.sh"
-hash = "5e0335127c686a0047d232a1dfad8f9bb8cd8bcceadc463e57c5e77670425613"
+hash = "acc276d37030edf30dc38540d255748a243eec62f0804e94c16f5184da2a0420"
 
 [[files]]
 file = "tools/update.ps1"

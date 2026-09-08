@@ -104,28 +104,39 @@ ENABLE_VOICE_CHAT=${ENABLE_VOICE_CHAT:-true}
 validate_boolean_value "ENABLE_VOICE_CHAT" "${ENABLE_VOICE_CHAT}"
 
 case ${PACKWIZ_AUTO_UPDATE} in
+    true|1|yes) SYNC_ON_START=true ;;
+    *)          SYNC_ON_START=false ;;
+esac
+
+# Wiping the mod set is only safe when something is going to put it back. These
+# used to be independent, so CLEAN_INSTALL with sync switched off deleted every
+# mod and then declined to re-download them, leaving a modded world to load
+# against no mods at all.
+case ${CLEAN_INSTALL} in
     true|1|yes)
-        STARTUP_SCRIPT=${SCRIPT_DIR}/startup.sh
-        UPDATE_SCRIPT=${SCRIPT_DIR}/tools/update.sh
-        ensure_executable_file "${UPDATE_SCRIPT}"
-        CURRENT_DIR=$(pwd)
-        PACKWIZ_SIDE="${PACKWIZ_SIDE}" "${UPDATE_SCRIPT}" --dir "${CURRENT_DIR}"
-        ensure_executable_file "${STARTUP_SCRIPT}"
-        ensure_executable_file "${UPDATE_SCRIPT}"
+        if [ "${SYNC_ON_START}" = "false" ]; then
+            die "CLEAN_INSTALL wipes the mod set but PACKWIZ_AUTO_UPDATE is off, so nothing would reinstall it. Switch Auto Update on for this start, or switch Clean Install off."
+        fi
+        printf '%s\n' "Clean install - wiping mods and packwiz config..."
+        rm -rf mods config/packwiz-installer.toml
         ;;
     *)
-        case ${CLEAN_INSTALL} in
-            true|1|yes)
-                printf '%s\n' "Clean install - wiping mods and packwiz config..."
-                rm -rf mods config/packwiz-installer.toml
-                ;;
-            *)
-                :
-                ;;
-        esac
-        printf '%s\n' "Skipping packwiz sync. Set PACKWIZ_AUTO_UPDATE=true to sync on every start."
+        :
         ;;
 esac
+
+if [ "${SYNC_ON_START}" = "true" ]; then
+    UPDATE_SCRIPT=${SCRIPT_DIR}/tools/update.sh
+    ensure_executable_file "${UPDATE_SCRIPT}"
+    CURRENT_DIR=$(pwd)
+    PACKWIZ_SIDE="${PACKWIZ_SIDE}" "${UPDATE_SCRIPT}" --dir "${CURRENT_DIR}"
+
+    # A sync may have moved or renamed these, so a missing one is not fatal.
+    mark_executable_if_present "${SCRIPT_DIR}/startup.sh"
+    mark_executable_if_present "${UPDATE_SCRIPT}"
+else
+    printf '%s\n' "Skipping packwiz sync. Set PACKWIZ_AUTO_UPDATE=true to sync on every start."
+fi
 
 VOICE_PORT=${VOICE_PORT:-24454}
 case ${VOICE_PORT} in
@@ -171,6 +182,32 @@ if [ "${VOICE_ENABLED}" = "true" ]; then
 else
     set_properties_key "${VOICE_CONFIG_FILE}" bind_address 127.0.0.1
     printf '%s\n' "Voice chat disabled. Simple Voice Chat is bound to 127.0.0.1 and is not reachable from outside."
+fi
+
+# Checked before the launcher, because a world loaded against no mods is the
+# failure that costs something. A modded world with no mods either refuses to
+# start or, worse, loads and strips every modded block on the first save.
+if [ -d world ] &&
+    [ -z "$(find mods -maxdepth 1 -name '*.jar' -print -quit 2>/dev/null)" ]; then
+    die "world/ exists but mods/ holds no jars. Starting would risk stripping the world. Set PACKWIZ_AUTO_UPDATE=true and restart to reinstall the mod set."
+fi
+
+# unix_args.txt is what a Forge server launches from, and only the installer
+# writes it, so a server that loses it cannot boot and cannot repair itself.
+# Forge keeps its own copy under libraries/, so take that rather than making an
+# operator reinstall over a missing few hundred bytes.
+if [ ! -f unix_args.txt ]; then
+    FORGE_ARGS=$(find libraries/net/minecraftforge/forge -name unix_args.txt -type f 2>/dev/null | sed -n '1p')
+    if [ -n "${FORGE_ARGS}" ]; then
+        cp "${FORGE_ARGS}" unix_args.txt
+        printf '%s\n' "Restored unix_args.txt from ${FORGE_ARGS}"
+    fi
+fi
+
+# Falling through to "-jar server.jar" on a Forge install reports the missing
+# jar, which is not the problem and sends you looking in the wrong place.
+if [ ! -f unix_args.txt ] && [ ! -f "${SERVER_JARFILE:-server.jar}" ]; then
+    die "No Forge launch arguments and no ${SERVER_JARFILE:-server.jar}, so there is nothing to start. Reinstall the server to install Forge."
 fi
 
 if [ "${JAVA_MEMORY_MODE}" = "exact" ]; then

@@ -285,9 +285,12 @@ if ($AutoUpdate -or $autoByEnv) {
         -Strict
 }
 else {
+    # Wiping the mod set is only safe when something is going to put it back.
+    # These used to be independent, so a clean install with sync switched off
+    # deleted every mod and then declined to re-download them, leaving a modded
+    # world to load against no mods at all.
     if ($resolvedCleanInstall) {
-        Write-Host "Clean install - wiping mods and packwiz config..."
-        Remove-Item -Recurse -Force -ErrorAction SilentlyContinue mods, config/packwiz-installer.toml
+        throw "CLEAN_INSTALL wipes the mod set but PACKWIZ_AUTO_UPDATE is off, so nothing would reinstall it. Switch Auto Update on for this start, or switch Clean Install off."
     }
     Write-Host "Skipping packwiz sync. Set PACKWIZ_AUTO_UPDATE=true to sync on every start."
 }
@@ -369,11 +372,23 @@ function Resolve-ForgeArgsFile {
     throw "unix_args.txt is present but win_args.txt is not, and $($candidates.Count) Forge versions are installed under libraries/. Re-run tools/install.ps1 to repair the install."
 }
 
+# A modded world loaded with no mods either refuses to start or, worse, loads
+# and strips every modded block on the first save. Stop before finding out which.
+if ((Test-Path -LiteralPath "world") -and
+    -not (Get-ChildItem -Path "mods/*.jar" -ErrorAction SilentlyContinue)) {
+    throw "world/ exists but mods/ holds no jars. Starting would risk stripping the world. Set PACKWIZ_AUTO_UPDATE=true and restart to reinstall the mod set."
+}
+
 $forgeArgsFile = Resolve-ForgeArgsFile
 if ($forgeArgsFile) {
     & java @javaMemoryArgs "@$forgeArgsFile"
 }
-else {
+elseif (Test-Path -LiteralPath $resolvedServerJarFile) {
     & java @javaMemoryArgs -jar $resolvedServerJarFile
+}
+else {
+    # Reporting the missing jar is not the problem and sends you looking in the
+    # wrong place; on a Forge install there was never meant to be one.
+    throw "No Forge launch arguments and no $resolvedServerJarFile, so there is nothing to start. Re-run tools/install.ps1 to install Forge."
 }
 exit $LASTEXITCODE

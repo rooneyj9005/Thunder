@@ -17,6 +17,19 @@ ensure_executable_file() {
     chmod +x -- "${path}" || die "Could not mark '${path}' as executable."
 }
 
+# The same, but a missing file is not an error. Used after a pack sync, which is
+# allowed to move or rename the very scripts driving the upgrade: 0.12.1 moved
+# update.sh into tools/ and the running startup.sh then died checking the path
+# the sync had just removed.
+mark_executable_if_present() {
+    path=$1
+
+    [ -f "${path}" ] || return 0
+    [ -x "${path}" ] && return 0
+
+    chmod +x -- "${path}" || die "Could not mark '${path}' as executable."
+}
+
 use_local_java21_if_available() {
     for java_dir in ./jdk-21* ./jre-21*; do
         [ -d "${java_dir}" ] || continue

@@ -3,7 +3,7 @@ set -eu
 
 SCRIPT_DIR=$(CDPATH='' cd "$(dirname "$0")" && pwd)
 ROOT_DIR=$(CDPATH='' cd "${SCRIPT_DIR}/../.." && pwd)
-TOOLS_DIR=${ROOT_DIR}/_ci/tools
+TOOLS_DIR=${ROOT_DIR}/tmp/tools
 CR_CHARACTER=$(printf '\r')
 
 cd "${ROOT_DIR}"
@@ -121,7 +121,8 @@ check_line_endings() {
 
 failed=0
 
-for script_path in install.sh startup.sh update.sh runtime-common.sh; do
+for script_path in tools/install.sh startup.sh tools/update.sh functions.sh tests/*.sh; do
+    [ -f "${script_path}" ] || continue
     check_line_endings "${script_path}"
 
     if ! sh -n "${script_path}"; then
@@ -146,7 +147,7 @@ else
     SHELLCHECK_BIN=$(bootstrap_shellcheck)
 fi
 
-"${SHELLCHECK_BIN}" -s sh install.sh startup.sh update.sh runtime-common.sh
+"${SHELLCHECK_BIN}" -s sh tools/install.sh startup.sh tools/update.sh functions.sh tests/*.sh
 "${SHELLCHECK_BIN}" -s bash .github/scripts/*.sh
 
 if [ "${failed}" -ne 0 ]; then

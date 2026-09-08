@@ -83,7 +83,7 @@ jobs:
 
       - name: Validate pack build and update path
         env:
-          SMOKE_PACK_URL: http://127.0.0.1:8123/pack.toml
+          TEST_PACK_URL: http://127.0.0.1:8123/pack.toml
         shell: bash
         run: bash ./.github/scripts/validate-pack.sh
 

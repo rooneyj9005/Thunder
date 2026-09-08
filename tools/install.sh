@@ -2,8 +2,21 @@
 set -eu
 
 SCRIPT_DIR=$(CDPATH='' cd "$(dirname "$0")" && pwd)
-# shellcheck disable=SC1091
-. "${SCRIPT_DIR}/runtime-common.sh"
+# functions.sh sits beside this script when fetched standalone, or one level
+# up when this script is run from the repo tools/ directory.
+_rc_loaded=0
+for _rc in "${SCRIPT_DIR}/functions.sh" "${SCRIPT_DIR}/../functions.sh"; do
+    if [ -f "${_rc}" ]; then
+        # shellcheck disable=SC1090,SC1091
+        . "${_rc}"
+        _rc_loaded=1
+        break
+    fi
+done
+if [ "${_rc_loaded}" -ne 1 ]; then
+    printf '%s\n' "ERROR: functions.sh not found next to or above this script." >&2
+    exit 1
+fi
 
 MODE="server"
 INSTALL_DIR=""
@@ -194,5 +207,5 @@ fi
 printf '%s\n' "Syncing modpack via packwiz..."
 java -jar packwiz-installer-bootstrap.jar -g -s "${PACKWIZ_SIDE}" "${PACKWIZ_URL}"
 ensure_executable_file "./startup.sh"
-ensure_executable_file "./update.sh"
+ensure_executable_file "./tools/update.sh"
 printf '%s\n' "Server installation complete."

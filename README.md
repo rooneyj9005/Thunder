@@ -28,7 +28,7 @@ packwiz refresh
 packwiz modrinth export
 ```
 
-If `shellcheck` is not already available, `lint-shell.sh` will fetch a local copy of the latest release into `_ci/tools` and use that instead.
+If `shellcheck` is not already available, `lint-shell.sh` will fetch a local copy of the latest release into `tmp/tools` and use that instead.
 
 A few expectations tend to matter more than anything else:
 
@@ -81,19 +81,20 @@ The checklist below is intended as the go/no-go release checklist for the pack r
   <li><label><input type="checkbox" /> I have checked that <code>packwiz refresh</code> completed successfully.</label></li>
   <li><label><input type="checkbox" /> I have checked that <code>packwiz modrinth export</code> completed successfully.</label></li>
   <li><label><input type="checkbox" /> I have checked that the release install/update path can pull the published pack metadata successfully.</label></li>
-  <li><label><input type="checkbox" /> I have checked that <code>startup.sh</code> and <code>update.sh</code> still use LF line endings.</label></li>
+  <li><label><input type="checkbox" /> I have checked that <code>startup.sh</code>, <code>functions.sh</code>, and <code>tools/update.sh</code> still use LF line endings.</label></li>
   <li><label><input type="checkbox" /> I have checked that a fresh client import launches cleanly and reaches the main menu.</label></li>
   <li><label><input type="checkbox" /> I have checked that a fresh client import can join a Thunder server.</label></li>
   <li><label><input type="checkbox" /> I have checked that server install and startup behave correctly on Linux.</label></li>
   <li><label><input type="checkbox" /> I have checked that server install and startup behave correctly on Windows.</label></li>
-  <li><label><input type="checkbox" /> I have checked that <code>startup.sh</code>, <code>startup.ps1</code>, <code>update.sh</code>, and <code>update.ps1</code> are included in the export.</label></li>
+  <li><label><input type="checkbox" /> I have run the local tests (<code>sh tests/server.sh</code> and <code>sh tests/client.sh</code>) for changes that could affect runtime behaviour.</label></li>
+  <li><label><input type="checkbox" /> I have checked that <code>startup.sh</code>, <code>startup.ps1</code>, <code>tools/update.sh</code>, and <code>tools/update.ps1</code> are included in the export.</label></li>
   <li><label><input type="checkbox" /> I have checked that <code>.packwizignore</code> excludes repository-only files without excluding files the pack genuinely needs to ship.</label></li>
   <li><label><input type="checkbox" /> I have checked that <code>pterodactyl.json</code> is present as a public release asset.</label></li>
   <li><label><input type="checkbox" /> I have checked that generated helper binaries remain CI artifacts and are not being published as release assets.</label></li>
   <li><label><input type="checkbox" /> I have checked that the docs site and the pack repository still agree on install, update, server, and release behaviour.</label></li>
   <li><label><input type="checkbox" /> I have checked that the docs site and the scripts still point at the correct packwiz host.</label></li>
   <li><label><input type="checkbox" /> I have checked that any user-facing behaviour change has been reflected in the docs repository or consciously reviewed there.</label></li>
-  <li><label><input type="checkbox" /> I have checked that all <code>data-mod-count</code> fallback values in docs are in sync with the actual mod count (search <code>docs/*.md</code> for <code>data-mod-count</code>).</label></li>
+  <li><label><input type="checkbox" /> I have checked that all <code>data-mod-count</code> fallback values in docs are in sync with the actual mod count (search <code>Thunder-docs/*.md</code> for <code>data-mod-count</code>).</label></li>
   <li><label><input type="checkbox" /> I have checked that the live docs site, or a local preview of it, still makes sense for this release, including download links, server guidance, and version-status checks.</label></li>
   <li><label><input type="checkbox" /> I have checked that the chosen version bump matches the kind of change in this release.</label></li>
   <li><label><input type="checkbox" /> I have checked that, if this is a major release, it is genuinely production-ready rather than a hopeful milestone.</label></li>
@@ -106,7 +107,7 @@ The checklist below is intended as the go/no-go release checklist for the pack r
 - **Building:** Macaw's suite, Chipped, Rechiseled, Immersive Paintings
 - **World Gen:** Biomes o' Plenty, Alex's Mobs, Oh The Trees You'll Grow
 - **Food:** Farmer's Delight, Create Confectionery, Better Farming Plus
-- **Performance and Polish:** Memory Leak Fix, Krypton, Canary, Ferrite Core, Dynamic Torches
+- **Performance and Polish:** Memory Leak Fix, Krypton, Canary, Ferrite Core, RyoamicLights
 - **Utility and Server:** SecurityCraft, GriefLogger, LuckPerms, FTB Essentials, Xaero's Maps, Jade, Waystones, Simple Voice Chat, Lootr, Sophisticated Backpacks, WorldEdit
 
 Anyone who wants the fuller player-facing tour is likely better served by the live [features page](https://thunder.john.rooney.scot/features/).
@@ -119,12 +120,27 @@ This repository remains the source of truth for pack metadata, scripts, release 
 
 ## CI/CD
 
-- `checks.yml` runs on pushes to `development` and on pull requests, linting Bash and PowerShell on both Windows and Linux before validating pack metadata consistency and the runtime update path.
-- `build.yml` runs for tag pushes, waits for `checks.yml` to succeed on the tagged `development` commit, then rebuilds and validates the pack, uploads helper binaries as workflow artifacts, and creates the GitHub prerelease with the public release assets including `pterodactyl.json`. Version-shaped tags are still checked against `pack.toml`; ad-hoc tags are useful for smoke-testing the release pipeline.
-- `deploy.yml` runs only when a prerelease is promoted to a stable release, deploys the tagged pack metadata to GitHub Pages, smoke-tests the stable install path, and rolls Pages back while demoting the release if that smoke test fails.
+- `checks.yml` runs on pushes to `development` and on pull requests, linting Bash and PowerShell on both Windows and Linux before validating pack metadata consistency and the runtime update path. It stays deliberately light; the heavier end-to-end tests live in `tests/` for contributors to run locally.
+- `build.yml` runs for tag pushes, waits for `checks.yml` to succeed on the tagged `development` commit, then rebuilds and validates the pack, uploads helper binaries as workflow artifacts, and creates the GitHub prerelease with the public release assets including `pterodactyl.json`. Version-shaped tags are still checked against `pack.toml`; ad-hoc tags are useful for testing the release pipeline.
+- `deploy.yml` runs only when a prerelease is promoted to a stable release, deploys the tagged pack metadata to GitHub Pages, tests the stable install path, and rolls Pages back while demoting the release if that test fails.
 - Public release assets are limited to the files intended for players and server admins. Generated helper binaries are not distributed through Releases.
-- The Pterodactyl egg reinstall path uses the currently imported egg definition, then fetches `install.sh` from the latest stable release. Runtime uses the startup and update scripts bundled with the pack, and optional RCON or Simple Voice Chat ports still need matching panel allocations and firewall rules to be reachable.
+- The Pterodactyl egg reinstall path uses the currently imported egg definition, then fetches `install.sh` and `functions.sh` from the latest stable release. Runtime uses the startup and update scripts bundled with the pack, and optional RCON or Simple Voice Chat ports still need matching panel allocations and firewall rules to be reachable.
 - The documentation site is deployed separately from the `Thunder-docs` repository.
+
+## Local Testing
+
+CI deliberately stays light. The end-to-end tests live in `tests/` and are meant to be run by contributors when a change could affect runtime behaviour.
+
+They serve the working-tree pack metadata with `packwiz serve`, then run a Pterodactyl-style Forge server and a Prism-style Forge client against it, one at a time. The server test passes when the server has generated its world and finished starting; the client test passes when the client has loaded the full mod set and reached the title screen. Both check the installed jars against the sides declared in `index.toml`, and both zip their logs into `tmp/tests/`.
+
+```bash
+sh tests/server.sh
+sh tests/client.sh
+```
+
+Each drives a single container, so only one game JVM is ever resident. A server and a client with this mod set do not fit in a default Docker Desktop VM together.
+
+Both take `--pack-url`, so the same script and the same container test the working tree locally or published metadata elsewhere. See [`tests/README.md`](./tests/README.md) for what each test proves, the memory it needs, and the known limits of the headless client.
 
 ## Licence and Ethos
 

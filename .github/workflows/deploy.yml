@@ -35,7 +35,7 @@ jobs:
 
       - name: Prepare Pages artifact
         shell: bash
-        run: bash ./.github/scripts/prepare-pack-pages-artifact.sh _ci/pages
+        run: bash ./.github/scripts/prepare-pack-pages-artifact.sh tmp/pages
 
       - name: Setup Pages
         uses: actions/configure-pages@v5
@@ -44,7 +44,7 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
           name: pack-pages
-          path: ./_ci/pages
+          path: ./tmp/pages
 
       - name: Deploy Pages
         id: deployment
@@ -52,8 +52,8 @@ jobs:
         with:
           artifact_name: pack-pages
 
-      - name: Smoke test deployed install path
-        id: smoke
+      - name: Test the deployed install path
+        id: install_test
         continue-on-error: true
         shell: bash
         run: |
@@ -65,12 +65,12 @@ jobs:
             exit 1
           fi
 
-          bash ./.github/scripts/smoke-install.sh "${base_url%/}/pack.toml"
+          bash ./.github/scripts/test-install.sh "${base_url%/}/pack.toml"
           echo "ok=true" >> "$GITHUB_OUTPUT"
 
       - name: Determine rollback tag
         id: rollback
-        if: ${{ steps.smoke.outputs.ok != 'true' }}
+        if: ${{ steps.install_test.outputs.ok != 'true' }}
         env:
           GH_TOKEN: ${{ github.token }}
           CURRENT_TAG: ${{ github.event.release.tag_name }}
@@ -90,32 +90,32 @@ jobs:
           echo "tag=${previous_tag}" >> "$GITHUB_OUTPUT"
 
       - name: Check out rollback tag
-        if: ${{ steps.smoke.outputs.ok != 'true' && steps.rollback.outputs.tag != '' }}
+        if: ${{ steps.install_test.outputs.ok != 'true' && steps.rollback.outputs.tag != '' }}
         uses: actions/checkout@v5
         with:
           ref: ${{ steps.rollback.outputs.tag }}
           fetch-depth: 0
 
       - name: Prepare rollback Pages artifact
-        if: ${{ steps.smoke.outputs.ok != 'true' && steps.rollback.outputs.tag != '' }}
+        if: ${{ steps.install_test.outputs.ok != 'true' && steps.rollback.outputs.tag != '' }}
         shell: bash
-        run: bash ./.github/scripts/prepare-pack-pages-artifact.sh _ci/rollback-pages
+        run: bash ./.github/scripts/prepare-pack-pages-artifact.sh tmp/rollback-pages
 
       - name: Upload rollback Pages artifact
-        if: ${{ steps.smoke.outputs.ok != 'true' && steps.rollback.outputs.tag != '' }}
+        if: ${{ steps.install_test.outputs.ok != 'true' && steps.rollback.outputs.tag != '' }}
         uses: actions/upload-pages-artifact@v3
         with:
           name: pack-pages-rollback
-          path: ./_ci/rollback-pages
+          path: ./tmp/rollback-pages
 
       - name: Deploy rollback Pages artifact
-        if: ${{ steps.smoke.outputs.ok != 'true' && steps.rollback.outputs.tag != '' }}
+        if: ${{ steps.install_test.outputs.ok != 'true' && steps.rollback.outputs.tag != '' }}
         uses: actions/deploy-pages@v4
         with:
           artifact_name: pack-pages-rollback
 
       - name: Demote failed release back to prerelease
-        if: ${{ steps.smoke.outputs.ok != 'true' }}
+        if: ${{ steps.install_test.outputs.ok != 'true' }}
         env:
           GH_TOKEN: ${{ github.token }}
           RELEASE_ID: ${{ github.event.release.id }}
@@ -128,12 +128,12 @@ jobs:
             -f make_latest=false >/dev/null
 
       - name: Fail workflow after rollback
-        if: ${{ steps.smoke.outputs.ok != 'true' }}
+        if: ${{ steps.install_test.outputs.ok != 'true' }}
         shell: bash
         run: |
           if [[ -z "${{ steps.rollback.outputs.tag }}" ]]; then
-            echo "ERROR: Pack metadata smoke test failed and no previous stable release was available for rollback." >&2
+            echo "ERROR: The install test failed and no previous stable release was available for rollback." >&2
           else
-            echo "ERROR: Pack metadata smoke test failed. Pages were rolled back to ${{ steps.rollback.outputs.tag }} and the release was demoted back to prerelease." >&2
+            echo "ERROR: The install test failed. Pages were rolled back to ${{ steps.rollback.outputs.tag }} and the release was demoted back to prerelease." >&2
           fi
           exit 1

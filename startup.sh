@@ -3,7 +3,7 @@ set -eu
 
 SCRIPT_DIR=$(CDPATH='' cd "$(dirname "$0")" && pwd)
 # shellcheck disable=SC1091
-. "${SCRIPT_DIR}/runtime-common.sh"
+. "${SCRIPT_DIR}/functions.sh"
 
 SERVER_DIR=""
 TOTAL_MEMORY_MIB=""
@@ -41,7 +41,8 @@ fi
 ensure_supported_java
 
 CLEAN_INSTALL=${CLEAN_INSTALL:-false}
-PACKWIZ_SKIP_UPDATE=${PACKWIZ_SKIP_UPDATE:-false}
+PACKWIZ_AUTO_UPDATE=${PACKWIZ_AUTO_UPDATE:-false}
+PACKWIZ_SIDE=${PACKWIZ_SIDE:-server}
 if [ -z "${TOTAL_MEMORY_MIB}" ] && [ -n "${SERVER_MEMORY:-}" ]; then
     TOTAL_MEMORY_MIB=${SERVER_MEMORY}
 fi
@@ -98,12 +99,21 @@ build_java_memory_args() {
 
 build_java_memory_args
 validate_boolean_value "CLEAN_INSTALL" "${CLEAN_INSTALL}"
-validate_boolean_value "PACKWIZ_SKIP_UPDATE" "${PACKWIZ_SKIP_UPDATE}"
+validate_boolean_value "PACKWIZ_AUTO_UPDATE" "${PACKWIZ_AUTO_UPDATE}"
 ENABLE_VOICE_CHAT=${ENABLE_VOICE_CHAT:-true}
 validate_boolean_value "ENABLE_VOICE_CHAT" "${ENABLE_VOICE_CHAT}"
 
-case ${PACKWIZ_SKIP_UPDATE} in
+case ${PACKWIZ_AUTO_UPDATE} in
     true|1|yes)
+        STARTUP_SCRIPT=${SCRIPT_DIR}/startup.sh
+        UPDATE_SCRIPT=${SCRIPT_DIR}/tools/update.sh
+        ensure_executable_file "${UPDATE_SCRIPT}"
+        CURRENT_DIR=$(pwd)
+        PACKWIZ_SIDE="${PACKWIZ_SIDE}" "${UPDATE_SCRIPT}" --dir "${CURRENT_DIR}"
+        ensure_executable_file "${STARTUP_SCRIPT}"
+        ensure_executable_file "${UPDATE_SCRIPT}"
+        ;;
+    *)
         case ${CLEAN_INSTALL} in
             true|1|yes)
                 printf '%s\n' "Clean install - wiping mods and packwiz config..."
@@ -113,16 +123,7 @@ case ${PACKWIZ_SKIP_UPDATE} in
                 :
                 ;;
         esac
-        printf '%s\n' "Skipping packwiz sync (PACKWIZ_SKIP_UPDATE enabled)."
-        ;;
-    *)
-        STARTUP_SCRIPT=${SCRIPT_DIR}/startup.sh
-        UPDATE_SCRIPT=${SCRIPT_DIR}/update.sh
-        ensure_executable_file "${UPDATE_SCRIPT}"
-        CURRENT_DIR=$(pwd)
-        "${UPDATE_SCRIPT}" --dir "${CURRENT_DIR}"
-        ensure_executable_file "${STARTUP_SCRIPT}"
-        ensure_executable_file "${UPDATE_SCRIPT}"
+        printf '%s\n' "Skipping packwiz sync. Set PACKWIZ_AUTO_UPDATE=true to sync on every start."
         ;;
 esac
 
@@ -140,20 +141,37 @@ if [ "${VOICE_PORT}" -gt 65535 ]; then
     die "VOICE_PORT must be an integer between 0 and 65535 (0 to disable)."
 fi
 
+# Simple Voice Chat keeps its server settings in a .properties file that the mod
+# rewrites with every key on load. Only the keys below are touched, so operator
+# edits to the rest of the file survive a restart. Disabling voice chat binds the
+# UDP listener to loopback instead of deleting the file, which would only make
+# the mod regenerate its defaults and listen on every interface again.
 VOICE_CONFIG_FILE=config/voicechat/voicechat-server.properties
+mkdir -p config/voicechat
 case ${ENABLE_VOICE_CHAT} in
     true|1|yes)
-        if [ "${VOICE_PORT}" = "0" ]; then
-            rm -f "${VOICE_CONFIG_FILE}"
-        else
-            mkdir -p config/voicechat
-            printf '%s\n' "port=${VOICE_PORT}" > "${VOICE_CONFIG_FILE}"
-        fi
+        VOICE_ENABLED=true
         ;;
     *)
-        rm -f "${VOICE_CONFIG_FILE}"
+        VOICE_ENABLED=false
         ;;
 esac
+if [ "${VOICE_PORT}" = "0" ]; then
+    VOICE_ENABLED=false
+fi
+
+if [ "${VOICE_ENABLED}" = "true" ]; then
+    set_properties_key "${VOICE_CONFIG_FILE}" port "${VOICE_PORT}"
+    # shellcheck disable=SC2310
+    if properties_key_equals "${VOICE_CONFIG_FILE}" bind_address 127.0.0.1; then
+        printf '%s\n' "Voice chat re-enabled. Clearing the loopback bind_address so it listens on every interface again."
+        set_properties_key "${VOICE_CONFIG_FILE}" bind_address ""
+    fi
+    printf '%s\n' "Simple Voice Chat listens on UDP port ${VOICE_PORT}."
+else
+    set_properties_key "${VOICE_CONFIG_FILE}" bind_address 127.0.0.1
+    printf '%s\n' "Voice chat disabled. Simple Voice Chat is bound to 127.0.0.1 and is not reachable from outside."
+fi
 
 if [ "${JAVA_MEMORY_MODE}" = "exact" ]; then
     if [ -f unix_args.txt ]; then

@@ -5,7 +5,7 @@ param(
     [string]$PackwizUrl = "",
     [string]$PackwizSide = "",
     [string]$PackwizExtraFlags = "",
-    [switch]$SkipPackUpdate,
+    [switch]$AutoUpdate,
     [switch]$CleanInstall,
     [string]$ServerJarFile = "",
     [Nullable[int]]$VoicePort = $null,
@@ -258,47 +258,120 @@ $resolvedServerJarFile = Resolve-StringSetting $ServerJarFile $env:SERVER_JARFIL
 $resolvedVoicePort = Resolve-NonNegativeSetting "VOICE_PORT" $VoicePort $env:VOICE_PORT 24454
 $resolvedCleanInstall = $CleanInstall -or ($env:CLEAN_INSTALL -match '^(1|true|yes)$')
 $javaMemoryArgs = Get-JavaMemoryArgs $resolvedMemoryMiB $resolvedJvmMemoryMiB
-$enableVoiceChat = Resolve-BooleanSetting "ENABLE_VOICE_CHAT" $EnableVoiceChat $env:ENABLE_VOICE_CHAT "true"
+# Named differently from the $EnableVoiceChat parameter on purpose: variable names
+# are case-insensitive, and assigning a boolean to that [string] parameter would
+# turn it into the truthy string "False".
+$voiceChatEnabled = Resolve-BooleanSetting "ENABLE_VOICE_CHAT" $EnableVoiceChat $env:ENABLE_VOICE_CHAT "true"
 
 if ($resolvedVoicePort -gt 65535) {
     throw "VOICE_PORT must be between 0 and 65535 (0 to disable)."
 }
 
-$skipByEnv = $env:PACKWIZ_SKIP_UPDATE -match '^(1|true|yes)$'
-if ($SkipPackUpdate -or $skipByEnv) {
-    if ($resolvedCleanInstall) {
-        Write-Host "Clean install - wiping mods and packwiz config..."
-        Remove-Item -Recurse -Force -ErrorAction SilentlyContinue mods, config/packwiz-installer.toml
-    }
-    Write-Host "Skipping packwiz sync (SkipPackUpdate/PACKWIZ_SKIP_UPDATE enabled)."
-}
-else {
-    $updateScript = Join-Path $PSScriptRoot "update.ps1"
+$autoByEnv = $env:PACKWIZ_AUTO_UPDATE -match '^(1|true|yes)$'
+if ($AutoUpdate -or $autoByEnv) {
+    $updateScript = Join-Path (Join-Path $PSScriptRoot "tools") "update.ps1"
     if (-not (Test-Path $updateScript)) {
         throw "Could not find '$updateScript'."
     }
 
+    # update.ps1 defaults -Dir to its own folder, which is tools/, so the
+    # server directory has to be passed explicitly.
     & $updateScript `
+        -Dir (Get-Location).Path `
         -PackwizUrl $resolvedPackwizUrl `
         -PackwizSide $resolvedPackwizSide `
         -PackwizExtraFlags $resolvedPackwizExtraFlags `
         -CleanInstall:$resolvedCleanInstall `
         -Strict
 }
+else {
+    if ($resolvedCleanInstall) {
+        Write-Host "Clean install - wiping mods and packwiz config..."
+        Remove-Item -Recurse -Force -ErrorAction SilentlyContinue mods, config/packwiz-installer.toml
+    }
+    Write-Host "Skipping packwiz sync. Set PACKWIZ_AUTO_UPDATE=true to sync on every start."
+}
 
-if ($enableVoiceChat -and $resolvedVoicePort -ne 0) {
-    $voiceDir = Join-Path "config" "voicechat"
-    if (-not (Test-Path $voiceDir)) { New-Item -ItemType Directory -Path $voiceDir -Force | Out-Null }
-    Set-Content -LiteralPath (Join-Path $voiceDir "voicechat-server.properties") -Value "port=$resolvedVoicePort" -Encoding ASCII
+# Java reads .properties files as ISO-8859-1, so the same encoding is used here
+# to round-trip every byte of the lines that are not being changed.
+$propertiesEncoding = [System.Text.Encoding]::GetEncoding(28591)
+
+# .NET file calls resolve relative paths against the process directory, which
+# Set-Location does not change, so paths are made absolute from the PowerShell
+# location first.
+function Resolve-AbsolutePath([string]$Path) {
+    return $ExecutionContext.SessionState.Path.GetUnresolvedProviderPathFromPSPath($Path)
+}
+
+function Get-PropertiesLines([string]$Path) {
+    $absolutePath = Resolve-AbsolutePath $Path
+    if (Test-Path -LiteralPath $absolutePath) {
+        return @([System.IO.File]::ReadAllLines($absolutePath, $propertiesEncoding))
+    }
+
+    return @()
+}
+
+# Rewrites one key in a Java .properties file and keeps every other line,
+# comments included, exactly as it was. A missing file is created with just
+# this key; the mod fills in its defaults on the next load.
+function Set-PropertiesKey([string]$Path, [string]$Key, [string]$Value) {
+    $lines = @(Get-PropertiesLines $Path | Where-Object { -not $_.StartsWith("$Key=") })
+    $lines += "$Key=$Value"
+    [System.IO.File]::WriteAllLines((Resolve-AbsolutePath $Path), [string[]]$lines, $propertiesEncoding)
+}
+
+function Test-PropertiesKeyEquals([string]$Path, [string]$Key, [string]$Value) {
+    return (Get-PropertiesLines $Path) -contains "$Key=$Value"
+}
+
+# Simple Voice Chat keeps its server settings in a .properties file that the mod
+# rewrites with every key on load. Only the keys below are touched, so operator
+# edits to the rest of the file survive a restart. Disabling voice chat binds the
+# UDP listener to loopback instead of deleting the file, which would only make
+# the mod regenerate its defaults and listen on every interface again.
+$voiceDir = Join-Path "config" "voicechat"
+$voiceConfigFile = Join-Path $voiceDir "voicechat-server.properties"
+if (-not (Test-Path $voiceDir)) { New-Item -ItemType Directory -Path $voiceDir -Force | Out-Null }
+
+if ($voiceChatEnabled -and $resolvedVoicePort -ne 0) {
+    Set-PropertiesKey $voiceConfigFile "port" "$resolvedVoicePort"
+    if (Test-PropertiesKeyEquals $voiceConfigFile "bind_address" "127.0.0.1") {
+        Write-Host "Voice chat re-enabled. Clearing the loopback bind_address so it listens on every interface again."
+        Set-PropertiesKey $voiceConfigFile "bind_address" ""
+    }
+    Write-Host "Simple Voice Chat listens on UDP port $resolvedVoicePort."
 }
 else {
-    Remove-Item -LiteralPath (Join-Path "config" "voicechat" "voicechat-server.properties") -Force -ErrorAction SilentlyContinue
+    Set-PropertiesKey $voiceConfigFile "bind_address" "127.0.0.1"
+    Write-Host "Voice chat disabled. Simple Voice Chat is bound to 127.0.0.1 and is not reachable from outside."
 }
 
-if (Test-Path "unix_args.txt") {
-    $winArgs = (Get-Content "unix_args.txt") -replace "(?<=\.jar):", ";"
-    Set-Content -LiteralPath "win_args.txt" -Value $winArgs -Encoding ASCII
-    & java @javaMemoryArgs "@win_args.txt"
+# The Forge installer writes win_args.txt beside unix_args.txt. install.ps1
+# copies it to the server root; older installs only have unix_args.txt at the
+# root, so fall back to the copy inside libraries/ before giving up.
+function Resolve-ForgeArgsFile {
+    if (Test-Path -LiteralPath "win_args.txt") {
+        return "win_args.txt"
+    }
+
+    if (-not (Test-Path -LiteralPath "unix_args.txt")) {
+        return $null
+    }
+
+    $candidates = @(Get-ChildItem -Path "libraries/net/minecraftforge/forge/*/win_args.txt" -ErrorAction SilentlyContinue)
+    if ($candidates.Count -eq 1) {
+        Copy-Item -LiteralPath $candidates[0].FullName -Destination "win_args.txt" -Force
+        Write-Host "Copied win_args.txt from $($candidates[0].DirectoryName)."
+        return "win_args.txt"
+    }
+
+    throw "unix_args.txt is present but win_args.txt is not, and $($candidates.Count) Forge versions are installed under libraries/. Re-run tools/install.ps1 to repair the install."
+}
+
+$forgeArgsFile = Resolve-ForgeArgsFile
+if ($forgeArgsFile) {
+    & java @javaMemoryArgs "@$forgeArgsFile"
 }
 else {
     & java @javaMemoryArgs -jar $resolvedServerJarFile

@@ -121,7 +121,7 @@ jobs:
       - name: Validate pack build and update path
         env:
           EXPECTED_TAG: ${{ github.ref_name }}
-          SMOKE_PACK_URL: http://127.0.0.1:8123/pack.toml
+          TEST_PACK_URL: http://127.0.0.1:8123/pack.toml
         shell: bash
         run: bash ./.github/scripts/validate-pack.sh
 
@@ -129,18 +129,18 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p _ci/bin
-          cp "$(go env GOPATH)/bin/packwiz" _ci/bin/packwiz
+          mkdir -p tmp/bin
+          cp "$(go env GOPATH)/bin/packwiz" tmp/bin/packwiz
           GOOS=windows GOARCH=amd64 go install github.com/packwiz/packwiz@latest
-          cp "$(go env GOPATH)/bin/windows_amd64/packwiz.exe" _ci/bin/packwiz.exe
+          cp "$(go env GOPATH)/bin/windows_amd64/packwiz.exe" tmp/bin/packwiz.exe
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v6
         with:
           name: build-artifacts
           path: |
-            _ci/bin/packwiz
-            _ci/bin/packwiz.exe
+            tmp/bin/packwiz
+            tmp/bin/packwiz.exe
 
       - name: Create or update prerelease
         env:
@@ -157,11 +157,11 @@ jobs:
               exit 1
             fi
 
-            gh release upload "$TAG_NAME" _ci/Thunder.mrpack install.sh install.ps1 pterodactyl.json --clobber
+            gh release upload "$TAG_NAME" tmp/Thunder.mrpack tools/install.sh tools/install.ps1 functions.sh pterodactyl.json --clobber
             release_id="$(jq -r '.id' <<<"$release_json")"
           else
             gh release create "$TAG_NAME" \
-              _ci/Thunder.mrpack install.sh install.ps1 pterodactyl.json \
+              tmp/Thunder.mrpack tools/install.sh tools/install.ps1 functions.sh pterodactyl.json \
               --verify-tag \
               --generate-notes \
               --latest=false \

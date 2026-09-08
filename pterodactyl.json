@@ -6,7 +6,7 @@
   "exported_at": "2026-03-02T00:00:00+00:00",
   "name": "Thunder",
   "author": "john@rooney.scot",
-  "description": "Pterodactyl egg for the Thunder modpack - a Minecraft 1.20.1 Forge modpack combining technology, magic, and building mods. Uses packwiz for automatic server-side mod synchronisation.",
+  "description": "Pterodactyl egg for the Thunder modpack - a Minecraft 1.20.1 Forge modpack combining technology, magic, and building mods. Uses packwiz for automatic server-side mod synchronisation. Allocate at least 6 GB of memory to the server.",
   "features": ["eula", "java_version", "pid_limit"],
   "docker_images": {
     "Java 17": "ghcr.io/pterodactyl/yolks:java_17",
@@ -21,7 +21,7 @@
   },
   "scripts": {
     "installation": {
-      "script": "#!/bin/bash\nset -euo pipefail\n\napt-get -q update\napt-get install -y --no-install-recommends curl ca-certificates\ncd /mnt/server\n\ncurl -sSfLO --connect-timeout 30 --max-time 30 https://github.com/rooneyj9005/Thunder/releases/latest/download/install.sh\nbash install.sh --container",
+      "script": "#!/bin/bash\nset -euo pipefail\n\napt-get -q update\napt-get install -y --no-install-recommends curl ca-certificates\ncd /mnt/server\n\ncurl -sSfL --connect-timeout 30 --max-time 30 -O https://github.com/rooneyj9005/Thunder/releases/latest/download/install.sh -O https://github.com/rooneyj9005/Thunder/releases/latest/download/functions.sh\nbash install.sh --container",
       "container": "debian:bookworm-slim",
       "entrypoint": "bash"
     }
@@ -88,6 +88,16 @@
       "field_type": "text"
     },
     {
+      "name": "Auto Update",
+      "description": "Sync the server against the published pack on every startup. Off by default, so a restart will not change your mod set. Set to true to enable, false to disable.",
+      "env_variable": "PACKWIZ_AUTO_UPDATE",
+      "default_value": "false",
+      "user_viewable": true,
+      "user_editable": true,
+      "rules": "required|string|in:true,false",
+      "field_type": "text"
+    },
+    {
       "name": "Clean Install",
       "description": "Wipe the mods folder before each startup to force a fresh packwiz sync. Set to true to enable, false to disable.",
       "env_variable": "CLEAN_INSTALL",
@@ -149,7 +159,7 @@
     },
     {
       "name": "Enable Voice Chat",
-      "description": "Enable Simple Voice Chat support. Requires the chosen port to be allocated in the panel and allowed through the firewall to be reachable externally.",
+      "description": "Enable Simple Voice Chat support. Requires the chosen port to be allocated in the panel and allowed through the firewall to be reachable externally. When false, the voice server is bound to 127.0.0.1 and the rest of config/voicechat/voicechat-server.properties is left alone.",
       "env_variable": "ENABLE_VOICE_CHAT",
       "default_value": "true",
       "user_viewable": true,
@@ -159,7 +169,7 @@
     },
     {
       "name": "Voice Chat Port",
-      "description": "UDP port for Simple Voice Chat when enabled. Must be allowed through the firewall and allocated in the panel. Set to 0 to disable.",
+      "description": "UDP port for Simple Voice Chat when enabled. Must be allowed through the firewall and allocated in the panel. Set to 0 to disable, which binds the voice server to 127.0.0.1.",
       "env_variable": "VOICE_PORT",
       "default_value": "24454",
       "user_viewable": true,

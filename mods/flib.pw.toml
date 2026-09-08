@@ -1,13 +1,13 @@
 name = "FLIB"
-filename = "flib-1.20.1-0.0.14.jar"
+filename = "flib-1.20.1-0.0.16.jar"
 side = "both"
 
 [download]
-url = "https://cdn.modrinth.com/data/FAUSd09K/versions/Qv28YacJ/flib-1.20.1-0.0.14.jar"
-hash-format = "sha256"
-hash = "f97825d7652e06edcb18d8a199082205e907060669e7b83a59ed97de1f037b95"
+url = "https://cdn.modrinth.com/data/FAUSd09K/versions/CDihtEoy/flib-1.20.1-0.0.16.jar"
+hash-format = "sha512"
+hash = "d4069f37c1d8c80bc32d1d6977db418f7bd7f6a14ab1d22b9a5a49050ff92d03b4c5f7334ac4d79796c703ae72d5111bfd1d10d53ae6b1c70a30188f1c99ceae"
 
 [update]
 [update.modrinth]
 mod-id = "FAUSd09K"
-version = "Qv28YacJ"
+version = "CDihtEoy"

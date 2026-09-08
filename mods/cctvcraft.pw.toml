@@ -1,0 +1,13 @@
+name = "CCTVCraft"
+filename = "CCTVCraft-1.20.1-Forge-5.0.1.jar"
+side = "both"
+
+[download]
+hash-format = "sha512"
+hash = "10614a9b65a4abcbd0901eac6c64732c637a6bf17c1cab3fa9df1c26aefcc5a635daf5d6e6ad11c04b260fd2d5186ae6a06c1febecfdca19221e1d0e8fc056df"
+mode = "metadata:curseforge"
+
+[update]
+[update.curseforge]
+file-id = 6627972
+project-id = 444532

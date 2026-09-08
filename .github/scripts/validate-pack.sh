@@ -4,7 +4,7 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 PACKWIZ_BIN="${PACKWIZ_BIN:-packwiz}"
 EXPECTED_TAG="${EXPECTED_TAG:-}"
-SMOKE_PACK_URL="${SMOKE_PACK_URL:-}"
+TEST_PACK_URL="${TEST_PACK_URL:-}"
 
 extract_pack_value() {
   local key="$1"
@@ -56,7 +56,7 @@ if [[ -n "$EXPECTED_TAG" ]]; then
   fi
 fi
 
-for managed_shell in startup.sh update.sh; do
+for managed_shell in startup.sh functions.sh tools/install.sh tools/update.sh; do
   if LC_ALL=C grep -q $'\r' "$managed_shell"; then
     echo "ERROR: $managed_shell contains CRLF line endings." >&2
     exit 1
@@ -71,13 +71,14 @@ if ! git diff --quiet -- pack.toml index.toml; then
   exit 1
 fi
 
-mkdir -p _ci
-rm -f _ci/Thunder.mrpack
-"$PACKWIZ_BIN" modrinth export -o _ci/Thunder.mrpack
+mkdir -p tmp
+rm -f tmp/Thunder.mrpack
+"$PACKWIZ_BIN" modrinth export -o tmp/Thunder.mrpack
 
-if [[ -n "$SMOKE_PACK_URL" ]]; then
-  smoke_dir="$ROOT_DIR/_ci/smoke-server"
-  rm -rf "$smoke_dir"
-  mkdir -p "$smoke_dir"
-  PACKWIZ_URL="$SMOKE_PACK_URL" PACKWIZ_SIDE=server bash "$ROOT_DIR/update.sh" --dir "$smoke_dir"
+if [[ -n "$TEST_PACK_URL" ]]; then
+  test_dir="$ROOT_DIR/tmp/tests/update"
+  rm -rf "$test_dir"
+  mkdir -p "$test_dir"
+  PACKWIZ_URL="$TEST_PACK_URL" PACKWIZ_SIDE=server bash "$ROOT_DIR/tools/update.sh" --dir "$test_dir"
+  bash "$ROOT_DIR/.github/scripts/check-install.sh" "$test_dir" server
 fi

@@ -198,15 +198,14 @@ function Resolve-StringSetting([string]$ArgumentValue, [string]$EnvValue, [strin
     return $DefaultValue
 }
 
-if (Test-Truthy "$env:PACKWIZ_SKIP_UPDATE") {
-    Write-Host "Skipping packwiz sync (PACKWIZ_SKIP_UPDATE enabled)."
-    exit 0
-}
-
 $resolvedPackwizUrl = Resolve-StringSetting $PackwizUrl $env:PACKWIZ_URL "https://packwiz.thunder.john.rooney.scot/pack.toml"
-$resolvedPackwizSide = Resolve-StringSetting $PackwizSide $env:PACKWIZ_SIDE "server"
+$resolvedPackwizSide = Resolve-StringSetting $PackwizSide $env:PACKWIZ_SIDE ""
 $resolvedPackwizExtraFlags = Resolve-StringSetting $PackwizExtraFlags $env:PACKWIZ_EXTRA_FLAGS ""
 $resolvedCleanInstall = $CleanInstall -or (Test-Truthy "$env:CLEAN_INSTALL")
+
+if (-not $resolvedPackwizSide) {
+    throw "PACKWIZ_SIDE must be set to 'server' or 'both'. This script syncs a Thunder server. Running it inside a client instance replaces your client mods with the server set."
+}
 
 if ($resolvedPackwizSide -notin @("server", "both")) {
     throw "PACKWIZ_SIDE must be 'server' or 'both'."

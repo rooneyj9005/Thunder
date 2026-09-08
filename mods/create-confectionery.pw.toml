@@ -1,13 +1,13 @@
 name = "Create Confectionery"
-filename = "create-confectionery1.20.1_v1.1.0.jar"
+filename = "create-confectionery1.20.1_v1.1.3.jar"
 side = "both"
 
 [download]
-url = "https://cdn.modrinth.com/data/WPE5gRs9/versions/rMCmTwR8/create-confectionery1.20.1_v1.1.0.jar"
-hash-format = "sha256"
-hash = "b779516864e1311142853a03d8ea7923532c3ab1232de8446c70fc63deb97ece"
+url = "https://cdn.modrinth.com/data/WPE5gRs9/versions/3AaYpdLZ/create-confectionery1.20.1_v1.1.3.jar"
+hash-format = "sha512"
+hash = "c161de48faa9472d8ae0dd6d241ef93c0854ff5e4ef6964a9c8790dc9437597ce89e1e5a4a90594dbda974fb49d2a83720cc7a074c5929a8df0057e430be596c"
 
 [update]
 [update.modrinth]
 mod-id = "WPE5gRs9"
-version = "rMCmTwR8"
+version = "3AaYpdLZ"

@@ -109,6 +109,36 @@ ensure_supported_java() {
     [ "${major}" = "21" ] || die "Java 17 or Java 21 is required; found Java ${major:-unknown}."
 }
 
+# Rewrites one key in a Java .properties file and keeps every other line,
+# comments included, exactly as it was. The key is a literal from the calling
+# script, so it is safe inside the grep pattern. The value never reaches a
+# shell or sed, so / and & in it are safe too. A missing file is created with
+# just this key; the mod fills in its defaults on the next load.
+set_properties_key() {
+    properties_file=$1
+    properties_key=$2
+    properties_value=$3
+
+    if [ -f "${properties_file}" ]; then
+        grep -v "^${properties_key}=" "${properties_file}" > "${properties_file}.new" || true
+    else
+        : > "${properties_file}.new"
+    fi
+
+    printf '%s=%s\n' "${properties_key}" "${properties_value}" >> "${properties_file}.new"
+    mv "${properties_file}.new" "${properties_file}"
+}
+
+# True when the file holds exactly key=value on its own line.
+properties_key_equals() {
+    properties_file=$1
+    properties_key=$2
+    properties_value=$3
+
+    [ -f "${properties_file}" ] || return 1
+    grep -qxF "${properties_key}=${properties_value}" "${properties_file}"
+}
+
 validate_boolean_value() {
     name=$1
     value=$2

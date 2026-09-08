@@ -175,7 +175,7 @@ if ($ModLoader -eq "forge" -and -not $ForgeVersion) {
 
 switch ($ModLoader) {
     "forge" {
-        Remove-Item -Force -ErrorAction SilentlyContinue unix_args.txt, user_jvm_args.txt, run.sh, run.bat
+        Remove-Item -Force -ErrorAction SilentlyContinue unix_args.txt, win_args.txt, user_jvm_args.txt, run.sh, run.bat
 
         $resolvedVersion = $ForgeVersion
         if (-not $resolvedVersion) {
@@ -183,8 +183,7 @@ switch ($ModLoader) {
             $resolvedVersion = $promos.promos."${McVersion}-recommended"
             if (-not $resolvedVersion) { $resolvedVersion = $promos.promos."${McVersion}-latest" }
             if (-not $resolvedVersion) {
-                Write-Error "No Forge version found for Minecraft ${McVersion}."
-                exit 1
+                throw "No Forge version found for Minecraft ${McVersion}."
             }
         }
 
@@ -195,14 +194,21 @@ switch ($ModLoader) {
             & java -jar $installerJar --installServer
             if ($LASTEXITCODE -ne 0) { throw "Forge installer failed with exit code $LASTEXITCODE" }
 
-            $argsFile = "libraries/net/minecraftforge/forge/${McVersion}-${resolvedVersion}/unix_args.txt"
-            if (Test-Path $argsFile) {
-                Copy-Item $argsFile "unix_args.txt" -Force
-                Write-Host "Copied unix_args.txt for Forge ${McVersion}-${resolvedVersion}"
+            # The installer writes both argument files. win_args.txt is the one
+            # startup.ps1 launches with; unix_args.txt is kept alongside it so
+            # the same folder still works with startup.sh.
+            $forgeDir = "libraries/net/minecraftforge/forge/${McVersion}-${resolvedVersion}"
+            $winArgsFile = "${forgeDir}/win_args.txt"
+            $unixArgsFile = "${forgeDir}/unix_args.txt"
+            if (Test-Path $winArgsFile) {
+                Copy-Item $winArgsFile "win_args.txt" -Force
+                if (Test-Path $unixArgsFile) {
+                    Copy-Item $unixArgsFile "unix_args.txt" -Force
+                }
+                Write-Host "Copied win_args.txt for Forge ${McVersion}-${resolvedVersion}"
             }
             elseif (-not (Test-Path $ServerJarFile)) {
-                Write-Error "Forge installation produced neither unix_args.txt nor ${ServerJarFile}."
-                exit 1
+                throw "Forge installation produced neither win_args.txt nor ${ServerJarFile}."
             }
         }
         finally {
@@ -251,8 +257,7 @@ switch ($ModLoader) {
     }
 
     default {
-        Write-Error "Unknown modloader '${ModLoader}'. Expected: forge, fabric, or quilt."
-        exit 1
+        throw "Unknown modloader '${ModLoader}'. Expected: forge, fabric, or quilt."
     }
 }
 

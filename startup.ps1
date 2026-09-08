@@ -267,8 +267,15 @@ if ($resolvedVoicePort -gt 65535) {
     throw "VOICE_PORT must be between 0 and 65535 (0 to disable)."
 }
 
+# A clean install is an install, so it syncs even when auto update is off.
+# Refusing would strand every server built from an egg older than
+# PACKWIZ_AUTO_UPDATE, whose panel has CLEAN_INSTALL and no way to add the new
+# variable, leaving no setting available to get the server booting again.
 $autoByEnv = $env:PACKWIZ_AUTO_UPDATE -match '^(1|true|yes)$'
-if ($AutoUpdate -or $autoByEnv) {
+if ($resolvedCleanInstall -and -not ($AutoUpdate -or $autoByEnv)) {
+    Write-Host "Clean install requested, so syncing this start even though PACKWIZ_AUTO_UPDATE is off."
+}
+if ($AutoUpdate -or $autoByEnv -or $resolvedCleanInstall) {
     $updateScript = Join-Path (Join-Path $PSScriptRoot "tools") "update.ps1"
     if (-not (Test-Path $updateScript)) {
         throw "Could not find '$updateScript'."
@@ -285,13 +292,6 @@ if ($AutoUpdate -or $autoByEnv) {
         -Strict
 }
 else {
-    # Wiping the mod set is only safe when something is going to put it back.
-    # These used to be independent, so a clean install with sync switched off
-    # deleted every mod and then declined to re-download them, leaving a modded
-    # world to load against no mods at all.
-    if ($resolvedCleanInstall) {
-        throw "CLEAN_INSTALL wipes the mod set but PACKWIZ_AUTO_UPDATE is off, so nothing would reinstall it. Switch Auto Update on for this start, or switch Clean Install off."
-    }
     Write-Host "Skipping packwiz sync. Set PACKWIZ_AUTO_UPDATE=true to sync on every start."
 }
 

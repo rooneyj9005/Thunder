@@ -8,9 +8,11 @@ SCRIPT_DIR=$(CDPATH='' cd "$(dirname "$0")" && pwd)
 SERVER_DIR=""
 TOTAL_MEMORY_MIB=""
 JVM_MEMORY_MIB=""
+IN_CONTAINER=false
 while [ "$#" -gt 0 ]; do
     case $1 in
         --container)
+            IN_CONTAINER=true
             shift
             ;;
         --dir)
@@ -41,8 +43,24 @@ fi
 ensure_supported_java
 
 CLEAN_INSTALL=${CLEAN_INSTALL:-false}
-PACKWIZ_AUTO_UPDATE=${PACKWIZ_AUTO_UPDATE:-false}
 PACKWIZ_SIDE=${PACKWIZ_SIDE:-server}
+
+# A panel does not add new egg variables to servers that already exist, so a
+# server created before PACKWIZ_AUTO_UPDATE was introduced has no way to set it,
+# and those servers synced on every boot. Reading an absent variable as "off"
+# would quietly mean they never receive a pack update again, with nothing in
+# their panel able to change that.
+#
+# Absent under --container therefore means a panel older than the variable, and
+# keeps the old behaviour. Every current egg sets it explicitly, so a deliberate
+# "false" is still honoured, and a standalone run without it gets the documented
+# opt-in default.
+if [ -z "${PACKWIZ_AUTO_UPDATE+set}" ] && [ "${IN_CONTAINER}" = "true" ]; then
+    PACKWIZ_AUTO_UPDATE=true
+    printf '%s\n' "PACKWIZ_AUTO_UPDATE is not set by this egg, so syncing on start as this server always has. Re-import pterodactyl.json to control it."
+else
+    PACKWIZ_AUTO_UPDATE=${PACKWIZ_AUTO_UPDATE:-false}
+fi
 if [ -z "${TOTAL_MEMORY_MIB}" ] && [ -n "${SERVER_MEMORY:-}" ]; then
     TOTAL_MEMORY_MIB=${SERVER_MEMORY}
 fi
@@ -112,10 +130,16 @@ esac
 # used to be independent, so CLEAN_INSTALL with sync switched off deleted every
 # mod and then declined to re-download them, leaving a modded world to load
 # against no mods at all.
+#
+# A clean install is an install, so it turns the sync on for this start rather
+# than refusing. Refusing would strand every server built from an egg older than
+# PACKWIZ_AUTO_UPDATE: those panels have CLEAN_INSTALL and no way to add the new
+# variable, so there would be no setting available to get the server booting.
 case ${CLEAN_INSTALL} in
     true|1|yes)
         if [ "${SYNC_ON_START}" = "false" ]; then
-            die "CLEAN_INSTALL wipes the mod set but PACKWIZ_AUTO_UPDATE is off, so nothing would reinstall it. Switch Auto Update on for this start, or switch Clean Install off."
+            printf '%s\n' "Clean install requested, so syncing this start even though PACKWIZ_AUTO_UPDATE is off."
+            SYNC_ON_START=true
         fi
         printf '%s\n' "Clean install - wiping mods and packwiz config..."
         rm -rf mods config/packwiz-installer.toml

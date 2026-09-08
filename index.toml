@@ -2,7 +2,7 @@ hash-format = "sha256"
 
 [[files]]
 file = "config/bcc-common.toml"
-hash = "d7e439e8c237078f604b3bd7924196e9d164690b6c008c3773eadec6e3601888"
+hash = "28c6a690556ac099ff9e5ecb6798809138e0b714d9f3ca69f0e0b60aa5dda65a"
 
 [[files]]
 file = "config/logbegone.toml"
@@ -377,8 +377,8 @@ hash = "70a4ecd9d0c04ad20aeb976c1ee28933ce48a0a1f43df42deafaeb2ad7235297"
 metafile = true
 
 [[files]]
-file = "mods/krypton-fnp.pw.toml"
-hash = "b31a682f05ca9379d504a79fadf8195049eb8530cbef8eea635d1bd3a15b3122"
+file = "mods/krypton-reno.pw.toml"
+hash = "fda62419ea0d286061260ceb7dc1e27ea6ebdfc1ab6a01a588c5e9e2243a6200"
 metafile = true
 
 [[files]]
@@ -683,11 +683,11 @@ preserve = true
 
 [[files]]
 file = "startup.ps1"
-hash = "b15654cec2d65dadc4179fe9ab446c3d0e7f06f493344411fd9ec43e524e03bf"
+hash = "23032d694efbad84a50d26c87c7a00c42a86c40cf5666055b9912ab5bc651439"
 
 [[files]]
 file = "startup.sh"
-hash = "acc276d37030edf30dc38540d255748a243eec62f0804e94c16f5184da2a0420"
+hash = "1c53ee323e910e43cb70e4f3f70f4df04bdaea5401bd60b3894f541a648f4766"
 
 [[files]]
 file = "tools/update.ps1"

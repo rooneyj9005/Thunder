@@ -200,6 +200,7 @@ esac
 
 PACKWIZ_URL=${PACKWIZ_URL:-https://packwiz.thunder.john.rooney.scot/pack.toml}
 PACKWIZ_SIDE=${PACKWIZ_SIDE:-server}
+PACKWIZ_EXTRA_FLAGS=${PACKWIZ_EXTRA_FLAGS:-}
 
 case ${PACKWIZ_SIDE} in
     server|both)
@@ -213,8 +214,24 @@ if printf '%s\n' "${PACKWIZ_URL}" | grep -Eq '[[:space:]]'; then
     die "PACKWIZ_URL must not contain whitespace."
 fi
 
+validate_extra_flags "PACKWIZ_EXTRA_FLAGS" "${PACKWIZ_EXTRA_FLAGS}"
+
 printf '%s\n' "Syncing modpack via packwiz..."
-java -jar packwiz-installer-bootstrap.jar -g -s "${PACKWIZ_SIDE}" "${PACKWIZ_URL}"
+# The bootstrap checks GitHub's releases API for a newer packwiz-installer on
+# every run. That is the right default for a player, who has their own sixty
+# requests an hour to spend, and the wrong one for CI, where a shared runner
+# address routinely has none left and the 403 reads as a broken pack. Passing
+# --bootstrap-no-update with a jar fetched beforehand is how CI opts out, and it
+# needs this passthrough to do it; update.sh has had one all along.
+if [ -n "${PACKWIZ_EXTRA_FLAGS}" ]; then
+    set -f
+    # shellcheck disable=SC2086
+    set -- -g -s "${PACKWIZ_SIDE}" ${PACKWIZ_EXTRA_FLAGS} "${PACKWIZ_URL}"
+    set +f
+    java -jar packwiz-installer-bootstrap.jar "$@"
+else
+    java -jar packwiz-installer-bootstrap.jar -g -s "${PACKWIZ_SIDE}" "${PACKWIZ_URL}"
+fi
 ensure_executable_file "./startup.sh"
 ensure_executable_file "./tools/update.sh"
 printf '%s\n' "Server installation complete."

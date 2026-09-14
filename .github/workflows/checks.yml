@@ -81,9 +81,25 @@ jobs:
           cat "$RUNNER_TEMP/pack-http-server.log" >&2 || true
           exit 1
 
+      - name: Fetch packwiz-installer
+        shell: bash
+        run: |
+          set -euo pipefail
+          # packwiz-installer-bootstrap otherwise asks the GitHub releases API for
+          # the newest installer on every run. Runners share addresses, so that
+          # request routinely lands on an exhausted sixty-an-hour budget and comes
+          # back 403, which surfaces as a broken pack rather than a busy API. The
+          # plain release asset URL below is not the API and is not rate limited
+          # the same way, so CI pins what it runs and stops guessing. Players keep
+          # the auto-update; only CI passes --bootstrap-no-update.
+          curl -sSfL --retry 3 --retry-delay 2 --connect-timeout 30 --max-time 120 \
+            -o "$RUNNER_TEMP/packwiz-installer.jar" \
+            "https://github.com/packwiz/packwiz-installer/releases/latest/download/packwiz-installer.jar"
+
       - name: Validate pack build and update path
         env:
           TEST_PACK_URL: http://127.0.0.1:8123/pack.toml
+          PACKWIZ_EXTRA_FLAGS: --bootstrap-no-update --bootstrap-main-jar ${{ runner.temp }}/packwiz-installer.jar
         shell: bash
         run: bash ./.github/scripts/checks-pack.sh
 

@@ -243,7 +243,9 @@ try {
 
     Write-Host "Syncing modpack via packwiz..."
     $packwizArgs = @("-jar", "packwiz-installer-bootstrap.jar", "-g", "-s", $resolvedPackwizSide)
-    if ($resolvedPackwizExtraFlags) { $packwizArgs += $resolvedPackwizExtraFlags -split " " }
+    # Splitting on one literal space would pass java an empty argument for every
+    # doubled space in the string.
+    if ($resolvedPackwizExtraFlags) { $packwizArgs += @($resolvedPackwizExtraFlags -split '\s+' | Where-Object { $_ }) }
     $packwizArgs += $resolvedPackwizUrl
 
     & java @packwizArgs

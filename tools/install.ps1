@@ -179,7 +179,11 @@ if ($ModLoader -eq "forge" -and -not $ForgeVersion) {
 
 switch ($ModLoader) {
     "forge" {
-        Remove-Item -Force -ErrorAction SilentlyContinue unix_args.txt, win_args.txt, user_jvm_args.txt, run.sh, run.bat
+        # run.sh and run.bat come straight back from the installer, so clearing
+        # them is only tidiness. user_jvm_args.txt does not: the installer keeps
+        # an existing one across a reinstall, precisely so an operator's own
+        # flags survive, and startup.ps1 launches with it when it is there.
+        Remove-Item -Force -ErrorAction SilentlyContinue unix_args.txt, win_args.txt, run.sh, run.bat
 
         $resolvedVersion = $ForgeVersion
         if (-not $resolvedVersion) {

@@ -97,7 +97,11 @@ fi
 
 case ${MODLOADER} in
     forge)
-        rm -f unix_args.txt user_jvm_args.txt run.sh run.bat
+        # run.sh and run.bat come straight back from the installer, so clearing
+        # them is only tidiness. user_jvm_args.txt does not: the installer keeps
+        # an existing one across a reinstall, precisely so an operator's own
+        # flags survive, and startup.sh launches with it when it is there.
+        rm -f unix_args.txt run.sh run.bat
 
         cleanup_forge() {
             rm -f installer.jar installer.jar.log

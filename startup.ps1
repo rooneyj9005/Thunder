@@ -5,6 +5,7 @@ param(
     [string]$PackwizUrl = "",
     [string]$PackwizSide = "",
     [string]$PackwizExtraFlags = "",
+    [string]$JvmExtraFlags = "",
     [switch]$AutoUpdate,
     [switch]$CleanInstall,
     [string]$ServerJarFile = "",
@@ -167,40 +168,115 @@ function Resolve-NonNegativeMiB([string]$Name, [Nullable[int]]$ArgumentValue, [s
     return [int]$EnvValue
 }
 
+# Everything outside the heap shares the same machine. Metaspace alone runs 300
+# to 500 MB on a pack this size, and then there is the code cache, G1's card
+# tables and remembered sets, thread stacks, Netty's direct buffers and
+# allocator fragmentation on top. Aikar's guidance is 1000 to 1500 MB; the old
+# total/20 reserve left 307 MiB at the memory the egg recommends.
+#
+# The Linux side reads the cgroup limit before applying this, because there the
+# kernel enforces a ceiling of its own. Windows has no equivalent, so this stays
+# a plain formula and the two platforms diverge here deliberately.
 function Get-AutomaticHeapMiB([int]$TotalMemoryMiB) {
-    $reserveMiB = [int][Math]::Floor($TotalMemoryMiB / 20)
-    if ($reserveMiB -lt 256) {
-        $reserveMiB = 256
-    }
-    elseif ($reserveMiB -gt 1024) {
+    $reserveMiB = [int][Math]::Floor($TotalMemoryMiB * 15 / 100)
+    if ($reserveMiB -lt 1024) {
         $reserveMiB = 1024
+    }
+    elseif ($reserveMiB -gt 2048) {
+        $reserveMiB = 2048
     }
 
     $heapMiB = $TotalMemoryMiB - $reserveMiB
     if ($heapMiB -lt 512) {
-        throw "--memory $TotalMemoryMiB does not leave enough room for a safe heap after JVM overhead. Use at least 768 MiB or set -JvmMemoryMiB explicitly."
+        throw "$TotalMemoryMiB MiB does not leave enough room for a safe heap once $reserveMiB MiB is reserved for JVM overhead. Allocate at least 1536 MiB, or set -JvmMemoryMiB to pick the heap yourself."
     }
 
     return $heapMiB
 }
 
-function Get-JavaMemoryArgs([int]$ResolvedMemoryMiB, [int]$ResolvedJvmMemoryMiB) {
+# 0 means nothing said how much memory this server has, and the caller falls
+# back to a percentage of what it finds.
+function Get-ResolvedHeapMiB([int]$ResolvedMemoryMiB, [int]$ResolvedJvmMemoryMiB) {
     if ($ResolvedJvmMemoryMiB -gt 0) {
         if ($ResolvedMemoryMiB -gt 0 -and $ResolvedJvmMemoryMiB -ge $ResolvedMemoryMiB) {
-            Write-Warning "-JvmMemoryMiB $ResolvedJvmMemoryMiB is at least the full advertised server memory of $ResolvedMemoryMiB MiB. This leaves no headroom for native JVM or container overhead."
+            Write-Warning "-JvmMemoryMiB $ResolvedJvmMemoryMiB is at least the full advertised server memory of $ResolvedMemoryMiB MiB. This leaves no headroom for native JVM overhead."
         }
 
         Write-Host "Using exact JVM heap of $ResolvedJvmMemoryMiB MiB."
-        return @("-Xms$($ResolvedJvmMemoryMiB)M", "-Xmx$($ResolvedJvmMemoryMiB)M")
+        return $ResolvedJvmMemoryMiB
     }
 
     if ($ResolvedMemoryMiB -gt 0) {
         $heapMiB = Get-AutomaticHeapMiB $ResolvedMemoryMiB
-        Write-Host "Using automatic JVM heap of $heapMiB MiB from $ResolvedMemoryMiB MiB total server memory."
-        return @("-Xms$($heapMiB)M", "-Xmx$($heapMiB)M")
+        Write-Host "Using automatic JVM heap of $heapMiB MiB, holding $($ResolvedMemoryMiB - $heapMiB) MiB of $ResolvedMemoryMiB MiB back for JVM overhead."
+        return $heapMiB
     }
 
-    return @("-Xms128M", "-XX:MaxRAMPercentage=95.0")
+    return 0
+}
+
+function Get-JavaMemoryArgs([int]$HeapMiB) {
+    if ($HeapMiB -gt 0) {
+        return @("-Xms$($HeapMiB)M", "-Xmx$($HeapMiB)M")
+    }
+
+    # It was 95 per cent, which on a shared machine is a heap free to grow over
+    # almost all of it, and paired with -Xms128M gave exactly the slow creep
+    # towards the ceiling that AlwaysPreTouch is here to stop.
+    return @("-XX:InitialRAMPercentage=75", "-XX:MaxRAMPercentage=75")
+}
+
+# Aikar's G1 flags, the reference tuning for a Minecraft server heap. Shipping
+# them beats the JVM's defaults, which size the young generation for a
+# throughput workload and pause a busy server long enough to be felt.
+#
+# AlwaysPreTouch is the one with teeth. It faults the whole heap in at boot
+# instead of letting resident memory creep towards it over hours, so a heap that
+# does not fit fails at start, in the open, rather than being killed quietly in
+# the middle of a session.
+function Get-JvmGcFlags([int]$HeapMiB) {
+    # Aikar splits the tuning at 12 GB: a large heap gets a bigger young
+    # generation, larger regions, and starts collecting later.
+    if ($HeapMiB -ge 12288) {
+        $newSizePercent = 40
+        $maxNewSizePercent = 50
+        $heapRegionSize = "16M"
+        $reservePercent = 15
+        $initiatingOccupancy = 20
+    }
+    else {
+        $newSizePercent = 30
+        $maxNewSizePercent = 40
+        $heapRegionSize = "8M"
+        $reservePercent = 20
+        $initiatingOccupancy = 15
+    }
+
+    return @(
+        "-XX:+UseG1GC",
+        "-XX:+ParallelRefProcEnabled",
+        "-XX:MaxGCPauseMillis=200",
+        "-XX:+UnlockExperimentalVMOptions",
+        "-XX:+DisableExplicitGC",
+        "-XX:+AlwaysPreTouch",
+        "-XX:+PerfDisableSharedMem",
+        "-XX:G1NewSizePercent=$newSizePercent",
+        "-XX:G1MaxNewSizePercent=$maxNewSizePercent",
+        "-XX:G1HeapRegionSize=$heapRegionSize",
+        "-XX:G1ReservePercent=$reservePercent",
+        "-XX:InitiatingHeapOccupancyPercent=$initiatingOccupancy",
+        "-XX:G1HeapWastePercent=5",
+        "-XX:G1MixedGCCountTarget=4",
+        "-XX:G1MixedGCLiveThresholdPercent=90",
+        "-XX:G1RSetUpdatingPauseTimePercent=5",
+        "-XX:SurvivorRatio=32",
+        "-XX:MaxTenuringThreshold=1",
+        "-Dusing.aikars.flags=https://mcflags.emc.gs",
+        "-Daikars.new.flags=true",
+        # An exhausted heap otherwise means the collector thrashing for as long
+        # as it takes, which reads as a hang rather than a failure.
+        "-XX:+ExitOnOutOfMemoryError"
+    )
 }
 
 function Resolve-StringSetting([string]$ArgumentValue, [string]$EnvValue, [string]$DefaultValue) {
@@ -261,7 +337,9 @@ $resolvedPackwizExtraFlags = Resolve-StringSetting $PackwizExtraFlags $env:PACKW
 $resolvedServerJarFile = Resolve-StringSetting $ServerJarFile $env:SERVER_JARFILE "server.jar"
 $resolvedVoicePort = Resolve-NonNegativeSetting "VOICE_PORT" $VoicePort $env:VOICE_PORT 24454
 $resolvedCleanInstall = $CleanInstall -or ($env:CLEAN_INSTALL -match '^(1|true|yes)$')
-$javaMemoryArgs = Get-JavaMemoryArgs $resolvedMemoryMiB $resolvedJvmMemoryMiB
+$resolvedJvmExtraFlags = Resolve-StringSetting $JvmExtraFlags $env:JVM_EXTRA_FLAGS ""
+$resolvedHeapMiB = Get-ResolvedHeapMiB $resolvedMemoryMiB $resolvedJvmMemoryMiB
+$javaMemoryArgs = Get-JavaMemoryArgs $resolvedHeapMiB
 # Named differently from the $EnableVoiceChat parameter on purpose: variable names
 # are case-insensitive, and assigning a boolean to that [string] parameter would
 # turn it into the truthy string "False".
@@ -269,6 +347,12 @@ $voiceChatEnabled = Resolve-BooleanSetting "ENABLE_VOICE_CHAT" $EnableVoiceChat 
 
 if ($resolvedVoicePort -gt 65535) {
     throw "VOICE_PORT must be between 0 and 65535 (0 to disable)."
+}
+
+# Operator-supplied flags reach a command line, so the allowlist is a deliberate
+# floor: letters, numbers, spaces and the punctuation a JVM flag actually needs.
+if ($resolvedJvmExtraFlags -match '[^A-Za-z0-9.,/:=_+\- ]') {
+    throw "JVM_EXTRA_FLAGS may only contain letters, numbers, spaces, and the characters . , / : = _ + -."
 }
 
 # A clean install is an install, so it syncs even when auto update is off.
@@ -384,11 +468,36 @@ if ((Test-Path -LiteralPath "world") -and
 }
 
 $forgeArgsFile = Resolve-ForgeArgsFile
+
+$javaArgs = @()
+$javaArgs += $javaMemoryArgs
+$javaArgs += Get-JvmGcFlags $resolvedHeapMiB
+
+# The Forge installer writes user_jvm_args.txt on every --installServer and
+# keeps an existing one across a reinstall, which makes it the one place an
+# operator can leave a flag and have it survive. Later flags win, so what is in
+# here overrides the defaults above.
+if (Test-Path -LiteralPath "user_jvm_args.txt") {
+    Write-Host "Reading extra JVM flags from user_jvm_args.txt."
+    $javaArgs += "@user_jvm_args.txt"
+}
+
+# The panel field, for operators with no way to edit a file. Last, so it beats
+# both the defaults and user_jvm_args.txt. Splitting on one literal space would
+# pass java an empty argument for every doubled space in the string.
+if ($resolvedJvmExtraFlags) {
+    Write-Host "Adding JVM_EXTRA_FLAGS: $resolvedJvmExtraFlags"
+    $javaArgs += @($resolvedJvmExtraFlags -split '\s+' | Where-Object { $_ })
+}
+
+# nogui is a server argument rather than a JVM one, so it goes last. Without it
+# the dedicated server opens its Swing console, which on this documented
+# standalone Windows route means a window on every start.
 if ($forgeArgsFile) {
-    & java @javaMemoryArgs "@$forgeArgsFile"
+    & java @javaArgs "@$forgeArgsFile" nogui
 }
 elseif (Test-Path -LiteralPath $resolvedServerJarFile) {
-    & java @javaMemoryArgs -jar $resolvedServerJarFile
+    & java @javaArgs -jar $resolvedServerJarFile nogui
 }
 else {
     # Reporting the missing jar is not the problem and sends you looking in the

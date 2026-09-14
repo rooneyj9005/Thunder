@@ -63,10 +63,7 @@ if printf '%s\n' "${PACKWIZ_URL}" | grep -Eq '[[:space:]]'; then
     die "PACKWIZ_URL must not contain whitespace."
 fi
 
-if [ -n "${PACKWIZ_EXTRA_FLAGS}" ] &&
-    printf '%s\n' "${PACKWIZ_EXTRA_FLAGS}" | grep -Eq '[^[:alnum:].,/:=_+ -]'; then
-    die "PACKWIZ_EXTRA_FLAGS may only contain letters, numbers, spaces, and the characters . , / : = _ + -."
-fi
+validate_extra_flags "PACKWIZ_EXTRA_FLAGS" "${PACKWIZ_EXTRA_FLAGS}"
 
 case ${CLEAN_INSTALL} in
     true|1|yes)

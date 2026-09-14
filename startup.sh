@@ -44,6 +44,7 @@ ensure_supported_java
 
 CLEAN_INSTALL=${CLEAN_INSTALL:-false}
 PACKWIZ_SIDE=${PACKWIZ_SIDE:-server}
+JVM_EXTRA_FLAGS=${JVM_EXTRA_FLAGS:-}
 
 # A panel does not add new egg variables to servers that already exist, so a
 # server created before PACKWIZ_AUTO_UPDATE was introduced has no way to set it,
@@ -68,24 +69,6 @@ if [ -z "${JVM_MEMORY_MIB}" ] && [ -n "${JVM_MEMORY:-}" ]; then
     JVM_MEMORY_MIB=${JVM_MEMORY}
 fi
 
-auto_heap_from_total_memory() {
-    total=$1
-    reserve=$((total / 20))
-
-    if [ "${reserve}" -lt 256 ]; then
-        reserve=256
-    elif [ "${reserve}" -gt 1024 ]; then
-        reserve=1024
-    fi
-
-    heap=$((total - reserve))
-    if [ "${heap}" -lt 512 ]; then
-        die "--memory ${total} does not leave enough room for a safe heap after JVM overhead. Use at least 768 MiB or set --jvm-memory explicitly."
-    fi
-
-    printf '%s\n' "${heap}"
-}
-
 build_java_memory_args() {
     validate_non_negative_mib "--memory" "${TOTAL_MEMORY_MIB}"
     validate_non_negative_mib "--jvm-memory" "${JVM_MEMORY_MIB}"
@@ -104,15 +87,40 @@ build_java_memory_args() {
     fi
 
     if [ -n "${TOTAL_MEMORY_MIB}" ] && [ "${TOTAL_MEMORY_MIB}" != "0" ]; then
-        auto_heap=$(auto_heap_from_total_memory "${TOTAL_MEMORY_MIB}")
+        budget=${TOTAL_MEMORY_MIB}
+
+        # The kernel enforces the container limit; the panel figure is only what
+        # the operator was quoted. Size against the ceiling that can actually
+        # kill the process. A limit more than twice the advertised figure is a
+        # parent cgroup rather than this server's, so it is ignored.
+        if cgroup_mib=$(cgroup_memory_limit_mib) &&
+            [ "${cgroup_mib}" -le "$((budget * 2))" ]; then
+            if [ "${cgroup_mib}" != "${budget}" ]; then
+                printf '%s\n' "Container memory limit is ${cgroup_mib} MiB against a ${budget} MiB allocation. Sizing the heap against the limit."
+            fi
+            budget=${cgroup_mib}
+        fi
+
+        reserve=$(heap_reserve_mib "${budget}")
+        auto_heap=$((budget - reserve))
+        if [ "${auto_heap}" -lt 512 ]; then
+            die "${budget} MiB does not leave enough room for a safe heap once ${reserve} MiB is reserved for JVM and container overhead. Allocate at least 1536 MiB, or set --jvm-memory to pick the heap yourself."
+        fi
+
         JAVA_MEMORY_MODE="exact"
         JAVA_MEMORY_VALUE=${auto_heap}
-        printf '%s\n' "Using automatic JVM heap of ${auto_heap} MiB from ${TOTAL_MEMORY_MIB} MiB total server memory."
+        printf '%s\n' "Using automatic JVM heap of ${auto_heap} MiB, holding ${reserve} MiB of ${budget} MiB back for JVM and container overhead."
         return
     fi
 
+    # Nothing said how much memory this server has. MaxRAMPercentage reads the
+    # container limit where there is one and physical memory otherwise, so it is
+    # the shape that behaves on both. It was 95 per cent, which on a shared
+    # machine is a heap free to grow over almost all of it, and paired with
+    # -Xms128M gave exactly the slow creep towards the ceiling that AlwaysPreTouch
+    # is here to stop.
     JAVA_MEMORY_MODE="percentage"
-    JAVA_MEMORY_VALUE="95.0"
+    JAVA_MEMORY_VALUE="75"
 }
 
 build_java_memory_args
@@ -120,6 +128,7 @@ validate_boolean_value "CLEAN_INSTALL" "${CLEAN_INSTALL}"
 validate_boolean_value "PACKWIZ_AUTO_UPDATE" "${PACKWIZ_AUTO_UPDATE}"
 ENABLE_VOICE_CHAT=${ENABLE_VOICE_CHAT:-true}
 validate_boolean_value "ENABLE_VOICE_CHAT" "${ENABLE_VOICE_CHAT}"
+validate_extra_flags "JVM_EXTRA_FLAGS" "${JVM_EXTRA_FLAGS}"
 
 case ${PACKWIZ_AUTO_UPDATE} in
     true|1|yes) SYNC_ON_START=true ;;
@@ -220,12 +229,36 @@ fi
 # writes it, so a server that loses it cannot boot and cannot repair itself.
 # Forge keeps its own copy under libraries/, so take that rather than making an
 # operator reinstall over a missing few hundred bytes.
-if [ ! -f unix_args.txt ]; then
-    FORGE_ARGS=$(find libraries/net/minecraftforge/forge -name unix_args.txt -type f 2>/dev/null | sed -n '1p')
-    if [ -n "${FORGE_ARGS}" ]; then
-        cp "${FORGE_ARGS}" unix_args.txt
-        printf '%s\n' "Restored unix_args.txt from ${FORGE_ARGS}"
+#
+# Which copy matters. Once a Forge bump leaves two versions installed, the first
+# find hit is filesystem order, and the wrong one boots the server against
+# libraries it was not built for. Take the version this server is configured
+# for, and refuse to guess when nothing says which.
+restore_unix_args() {
+    if [ -n "${MC_VERSION:-}" ] && [ -n "${FORGE_VERSION:-}" ]; then
+        pinned="libraries/net/minecraftforge/forge/${MC_VERSION}-${FORGE_VERSION}/unix_args.txt"
+        if [ -f "${pinned}" ]; then
+            cp "${pinned}" unix_args.txt
+            printf '%s\n' "Restored unix_args.txt from ${pinned}"
+            return 0
+        fi
     fi
+
+    candidates=$(find libraries/net/minecraftforge/forge -name unix_args.txt -type f 2>/dev/null)
+    [ -n "${candidates}" ] || return 0
+
+    count=$(printf '%s\n' "${candidates}" | wc -l)
+    count=$((count))
+    if [ "${count}" -ne 1 ]; then
+        die "unix_args.txt is missing from the server root and ${count} Forge versions are installed under libraries/, so there is nothing to say which one this server runs. Set MC_VERSION and FORGE_VERSION, or re-run tools/install.sh to repair the install."
+    fi
+
+    cp "${candidates}" unix_args.txt
+    printf '%s\n' "Restored unix_args.txt from ${candidates}"
+}
+
+if [ ! -f unix_args.txt ]; then
+    restore_unix_args
 fi
 
 # Falling through to "-jar server.jar" on a Forge install reports the missing
@@ -234,16 +267,47 @@ if [ ! -f unix_args.txt ] && [ ! -f "${SERVER_JARFILE:-server.jar}" ]; then
     die "No Forge launch arguments and no ${SERVER_JARFILE:-server.jar}, so there is nothing to start. Reinstall the server to install Forge."
 fi
 
+set --
+
 if [ "${JAVA_MEMORY_MODE}" = "exact" ]; then
-    if [ -f unix_args.txt ]; then
-        exec java -Xms"${JAVA_MEMORY_VALUE}M" -Xmx"${JAVA_MEMORY_VALUE}M" @unix_args.txt
-    fi
-
-    exec java -Xms"${JAVA_MEMORY_VALUE}M" -Xmx"${JAVA_MEMORY_VALUE}M" -jar "${SERVER_JARFILE:-server.jar}"
+    set -- "$@" "-Xms${JAVA_MEMORY_VALUE}M" "-Xmx${JAVA_MEMORY_VALUE}M"
+    GC_HEAP_MIB=${JAVA_MEMORY_VALUE}
+else
+    set -- "$@" "-XX:InitialRAMPercentage=${JAVA_MEMORY_VALUE}" "-XX:MaxRAMPercentage=${JAVA_MEMORY_VALUE}"
+    GC_HEAP_MIB=""
 fi
 
+GC_FLAGS=$(jvm_gc_flags "${GC_HEAP_MIB}")
+set -f
+# shellcheck disable=SC2086
+set -- "$@" ${GC_FLAGS}
+set +f
+
+# The Forge installer writes user_jvm_args.txt on every --installServer and
+# keeps an existing one across a reinstall, which makes it the one place an
+# operator can leave a flag and have it survive. Later flags win, so what is in
+# here overrides the defaults above.
+if [ -f user_jvm_args.txt ]; then
+    set -- "$@" "@user_jvm_args.txt"
+    printf '%s\n' "Reading extra JVM flags from user_jvm_args.txt."
+fi
+
+# The panel field, for operators with no way to edit a file. Last, so it beats
+# both the defaults and user_jvm_args.txt.
+if [ -n "${JVM_EXTRA_FLAGS}" ]; then
+    set -f
+    # shellcheck disable=SC2086
+    set -- "$@" ${JVM_EXTRA_FLAGS}
+    set +f
+    printf '%s\n' "Adding JVM_EXTRA_FLAGS: ${JVM_EXTRA_FLAGS}"
+fi
+
+# nogui is a server argument rather than a JVM one, so it goes last. Without it
+# the dedicated server opens its Swing console on any host with a display, which
+# is every standalone Linux desktop; inside the container it is headless by
+# accident rather than by instruction.
 if [ -f unix_args.txt ]; then
-    exec java -Xms128M -XX:MaxRAMPercentage="${JAVA_MEMORY_VALUE}" @unix_args.txt
+    exec java "$@" "@unix_args.txt" nogui
 fi
 
-exec java -Xms128M -XX:MaxRAMPercentage="${JAVA_MEMORY_VALUE}" -jar "${SERVER_JARFILE:-server.jar}"
+exec java "$@" -jar "${SERVER_JARFILE:-server.jar}" nogui

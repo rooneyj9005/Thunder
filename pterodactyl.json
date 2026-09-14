@@ -6,7 +6,7 @@
   "exported_at": "2026-03-02T00:00:00+00:00",
   "name": "Thunder",
   "author": "john@rooney.scot",
-  "description": "Pterodactyl egg for the Thunder modpack - a Minecraft 1.20.1 Forge modpack combining technology, magic, and building mods. Uses packwiz for automatic server-side mod synchronisation. Allocate at least 6 GB of memory to the server.",
+  "description": "Pterodactyl egg for the Thunder modpack - a Minecraft 1.20.1 Forge modpack combining technology, magic, and building mods. Uses packwiz for automatic server-side mod synchronisation. Allocate at least 8 GB of memory to the server.",
   "features": ["eula", "java_version", "pid_limit"],
   "docker_images": {
     "Java 17": "ghcr.io/pterodactyl/yolks:java_17",
@@ -115,6 +115,16 @@
       "user_viewable": true,
       "user_editable": true,
       "rules": "required|integer|between:0,262144",
+      "field_type": "text"
+    },
+    {
+      "name": "Extra JVM Flags",
+      "description": "Additional flags passed to the Java runtime, ahead of the server arguments. Applied after the pack's own memory and garbage collection defaults, so anything set here overrides them. Letters, numbers, spaces and . , / : = _ + - only.",
+      "env_variable": "JVM_EXTRA_FLAGS",
+      "default_value": "",
+      "user_viewable": true,
+      "user_editable": false,
+      "rules": "nullable|string|max:500",
       "field_type": "text"
     },
     {

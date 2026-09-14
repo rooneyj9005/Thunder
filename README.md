@@ -6,21 +6,21 @@
 
 Thunder is a Minecraft Forge modpack focused on technical stability, performance, and practical server tooling.
 
-This repository is mainly for contributors working on the pack itself: metadata, configs, scripts, release assets, and workflow changes. If you are looking to play Thunder or host it for your group, the public site is the better starting point:
+This repository is for contributors working on the pack itself: metadata, configs, scripts, release assets, and workflow changes. To play Thunder or host it for your group, start at the public site instead:
 
-- Players and server owners will usually want [thunder.john.rooney.scot](https://thunder.john.rooney.scot/)
+- Players and server owners want [thunder.john.rooney.scot](https://thunder.john.rooney.scot/)
 - The separate docs repository lives at [`Thunder-docs`](https://github.com/rooneyj9005/Thunder-docs)
 
 ## Contributing to the Pack
 
-Contributors will usually want a local clone of the pack repository and a working `packwiz` installation from the upstream project.
+You need a local clone of the pack repository and a working `packwiz` installation from the upstream project.
 
 ```bash
 git clone https://github.com/rooneyj9005/Thunder.git
 cd Thunder
 ```
 
-Once `packwiz` is on your `PATH`, these are the commands you are most likely to reach for:
+Once `packwiz` is on your `PATH`, these three do most of the work:
 
 ```bash
 packwiz modrinth add "mod name"
@@ -30,14 +30,14 @@ packwiz modrinth export
 
 If `shellcheck` is not already available, `checks-shell.sh` will fetch a local copy of the latest release into `tmp/tools` and use that instead.
 
-A few expectations tend to matter more than anything else:
+A few rules matter more than the rest:
 
-- Please treat every repository content change as versioned work. `pack.toml` should move with the change.
-- Patch bumps suit docs, scripts, workflows, configs, and other minor repository changes.
-- Minor bumps suit adding or removing mods.
-- Major bumps are best kept for thoroughly tested, production-ready milestone releases.
-- If the pack name or version changes, `config/bcc-common.toml` should usually move with it.
-- Create and its ecosystem are intentionally handled with care. If you are considering an update there, `mods/create.pw.toml` is the right place to start reading.
+- Every repository content change needs a version bump in `pack.toml`.
+- Use patch bumps for docs, scripts, workflows, configs, and other minor repository changes.
+- Use minor bumps for adding or removing mods.
+- Use major bumps only for thoroughly tested, production-ready milestone releases.
+- Keep `config/bcc-common.toml` in step with the pack name and version.
+- Create and the mods built on it are handled deliberately. Read `mods/create.pw.toml` before updating anything in that family.
 
 ## Repository Notes for Contributors
 
@@ -56,7 +56,7 @@ The player-facing website is maintained separately. That split is deliberate: th
 
 The day-to-day setup guide for players and server owners belongs on the public site. The notes here are aimed at contributors changing the scripts.
 
-The scripts are designed around the same general ideas on both platforms:
+The scripts work the same way on both platforms:
 
 - the install step fetches Forge and packwiz bootstrap tooling
 - the startup step can sync the pack before launch
@@ -65,13 +65,13 @@ The scripts are designed around the same general ideas on both platforms:
 - `pterodactyl.json` remains the public panel import asset
 - the published pack metadata is expected to come from `https://packwiz.thunder.john.rooney.scot/pack.toml`
 
-If you are touching pack sync behaviour, it is worth checking both the scripts and the docs site so they keep telling the same story.
+If you touch pack sync behaviour, check the scripts and the docs site together. They have to tell the same story.
 
-Testing them in a separate empty directory is usually the safest approach, rather than pointing them at the repository working tree itself.
+Test them in a separate empty directory. A server booted in the working tree writes its own files into the repository, which is what the second half of `.packwizignore` exists to contain.
 
 ## Release Checklist
 
-The checklist below is intended as the go/no-go release checklist for the pack repository.
+Go/no-go for a pack release.
 
 <ul>
   <li><label><input type="checkbox" /> I have checked that temporary release-test files such as stray <code>.mrpack</code> exports are not in source control.</label></li>
@@ -110,7 +110,7 @@ The checklist below is intended as the go/no-go release checklist for the pack r
 - **Performance and Polish:** Memory Leak Fix, Krypton, Canary, Ferrite Core, RyoamicLights
 - **Utility and Server:** SecurityCraft, GriefLogger, LuckPerms, FTB Essentials, Xaero's Maps, Jade, Waystones, Simple Voice Chat, Lootr, Sophisticated Backpacks, WorldEdit
 
-Anyone who wants the fuller player-facing tour is likely better served by the live [features page](https://thunder.john.rooney.scot/features/).
+The live [features page](https://thunder.john.rooney.scot/features/) has the fuller player-facing tour.
 
 ## Documentation Site
 

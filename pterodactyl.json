@@ -6,7 +6,7 @@
   "exported_at": "2026-03-02T00:00:00+00:00",
   "name": "Thunder",
   "author": "john@rooney.scot",
-  "description": "Pterodactyl egg for the Thunder modpack - a Minecraft 1.20.1 Forge modpack combining technology, magic, and building mods. Uses packwiz for automatic server-side mod synchronisation. Allocate at least 8 GB of memory to the server.",
+  "description": "Pterodactyl egg for the Thunder modpack - a Minecraft 1.20.1 Forge modpack combining technology, magic, building, and exploration mods. Uses packwiz for automatic server-side mod synchronisation. Allocate at least 8 GB of memory to the server.",
   "features": ["eula", "java_version", "pid_limit"],
   "docker_images": {
     "Java 17": "ghcr.io/pterodactyl/yolks:java_17",

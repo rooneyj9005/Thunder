@@ -2,7 +2,7 @@ hash-format = "sha256"
 
 [[files]]
 file = "config/bcc-common.toml"
-hash = "f9212a57170b5f0bb2aec494b27a9f11ffe28da0ffa5a553a02d30c898fe2a7e"
+hash = "b5a0aa968010a058256c3fcac2768b7dff2c4e4a40d25daa02dee7acdfe7dd3b"
 
 [[files]]
 file = "config/logbegone.toml"
@@ -19,7 +19,7 @@ hash = "40772d4fb4527e43079e7f97d1a270dcc0386f5e7d4530512e544094e99b019a"
 
 [[files]]
 file = "kubejs/server_scripts/fix_create_confectionery.js"
-hash = "ea244b1e901c426eaff454c73bf1b4985d80f7e0ce72e0129a17b1529541262e"
+hash = "5e4ef001fdb29a5d3e2a6da776a2397e6f76ee91c2181724e60536a84a58f532"
 
 [[files]]
 file = "mods/ae2.pw.toml"

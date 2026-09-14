@@ -71,8 +71,12 @@ function Get-JavaMajorVersion {
             $versionOutput += Get-Content -LiteralPath $stdoutPath -ErrorAction SilentlyContinue
         }
 
-        $firstLine = $versionOutput | Select-Object -First 1
-        if ($firstLine -match '"(?<version>[^"]+)"') {
+        # Filter to the version line rather than taking the first. With
+        # JAVA_TOOL_OPTIONS or _JAVA_OPTIONS set, java prints a "Picked up ..."
+        # banner ahead of it, which carries no quoted version and made this
+        # return $null on a perfectly good runtime.
+        $versionLine = $versionOutput | Where-Object { $_ -match ' version "[^"]+"' } | Select-Object -First 1
+        if ($versionLine -match ' version "(?<version>[^"]+)"') {
             $parts = $Matches.version.Split(".")
             if ($parts[0] -eq "1" -and $parts.Length -gt 1) {
                 return $parts[1]

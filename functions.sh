@@ -45,8 +45,11 @@ use_local_java21_if_available() {
     return 1
 }
 
+# Matches on ' version "' rather than the bare word, so a JAVA_TOOL_OPTIONS or
+# _JAVA_OPTIONS banner, or an option value that happens to contain "version",
+# cannot be read as the version string.
 java_major_version() {
-    java -version 2>&1 | awk -F '"' '/version/ { split($2, parts, "."); if (parts[1] == 1 && parts[2] != "") { print parts[2]; } else { print parts[1]; } exit }'
+    java -version 2>&1 | awk -F '"' '/ version "/ { split($2, parts, "."); if (parts[1] == 1 && parts[2] != "") { print parts[2]; } else { print parts[1]; } exit }'
 }
 
 temurin_linux_arch() {
@@ -70,7 +73,7 @@ install_local_java21() {
     java_archive="temurin-21-${arch}.tar.gz"
 
     rm -f "${java_archive}"
-    curl -sSfL --connect-timeout 30 --max-time 300 \
+    curl -sSfL --retry 3 --retry-delay 2 --connect-timeout 30 --max-time 300 \
         -o "${java_archive}" \
         "https://api.adoptium.net/v3/binary/latest/21/ga/linux/${arch}/jre/hotspot/normal/eclipse"
     tar -xzf "${java_archive}"

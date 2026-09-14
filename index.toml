@@ -2,7 +2,7 @@ hash-format = "sha256"
 
 [[files]]
 file = "config/bcc-common.toml"
-hash = "28c6a690556ac099ff9e5ecb6798809138e0b714d9f3ca69f0e0b60aa5dda65a"
+hash = "485cf4a9449cfffeb7e07574f8ae2b7c0c6cd7c41b3c43647784da4a48f66743"
 
 [[files]]
 file = "config/logbegone.toml"
@@ -15,7 +15,7 @@ hash = "6ad11b0f52be1a2e5b285c48a13667916ab7922dcfbc3f616fd72f8e77867677"
 
 [[files]]
 file = "functions.sh"
-hash = "5fd67c648951c9304e9f66a9d72a4cb54c00697b478eee57b420d072370f1519"
+hash = "67e36019d87d7efcbdd591ed5e9d2715dc1fbabb1073f30cb305adc5c5d50360"
 
 [[files]]
 file = "kubejs/server_scripts/fix_create_confectionery.js"
@@ -683,7 +683,7 @@ preserve = true
 
 [[files]]
 file = "startup.ps1"
-hash = "23032d694efbad84a50d26c87c7a00c42a86c40cf5666055b9912ab5bc651439"
+hash = "ead38c9a15dcc9a0e7070b81710c7a550800da6a055155c4787c36c5c6cc8a1d"
 
 [[files]]
 file = "startup.sh"
@@ -691,8 +691,8 @@ hash = "1c53ee323e910e43cb70e4f3f70f4df04bdaea5401bd60b3894f541a648f4766"
 
 [[files]]
 file = "tools/update.ps1"
-hash = "7c42e3dc9248b24e2c1344f361d0a4addec9601716c3a40410d9051886012191"
+hash = "7f0e0bfff18e10c4d1c448121797b6c8610e99a6a3d9aed362f41baa5d81805b"
 
 [[files]]
 file = "tools/update.sh"
-hash = "77b164d3b788e5ed9712b5e7171fddcd5c1f112b695e1113e7469a0195024c00"
+hash = "18764905f7fe739c85d1cda40584b03e4e0b0b67556c3bcbec081d07a8e5112c"

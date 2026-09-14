@@ -80,7 +80,7 @@ esac
 
 if [ ! -f packwiz-installer-bootstrap.jar ]; then
     printf '%s\n' "packwiz-installer-bootstrap.jar not found, downloading latest release..."
-    curl -sSfL --connect-timeout 30 --max-time 120 \
+    curl -sSfL --retry 3 --retry-delay 2 --connect-timeout 30 --max-time 120 \
         -o packwiz-installer-bootstrap.jar \
         "https://github.com/packwiz/packwiz-installer-bootstrap/releases/latest/download/packwiz-installer-bootstrap.jar"
 fi

@@ -54,7 +54,7 @@ fi
 ensure_supported_java
 
 printf '%s\n' "Fetching packwiz-installer-bootstrap..."
-curl -sSfL --connect-timeout 30 --max-time 120 \
+curl -sSfL --retry 3 --retry-delay 2 --connect-timeout 30 --max-time 120 \
     -o packwiz-installer-bootstrap.jar \
     "https://github.com/packwiz/packwiz-installer-bootstrap/releases/latest/download/packwiz-installer-bootstrap.jar"
 printf '%s\n' "Downloaded packwiz-installer-bootstrap.jar"
@@ -106,7 +106,7 @@ case ${MODLOADER} in
 
         RESOLVED_VERSION=${FORGE_VERSION}
         if [ -z "${RESOLVED_VERSION}" ]; then
-            JSON_DATA=$(curl -sSfL --connect-timeout 30 --max-time 30 \
+            JSON_DATA=$(curl -sSfL --retry 3 --retry-delay 2 --connect-timeout 30 --max-time 30 \
                 "https://files.minecraftforge.net/maven/net/minecraftforge/forge/promotions_slim.json")
             RESOLVED_VERSION=$(printf '%s\n' "${JSON_DATA}" | jq -r \
                 ".promos[\"${MC_VERSION}-recommended\"] // .promos[\"${MC_VERSION}-latest\"]")
@@ -116,7 +116,7 @@ case ${MODLOADER} in
         fi
 
         printf '%s\n' "Installing Forge ${MC_VERSION}-${RESOLVED_VERSION}..."
-        curl -sSfL --connect-timeout 30 --max-time 120 \
+        curl -sSfL --retry 3 --retry-delay 2 --connect-timeout 30 --max-time 120 \
             -o installer.jar \
             "https://maven.minecraftforge.net/net/minecraftforge/forge/${MC_VERSION}-${RESOLVED_VERSION}/forge-${MC_VERSION}-${RESOLVED_VERSION}-installer.jar"
 
@@ -143,10 +143,10 @@ case ${MODLOADER} in
         if [ -n "${FORGE_VERSION}" ]; then
             FABRIC_LOADER=${FORGE_VERSION}
         else
-            FABRIC_LOADER=$(curl -sSfL --connect-timeout 30 --max-time 30 \
+            FABRIC_LOADER=$(curl -sSfL --retry 3 --retry-delay 2 --connect-timeout 30 --max-time 30 \
                 "https://meta.fabricmc.net/v2/versions/loader" | jq -r '.[0].version')
         fi
-        FABRIC_INSTALLER=$(curl -sSfL --connect-timeout 30 --max-time 30 \
+        FABRIC_INSTALLER=$(curl -sSfL --retry 3 --retry-delay 2 --connect-timeout 30 --max-time 30 \
             "https://meta.fabricmc.net/v2/versions/installer" | jq -r '.[0].version')
 
         printf '%s\n' "Installing Fabric Loader ${FABRIC_LOADER} for Minecraft ${MC_VERSION}..."
@@ -156,7 +156,7 @@ case ${MODLOADER} in
         }
         trap cleanup_fabric 0 1 2 15
 
-        curl -sSfL --connect-timeout 30 --max-time 120 \
+        curl -sSfL --retry 3 --retry-delay 2 --connect-timeout 30 --max-time 120 \
             -o "${SERVER_JARFILE}.tmp" \
             "https://meta.fabricmc.net/v2/versions/loader/${MC_VERSION}/${FABRIC_LOADER}/${FABRIC_INSTALLER}/server/jar"
         mv "${SERVER_JARFILE}.tmp" "${SERVER_JARFILE}"
@@ -168,10 +168,10 @@ case ${MODLOADER} in
         if [ -n "${FORGE_VERSION}" ]; then
             QUILT_LOADER=${FORGE_VERSION}
         else
-            QUILT_LOADER=$(curl -sSfL --connect-timeout 30 --max-time 30 \
+            QUILT_LOADER=$(curl -sSfL --retry 3 --retry-delay 2 --connect-timeout 30 --max-time 30 \
                 "https://meta.quiltmc.org/v3/versions/loader" | jq -r '.[0].version')
         fi
-        QUILT_INSTALLER=$(curl -sSfL --connect-timeout 30 --max-time 30 \
+        QUILT_INSTALLER=$(curl -sSfL --retry 3 --retry-delay 2 --connect-timeout 30 --max-time 30 \
             "https://meta.quiltmc.org/v3/versions/installer" | jq -r '.[0].version')
 
         printf '%s\n' "Installing Quilt Loader ${QUILT_LOADER} for Minecraft ${MC_VERSION}..."
@@ -181,7 +181,7 @@ case ${MODLOADER} in
         }
         trap cleanup_quilt 0 1 2 15
 
-        curl -sSfL --connect-timeout 30 --max-time 120 \
+        curl -sSfL --retry 3 --retry-delay 2 --connect-timeout 30 --max-time 120 \
             -o "${SERVER_JARFILE}.tmp" \
             "https://meta.quiltmc.org/v3/versions/loader/${MC_VERSION}/${QUILT_LOADER}/${QUILT_INSTALLER}/server/jar"
         mv "${SERVER_JARFILE}.tmp" "${SERVER_JARFILE}"

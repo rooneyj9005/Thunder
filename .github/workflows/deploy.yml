@@ -55,11 +55,13 @@ jobs:
       - name: Test the deployed install path
         id: install_test
         continue-on-error: true
+        env:
+          PAGE_URL: ${{ steps.deployment.outputs.page_url }}
         shell: bash
         run: |
           set -euo pipefail
 
-          base_url="${{ steps.deployment.outputs.page_url }}"
+          base_url="$PAGE_URL"
           if [[ -z "$base_url" ]]; then
             echo "ERROR: Missing Pages deployment URL." >&2
             exit 1
@@ -129,11 +131,13 @@ jobs:
 
       - name: Fail workflow after rollback
         if: ${{ steps.install_test.outputs.ok != 'true' }}
+        env:
+          ROLLBACK_TAG: ${{ steps.rollback.outputs.tag }}
         shell: bash
         run: |
-          if [[ -z "${{ steps.rollback.outputs.tag }}" ]]; then
+          if [[ -z "$ROLLBACK_TAG" ]]; then
             echo "ERROR: The install test failed and no previous stable release was available for rollback." >&2
           else
-            echo "ERROR: The install test failed. Pages were rolled back to ${{ steps.rollback.outputs.tag }} and the release was demoted back to prerelease." >&2
+            echo "ERROR: The install test failed. Pages were rolled back to ${ROLLBACK_TAG} and the release was demoted back to prerelease." >&2
           fi
           exit 1

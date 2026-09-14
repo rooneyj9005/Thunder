@@ -1,9 +1,20 @@
+# Repo, CI and release-only files, plus whatever a server writes into the tree
+# when one is booted here. packwiz does not read .gitignore, so without the
+# second group a refresh after a local boot publishes ops.json, whitelist.json,
+# usercache.json and the RCON password in server.properties to every client.
 /.git/
 /.github/
 /tmp/
 /logs/
 /tests/
+/world/
+/libraries/
+/crash-reports/
+/jdk-21*/
+/jre-21*/
 *.mrpack
+hs_err_pid*.log
+/banned-*.json
 /.gitattributes
 /.gitignore
 /.packwizignore
@@ -13,3 +24,17 @@
 /pterodactyl.json
 /tools/install.sh
 /tools/install.ps1
+/eula.txt
+/server.properties
+/ops.json
+/whitelist.json
+/usercache.json
+/usernamecache.json
+/packwiz-installer-bootstrap.jar
+/unix_args.txt
+/win_args.txt
+/user_jvm_args.txt
+/run.sh
+/run.bat
+/installer.jar
+/installer.jar.log

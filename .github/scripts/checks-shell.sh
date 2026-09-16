@@ -119,22 +119,33 @@ check_line_endings() {
     fi
 }
 
+# The shebang decides the dialect, not the directory a script happens to sit in.
+# The split used to be by folder, which checked this script as bash because of
+# its neighbours even though it declares POSIX sh, so a bashism in here would
+# have passed.
+syntax_checker_for() {
+    case $(head -n 1 "$1") in
+        *bash)
+            printf '%s\n' "${BASH:-bash}"
+            ;;
+        *)
+            printf '%s\n' "sh"
+            ;;
+    esac
+}
+
+# One list, held in the positional parameters so the globs expand once and the
+# paths reach shellcheck as separate arguments without being re-split.
+set -- tools/install.sh startup.sh tools/update.sh functions.sh tests/*.sh .github/scripts/*.sh
+
 failed=0
 
-for script_path in tools/install.sh startup.sh tools/update.sh functions.sh tests/*.sh; do
+for script_path in "$@"; do
     [ -f "${script_path}" ] || continue
     check_line_endings "${script_path}"
 
-    if ! sh -n "${script_path}"; then
-        failed=1
-    fi
-done
-
-for script_path in .github/scripts/*.sh; do
-    [ -f "${script_path}" ] || continue
-    check_line_endings "${script_path}"
-
-    if ! "${BASH:-bash}" -n "${script_path}"; then
+    checker=$(syntax_checker_for "${script_path}")
+    if ! "${checker}" -n "${script_path}"; then
         failed=1
     fi
 done
@@ -147,8 +158,10 @@ else
     SHELLCHECK_BIN=$(bootstrap_shellcheck)
 fi
 
-"${SHELLCHECK_BIN}" -s sh tools/install.sh startup.sh tools/update.sh functions.sh tests/*.sh
-"${SHELLCHECK_BIN}" -s bash .github/scripts/*.sh
+# -x follows sourced files, which is what lets shellcheck see functions.sh from
+# the scripts that source it instead of reporting every call into it. No -s
+# here either: each script's own shebang picks its dialect.
+"${SHELLCHECK_BIN}" -x "$@"
 
 if [ "${failed}" -ne 0 ]; then
     exit 1

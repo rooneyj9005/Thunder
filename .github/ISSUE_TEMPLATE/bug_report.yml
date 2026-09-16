@@ -1,0 +1,71 @@
+name: Bug report
+description: Something in Thunder is not working.
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        A log is the difference between a fix and a guess. If you have one, it is the most useful thing on this form.
+
+  - type: input
+    id: pack-version
+    attributes:
+      label: Pack version
+      description: The version your launcher shows, or the one on the download button at thunder.john.rooney.scot.
+      placeholder: "0.12.7"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: launcher
+    attributes:
+      label: How are you running Thunder?
+      options:
+        - Prism Launcher
+        - MultiMC
+        - Modrinth App
+        - CurseForge App
+        - ATLauncher
+        - A server, no launcher
+        - Something else
+    validations:
+      required: true
+
+  - type: dropdown
+    id: side
+    attributes:
+      label: Where does it happen?
+      options:
+        - Client
+        - Server
+        - Both
+    validations:
+      required: true
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What you did, what you expected, and what you got instead. If it happens every time, say what makes it happen.
+    validations:
+      required: true
+
+  - type: textarea
+    id: log
+    attributes:
+      label: latest.log
+      description: >
+        From logs/latest.log inside your instance folder, or the server
+        directory. Drag the file into this box, or paste it. If the game
+        crashed, the newest file in crash-reports/ as well.
+    validations:
+      required: false
+
+  - type: textarea
+    id: anything-else
+    attributes:
+      label: Anything else
+      description: Mods you have added, configs you have changed, how much memory you gave it. Anything that makes your setup different from a fresh install.
+    validations:
+      required: false

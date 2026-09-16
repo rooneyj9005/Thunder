@@ -2,7 +2,7 @@ hash-format = "sha256"
 
 [[files]]
 file = "config/bcc-common.toml"
-hash = "b5a0aa968010a058256c3fcac2768b7dff2c4e4a40d25daa02dee7acdfe7dd3b"
+hash = "d152ca0c7e04534b735b25f13220b85f46b106753c9130b392207a9a5c37894e"
 
 [[files]]
 file = "config/logbegone.toml"
@@ -15,7 +15,7 @@ hash = "6ad11b0f52be1a2e5b285c48a13667916ab7922dcfbc3f616fd72f8e77867677"
 
 [[files]]
 file = "functions.sh"
-hash = "40772d4fb4527e43079e7f97d1a270dcc0386f5e7d4530512e544094e99b019a"
+hash = "bff4a84ad5deae4f2273c7d7904411b21b9494f3868ef396ac89b7d52173fa39"
 
 [[files]]
 file = "kubejs/server_scripts/fix_create_confectionery.js"
@@ -43,7 +43,7 @@ metafile = true
 
 [[files]]
 file = "mods/apotheosis.pw.toml"
-hash = "76350c45f79ff24ed84344e4ad94b103596832c00315ce5ef33ba366da02feee"
+hash = "9879628ffc31444830369bca2acb00ce0bde37a092ac2ee3f53447b28a6f6f04"
 metafile = true
 
 [[files]]
@@ -53,7 +53,7 @@ metafile = true
 
 [[files]]
 file = "mods/apothic-attributes.pw.toml"
-hash = "9f7e9da58d3c13b83725ef94dc5020769b67f9904c13b39820665f45c452bb7b"
+hash = "1dc9e1a184ade4918dad17ef20de026053c841bd5a50f122fb783bb3f9185b89"
 metafile = true
 
 [[files]]
@@ -523,7 +523,7 @@ metafile = true
 
 [[files]]
 file = "mods/placebo.pw.toml"
-hash = "74b3603c4750373928488bdb73ab6042bf29d833e90b6827f3165c52493807e8"
+hash = "969078b157cd783f7c38ac33407abc4f532c244c973d52810d559f02be06db90"
 metafile = true
 
 [[files]]
@@ -653,7 +653,7 @@ metafile = true
 
 [[files]]
 file = "mods/worldedit.pw.toml"
-hash = "aca59c694729644466047813a7bb26f1c16fa3968788c694f77fa0436199e907"
+hash = "810c63c5de675c9cb2f29c4e63231ae4d35d83f906d3279ac5c7a83132fe387c"
 metafile = true
 
 [[files]]
@@ -683,16 +683,16 @@ preserve = true
 
 [[files]]
 file = "startup.ps1"
-hash = "5fd312b6c4c92294727065866cdf40da2c8207383765f59fef691d1b2831956c"
+hash = "df3d307c6b77a1e742eb243c332d5b2d47b4f4491aa5c4b81220ddb5c05989da"
 
 [[files]]
 file = "startup.sh"
-hash = "c03b9881b706fdaa13ded8d294aa3bd9d9b91995e92cbd1a9c19db5676de7f4e"
+hash = "978a369d0d2f3ec79f618264cb35f2a120bf942deb95831ba2a8d0208be925d5"
 
 [[files]]
 file = "tools/update.ps1"
-hash = "39483ffa31f102405884880df11e8e99d13a93cf4cb44148831b5aa98df4ab14"
+hash = "a5ecf26bf2903214e872d2a18754031d9cae6051cc5675d9d1a45459ffeca6fd"
 
 [[files]]
 file = "tools/update.sh"
-hash = "d4e73855d8f817f92710c65fc82de67eaf53bff88c2a9344840eed4fbeeabd43"
+hash = "e557edde89ee3d95d5f5a86edd8d23468b58f81495cc796db17c8b4f61ba00bb"

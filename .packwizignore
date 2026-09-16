@@ -15,10 +15,10 @@
 *.mrpack
 hs_err_pid*.log
 /banned-*.json
+/.editorconfig
 /.gitattributes
 /.gitignore
 /.packwizignore
-/CNAME
 /LICENSE
 /README.md
 /pterodactyl.json

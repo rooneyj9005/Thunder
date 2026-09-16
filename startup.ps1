@@ -68,11 +68,16 @@ function Test-SupportedJavaVersion([string]$Version) {
     return $Version -in @("17", "21")
 }
 
+# The environment variables rather than RuntimeInformation.OSArchitecture: that
+# member needs .NET Framework 4.7.1, which every modern host has, but it is not
+# in the 5.1 profile PSScriptAnalyzer checks against and the warning is raised
+# on every edit. A 32-bit PowerShell on 64-bit Windows reports x86 in
+# PROCESSOR_ARCHITECTURE and the real architecture in PROCESSOR_ARCHITEW6432.
 function Get-TemurinArch {
-    $arch = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString()
+    $arch = if ($env:PROCESSOR_ARCHITEW6432) { $env:PROCESSOR_ARCHITEW6432 } else { $env:PROCESSOR_ARCHITECTURE }
     switch ($arch) {
-        "X64" { return "x64" }
-        "Arm64" { return "aarch64" }
+        "AMD64" { return "x64" }
+        "ARM64" { return "aarch64" }
         default { throw "Unsupported Windows architecture for Temurin 21: $arch." }
     }
 }
@@ -118,7 +123,7 @@ function Install-Temurin21 {
     Write-Host "Installed Temurin 21 to $($jdkDir.FullName)"
 }
 
-function Ensure-SupportedJava {
+function Confirm-SupportedJava {
     $javaMajor = Get-JavaMajorVersion
     if (Test-SupportedJavaVersion $javaMajor) {
         return
@@ -146,7 +151,7 @@ function Ensure-SupportedJava {
     }
 }
 
-Ensure-SupportedJava
+Confirm-SupportedJava
 
 function Resolve-NonNegativeMiB([string]$Name, [Nullable[int]]$ArgumentValue, [string]$EnvValue) {
     if ($null -ne $ArgumentValue) {
@@ -349,6 +354,13 @@ if ($resolvedVoicePort -gt 65535) {
     throw "VOICE_PORT must be between 0 and 65535 (0 to disable)."
 }
 
+# SERVER_JARFILE names a file in the server directory, not a path to one.
+# tools/install.ps1 has always refused anything else; this is the same rule on
+# the start path, which a standalone run can reach without going through it.
+if ($resolvedServerJarFile -notmatch '^[A-Za-z0-9._-]+\.jar$') {
+    throw "SERVER_JARFILE must be a simple .jar filename."
+}
+
 # Operator-supplied flags reach a command line, so the allowlist is a deliberate
 # floor: letters, numbers, spaces and the punctuation a JVM flag actually needs.
 if ($resolvedJvmExtraFlags -match '[^A-Za-z0-9.,/:=_+\- ]') {
@@ -359,6 +371,14 @@ if ($resolvedJvmExtraFlags -match '[^A-Za-z0-9.,/:=_+\- ]') {
 # Refusing would strand every server built from an egg older than
 # PACKWIZ_AUTO_UPDATE, whose panel has CLEAN_INSTALL and no way to add the new
 # variable, leaving no setting available to get the server booting again.
+#
+# An absent PACKWIZ_AUTO_UPDATE means off here, and startup.sh deliberately
+# reads it as on under --container. That asymmetry is the point: the container
+# case is a Pterodactyl panel too old to carry the variable, whose servers
+# synced on every boot and would otherwise never see a pack update again. There
+# is no Windows panel and no --container on this side, so a run that does not
+# set the variable is a person at a prompt, and they get the documented opt-in
+# default.
 $autoByEnv = $env:PACKWIZ_AUTO_UPDATE -match '^(1|true|yes)$'
 if ($resolvedCleanInstall -and -not ($AutoUpdate -or $autoByEnv)) {
     Write-Host "Clean install requested, so syncing this start even though PACKWIZ_AUTO_UPDATE is off."

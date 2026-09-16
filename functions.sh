@@ -79,7 +79,6 @@ install_local_java21() {
     tar -xzf "${java_archive}"
     rm -f "${java_archive}"
 
-    # shellcheck disable=SC2310
     if ! use_local_java21_if_available; then
         die "Temurin 21 archive did not contain an expected jdk-21* or jre-21* directory."
     fi
@@ -100,7 +99,6 @@ ensure_supported_java() {
         esac
     fi
 
-    # shellcheck disable=SC2310
     if use_local_java21_if_available; then
         major=$(java_major_version)
         case ${major} in
@@ -268,6 +266,48 @@ validate_boolean_value() {
             die "${name} must be one of: true, false, 1, 0, yes, or no."
             ;;
     esac
+}
+
+# Over plaintext an attacker on the path controls the index and the hashes that
+# index is checked against, so hash verification proves nothing about what ends
+# up in mods/. The only host that legitimately serves the pack over http is the
+# local one in tests/ and CI, and that sets PACKWIZ_ALLOW_INSECURE_URL to say
+# so. A real install has no reason to.
+validate_packwiz_url() {
+    name=$1
+    value=$2
+
+    if printf '%s\n' "${value}" | grep -Eq '[[:space:]]'; then
+        die "${name} must not contain whitespace."
+    fi
+
+    case ${PACKWIZ_ALLOW_INSECURE_URL:-} in
+        1|true|yes)
+            return 0
+            ;;
+    esac
+
+    case ${value} in
+        https://*)
+            return 0
+            ;;
+        *)
+            die "${name} must be an https:// URL. Set PACKWIZ_ALLOW_INSECURE_URL=1 to allow a plaintext host, which is only safe for a local test."
+            ;;
+    esac
+}
+
+# SERVER_JARFILE names a file in the server directory, not a path to one. The
+# egg's own rule already refuses anything else from a panel, so this is what
+# covers a standalone run, where the value reaches a java -jar argument with
+# nothing between it and the shell.
+validate_server_jarfile() {
+    name=$1
+    value=$2
+
+    if ! printf '%s\n' "${value}" | grep -Eq '^[A-Za-z0-9._-]+\.jar$'; then
+        die "${name} must be a simple .jar filename."
+    fi
 }
 
 validate_non_negative_mib() {

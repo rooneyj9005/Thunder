@@ -95,11 +95,16 @@ function Test-SupportedJavaVersion([string]$Version) {
     return $Version -in @("17", "21")
 }
 
+# The environment variables rather than RuntimeInformation.OSArchitecture: that
+# member needs .NET Framework 4.7.1, which every modern host has, but it is not
+# in the 5.1 profile PSScriptAnalyzer checks against and the warning is raised
+# on every edit. A 32-bit PowerShell on 64-bit Windows reports x86 in
+# PROCESSOR_ARCHITECTURE and the real architecture in PROCESSOR_ARCHITEW6432.
 function Get-TemurinArch {
-    $arch = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString()
+    $arch = if ($env:PROCESSOR_ARCHITEW6432) { $env:PROCESSOR_ARCHITEW6432 } else { $env:PROCESSOR_ARCHITECTURE }
     switch ($arch) {
-        "X64" { return "x64" }
-        "Arm64" { return "aarch64" }
+        "AMD64" { return "x64" }
+        "ARM64" { return "aarch64" }
         default { throw "Unsupported Windows architecture for Temurin 21: $arch." }
     }
 }
@@ -278,6 +283,15 @@ if ($packwizSide -notin @("server", "both")) {
 
 if ($packwizUrl -match "\s") {
     throw "PACKWIZ_URL must not contain whitespace."
+}
+
+# Over plaintext an attacker on the path controls the index and the hashes that
+# index is checked against, so hash verification proves nothing about what ends
+# up in mods/. The only host that legitimately serves the pack over http is the
+# local one in tests/ and CI, and that sets PACKWIZ_ALLOW_INSECURE_URL to say
+# so. A real install has no reason to.
+if ($packwizUrl -notlike "https://*" -and $env:PACKWIZ_ALLOW_INSECURE_URL -notmatch '^(1|true|yes)$') {
+    throw "PACKWIZ_URL must be an https:// URL. Set PACKWIZ_ALLOW_INSECURE_URL=1 to allow a plaintext host, which is only safe for a local test."
 }
 
 Write-Host "Syncing modpack via packwiz..."

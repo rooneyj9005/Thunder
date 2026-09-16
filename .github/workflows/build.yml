@@ -135,6 +135,11 @@ jobs:
 
       - name: Validate pack build and update path
         env:
+          # checks-pack.sh asks the releases API what the current stable release
+          # is, so a tag numbered below it cannot deploy older metadata over a
+          # newer one. Without a token that question is unanswerable and the
+          # check skips itself.
+          GH_TOKEN: ${{ github.token }}
           EXPECTED_TAG: ${{ github.ref_name }}
           TEST_PACK_URL: http://127.0.0.1:8123/pack.toml
           PACKWIZ_EXTRA_FLAGS: --bootstrap-no-update --bootstrap-main-jar ${{ runner.temp }}/packwiz-installer.jar

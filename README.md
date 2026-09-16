@@ -39,6 +39,8 @@ A few rules matter more than the rest:
 - Keep `config/bcc-common.toml` in step with the pack name and version.
 - Create and the mods built on it are handled deliberately. Read `mods/create.pw.toml` before updating anything in that family.
 
+Forge tracks the recommended channel. `pack.toml`, `pterodactyl.json`, `tools/install.sh` and `tools/install.ps1` pin the same build and move together, when the recommended build in Forge's promotions file for this Minecraft version passes the one pinned here. Latest is not the trigger, and a recommended build sitting below the pin means there is nothing to do. Bumping Forge is a patch.
+
 ## Repository Notes for Contributors
 
 This repository is the source of truth for:
@@ -73,32 +75,30 @@ Test them in a separate empty directory. A server booted in the working tree wri
 
 Go/no-go for a pack release.
 
-<ul>
-  <li><label><input type="checkbox" /> I have checked that temporary release-test files such as stray <code>.mrpack</code> exports are not in source control.</label></li>
-  <li><label><input type="checkbox" /> I have checked that <code>pack.toml</code> reflects the intended release version and state.</label></li>
-  <li><label><input type="checkbox" /> I have checked that <code>config/bcc-common.toml</code> reflects the intended pack name and displayed version.</label></li>
-  <li><label><input type="checkbox" /> I have checked that <code>index.toml</code> matches the current pack-managed contents.</label></li>
-  <li><label><input type="checkbox" /> I have checked that <code>packwiz refresh</code> completed successfully.</label></li>
-  <li><label><input type="checkbox" /> I have checked that <code>packwiz modrinth export</code> completed successfully.</label></li>
-  <li><label><input type="checkbox" /> I have checked that the release install/update path can pull the published pack metadata successfully.</label></li>
-  <li><label><input type="checkbox" /> I have checked that <code>startup.sh</code>, <code>functions.sh</code>, and <code>tools/update.sh</code> still use LF line endings.</label></li>
-  <li><label><input type="checkbox" /> I have checked that a fresh client import launches cleanly and reaches the main menu.</label></li>
-  <li><label><input type="checkbox" /> I have checked that a fresh client import can join a Thunder server.</label></li>
-  <li><label><input type="checkbox" /> I have checked that server install and startup behave correctly on Linux.</label></li>
-  <li><label><input type="checkbox" /> I have checked that server install and startup behave correctly on Windows.</label></li>
-  <li><label><input type="checkbox" /> I have run the local tests (<code>sh tests/server.sh</code> and <code>sh tests/client.sh</code>) for changes that could affect runtime behaviour.</label></li>
-  <li><label><input type="checkbox" /> I have checked that <code>startup.sh</code>, <code>startup.ps1</code>, <code>tools/update.sh</code>, and <code>tools/update.ps1</code> are included in the export.</label></li>
-  <li><label><input type="checkbox" /> I have checked that <code>.packwizignore</code> excludes repository-only files without excluding files the pack genuinely needs to ship.</label></li>
-  <li><label><input type="checkbox" /> I have checked that <code>pterodactyl.json</code> is present as a public release asset.</label></li>
-  <li><label><input type="checkbox" /> I have checked that generated helper binaries remain CI artifacts and are not being published as release assets.</label></li>
-  <li><label><input type="checkbox" /> I have checked that the docs site and the pack repository still agree on install, update, server, and release behaviour.</label></li>
-  <li><label><input type="checkbox" /> I have checked that the docs site and the scripts still point at the correct packwiz host.</label></li>
-  <li><label><input type="checkbox" /> I have checked that any user-facing behaviour change has been reflected in the docs repository or consciously reviewed there.</label></li>
-  <li><label><input type="checkbox" /> I have checked that all <code>data-mod-count</code> fallback values in docs are in sync with the actual mod count (search <code>Thunder-docs/*.md</code> for <code>data-mod-count</code>).</label></li>
-  <li><label><input type="checkbox" /> I have checked that the live docs site, or a local preview of it, still makes sense for this release, including download links, server guidance, and version-status checks.</label></li>
-  <li><label><input type="checkbox" /> I have checked that the chosen version bump matches the kind of change in this release.</label></li>
-  <li><label><input type="checkbox" /> I have checked that, if this is a major release, it is genuinely production-ready rather than a hopeful milestone.</label></li>
-</ul>
+- [ ] I have checked that temporary release-test files such as stray `.mrpack` exports are not in source control.
+- [ ] I have checked that `pack.toml` reflects the intended release version and state.
+- [ ] I have checked that `config/bcc-common.toml` reflects the intended pack name and displayed version.
+- [ ] I have checked that `index.toml` matches the current pack-managed contents.
+- [ ] I have checked that `packwiz refresh` completed successfully.
+- [ ] I have checked that `packwiz modrinth export` completed successfully.
+- [ ] I have checked that the release install/update path can pull the published pack metadata successfully.
+- [ ] I have checked that `startup.sh`, `functions.sh`, and `tools/update.sh` still use LF line endings.
+- [ ] I have checked that a fresh client import launches cleanly and reaches the main menu.
+- [ ] I have checked that a fresh client import can join a Thunder server.
+- [ ] I have checked that server install and startup behave correctly on Linux.
+- [ ] I have checked that server install and startup behave correctly on Windows.
+- [ ] I have run the local tests (`sh tests/server.sh` and `sh tests/client.sh`) for changes that could affect runtime behaviour.
+- [ ] I have checked that `startup.sh`, `startup.ps1`, `tools/update.sh`, and `tools/update.ps1` are included in the export.
+- [ ] I have checked that `.packwizignore` excludes repository-only files without excluding files the pack genuinely needs to ship.
+- [ ] I have checked that `pterodactyl.json` is present as a public release asset.
+- [ ] I have checked that generated helper binaries remain CI artifacts and are not being published as release assets.
+- [ ] I have checked that the docs site and the pack repository still agree on install, update, server, and release behaviour.
+- [ ] I have checked that the docs site and the scripts still point at the correct packwiz host.
+- [ ] I have checked that any user-facing behaviour change has been reflected in the docs repository or consciously reviewed there.
+- [ ] I have checked that all `data-mod-count` fallback values in docs are in sync with the actual mod count (search `Thunder-docs/*.md` for `data-mod-count`).
+- [ ] I have checked that the live docs site, or a local preview of it, still makes sense for this release, including download links, server guidance, and version-status checks.
+- [ ] I have checked that the chosen version bump matches the kind of change in this release.
+- [ ] I have checked that, if this is a major release, it is genuinely production-ready rather than a hopeful milestone.
 
 ## Pack Contents
 

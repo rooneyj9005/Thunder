@@ -7,7 +7,7 @@ SCRIPT_DIR=$(CDPATH='' cd "$(dirname "$0")" && pwd)
 _rc_loaded=0
 for _rc in "${SCRIPT_DIR}/functions.sh" "${SCRIPT_DIR}/../functions.sh"; do
     if [ -f "${_rc}" ]; then
-        # shellcheck disable=SC1090,SC1091
+        # shellcheck source=functions.sh
         . "${_rc}"
         _rc_loaded=1
         break
@@ -85,9 +85,7 @@ if [ -n "${FORGE_VERSION}" ] &&
     die "FORGE_VERSION must contain only digits and dots."
 fi
 
-if ! printf '%s\n' "${SERVER_JARFILE}" | grep -Eq '^[A-Za-z0-9._-]+\.jar$'; then
-    die "SERVER_JARFILE must be a simple .jar filename."
-fi
+validate_server_jarfile "SERVER_JARFILE" "${SERVER_JARFILE}"
 
 if { [ "${MODLOADER}" = "forge" ] && [ -z "${FORGE_VERSION}" ]; } ||
     [ "${MODLOADER}" = "fabric" ] ||
@@ -210,9 +208,7 @@ case ${PACKWIZ_SIDE} in
         ;;
 esac
 
-if printf '%s\n' "${PACKWIZ_URL}" | grep -Eq '[[:space:]]'; then
-    die "PACKWIZ_URL must not contain whitespace."
-fi
+validate_packwiz_url "PACKWIZ_URL" "${PACKWIZ_URL}"
 
 validate_extra_flags "PACKWIZ_EXTRA_FLAGS" "${PACKWIZ_EXTRA_FLAGS}"
 

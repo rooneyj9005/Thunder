@@ -22,6 +22,13 @@ set -eu
 
 PACKWIZ_URL="${PACKWIZ_URL:-http://host.docker.internal:8123/pack.toml}"
 PACK_HOST="${PACKWIZ_URL%/pack.toml}"
+
+# install.sh refuses a plaintext pack host, because over http the attacker who
+# controls the index also controls the hashes it is checked against. The host
+# here is packwiz serve on the loopback of the machine running the test, so the
+# rule is waived for the length of this container and nowhere else.
+PACKWIZ_ALLOW_INSECURE_URL=1
+export PACKWIZ_ALLOW_INSECURE_URL
 SERVER_DIR=/home/container
 STATE_DIR="${SERVER_DIR}/.thunder-test"
 INSTALL_MARKER="${STATE_DIR}/installed"

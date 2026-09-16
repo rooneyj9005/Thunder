@@ -2,7 +2,7 @@
 set -eu
 
 SCRIPT_DIR=$(CDPATH='' cd "$(dirname "$0")" && pwd)
-# shellcheck disable=SC1091
+# shellcheck source=functions.sh
 . "${SCRIPT_DIR}/functions.sh"
 
 SERVER_DIR=""
@@ -45,6 +45,7 @@ ensure_supported_java
 CLEAN_INSTALL=${CLEAN_INSTALL:-false}
 PACKWIZ_SIDE=${PACKWIZ_SIDE:-server}
 JVM_EXTRA_FLAGS=${JVM_EXTRA_FLAGS:-}
+SERVER_JARFILE=${SERVER_JARFILE:-server.jar}
 
 # A panel does not add new egg variables to servers that already exist, so a
 # server created before PACKWIZ_AUTO_UPDATE was introduced has no way to set it,
@@ -129,6 +130,7 @@ validate_boolean_value "PACKWIZ_AUTO_UPDATE" "${PACKWIZ_AUTO_UPDATE}"
 ENABLE_VOICE_CHAT=${ENABLE_VOICE_CHAT:-true}
 validate_boolean_value "ENABLE_VOICE_CHAT" "${ENABLE_VOICE_CHAT}"
 validate_extra_flags "JVM_EXTRA_FLAGS" "${JVM_EXTRA_FLAGS}"
+validate_server_jarfile "SERVER_JARFILE" "${SERVER_JARFILE}"
 
 case ${PACKWIZ_AUTO_UPDATE} in
     true|1|yes) SYNC_ON_START=true ;;
@@ -206,7 +208,6 @@ fi
 
 if [ "${VOICE_ENABLED}" = "true" ]; then
     set_properties_key "${VOICE_CONFIG_FILE}" port "${VOICE_PORT}"
-    # shellcheck disable=SC2310
     if properties_key_equals "${VOICE_CONFIG_FILE}" bind_address 127.0.0.1; then
         printf '%s\n' "Voice chat re-enabled. Clearing the loopback bind_address so it listens on every interface again."
         set_properties_key "${VOICE_CONFIG_FILE}" bind_address ""
@@ -263,8 +264,8 @@ fi
 
 # Falling through to "-jar server.jar" on a Forge install reports the missing
 # jar, which is not the problem and sends you looking in the wrong place.
-if [ ! -f unix_args.txt ] && [ ! -f "${SERVER_JARFILE:-server.jar}" ]; then
-    die "No Forge launch arguments and no ${SERVER_JARFILE:-server.jar}, so there is nothing to start. Reinstall the server to install Forge."
+if [ ! -f unix_args.txt ] && [ ! -f "${SERVER_JARFILE}" ]; then
+    die "No Forge launch arguments and no ${SERVER_JARFILE}, so there is nothing to start. Reinstall the server to install Forge."
 fi
 
 set --
@@ -310,4 +311,4 @@ if [ -f unix_args.txt ]; then
     exec java "$@" "@unix_args.txt" nogui
 fi
 
-exec java "$@" -jar "${SERVER_JARFILE:-server.jar}" nogui
+exec java "$@" -jar "${SERVER_JARFILE}" nogui

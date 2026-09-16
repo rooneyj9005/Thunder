@@ -1,0 +1,38 @@
+# Git normalises nothing here. `.gitattributes` sets `* -text` so packwiz
+# content stays byte-stable against the hashes in `index.toml`, and the cost of
+# that is git will not quietly repair a CRLF file an editor creates. The
+# line-ending checks in `checks-pack.sh` and `checks-shell.sh` catch those, but
+# only once they have already been committed. This is what stops them happening.
+#
+# The catch-all below is deliberately just the line ending. Whitespace and
+# charset rules are kept to the files this repository actually writes, because
+# everything under `config/`, `mods/` and `resourcepacks/` is pack-managed
+# content and an editor tidying it on save would change its hash.
+
+root = true
+
+[*]
+end_of_line = lf
+
+# Voltaic reads this directory rather than config/, and its file is CRLF and has
+# to stay CRLF. Tools that strip carriage returns break it silently. The
+# directory goes when Voltaic does.
+[defaultconfigs/*.txt]
+end_of_line = crlf
+
+[*.{sh,ps1}]
+indent_style = space
+indent_size = 4
+trim_trailing_whitespace = true
+insert_final_newline = true
+
+[*.{yml,yaml,json}]
+indent_style = space
+indent_size = 2
+trim_trailing_whitespace = true
+insert_final_newline = true
+
+[*.md]
+indent_style = space
+indent_size = 2
+insert_final_newline = true

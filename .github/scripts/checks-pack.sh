@@ -51,6 +51,42 @@ if [[ -n "$EXPECTED_TAG" ]]; then
       echo "ERROR: Tag '$EXPECTED_TAG' does not match pack version 'v$normalised_pack_version'." >&2
       exit 1
     fi
+
+    # Promoting a release deploys its metadata to Pages, and Pages keeps no
+    # history to go back to. A tag numbered below the current stable release
+    # would therefore publish older metadata over a newer one and hand every
+    # player a downgrade, so refuse it here rather than at the point where
+    # someone notices their mods went backwards.
+    #
+    # A shared runner address routinely has no API budget left, and a busy API
+    # is not a reason to fail a build. An unanswerable question is reported and
+    # skipped; the check is a floor, not the only thing standing between a
+    # mistake and a release.
+    previous_tag=""
+    if command -v gh >/dev/null 2>&1 && [[ -n "${GITHUB_REPOSITORY:-}" ]]; then
+      previous_tag="$(
+        gh api --paginate "repos/${GITHUB_REPOSITORY}/releases?per_page=100" 2>/dev/null |
+          jq -sr --arg current "$EXPECTED_TAG" '
+              add
+              | map(select(.draft == false and .prerelease == false and .tag_name != $current))
+              | .[0].tag_name // empty
+            ' 2>/dev/null
+      )" || previous_tag=""
+    fi
+
+    if [[ -z "$previous_tag" ]]; then
+      echo "Info: Skipping the release-order check. No previous stable release was readable from the releases API."
+    else
+      previous_version="${previous_tag#v}"
+      lowest="$(printf '%s\n%s\n' "$normalised_pack_version" "$previous_version" | sort -V | head -n 1)"
+
+      if [[ "$lowest" == "$normalised_pack_version" ]]; then
+        echo "ERROR: Tag '$EXPECTED_TAG' is not higher than the current stable release '$previous_tag'. Releasing it would deploy older pack metadata over a newer one." >&2
+        exit 1
+      fi
+
+      echo "Tag '$EXPECTED_TAG' is higher than the current stable release '$previous_tag'."
+    fi
   else
     echo "Info: Skipping tag/version check for non-version tag '$EXPECTED_TAG'."
   fi
@@ -79,6 +115,11 @@ if [[ -n "$TEST_PACK_URL" ]]; then
   test_dir="$ROOT_DIR/tmp/tests/update"
   rm -rf "$test_dir"
   mkdir -p "$test_dir"
-  PACKWIZ_URL="$TEST_PACK_URL" PACKWIZ_SIDE=server bash "$ROOT_DIR/tools/update.sh" --dir "$test_dir"
+  # update.sh refuses a plaintext pack host, because over http the attacker who
+  # controls the index also controls the hashes it is checked against.
+  # TEST_PACK_URL is the local python http.server the workflow starts on the
+  # runner's own loopback, so the rule is waived for this one call.
+  PACKWIZ_URL="$TEST_PACK_URL" PACKWIZ_SIDE=server PACKWIZ_ALLOW_INSECURE_URL=1 \
+    bash "$ROOT_DIR/tools/update.sh" --dir "$test_dir"
   bash "$ROOT_DIR/.github/scripts/checks-install.sh" "$test_dir" server
 fi

@@ -54,8 +54,10 @@ missing_file="$(mktemp)"
 unexpected_file="$(mktemp)"
 trap 'rm -f "$expected_file" "$actual_file" "$missing_file" "$unexpected_file"' EXIT
 
-# Invoked through bash because the scripts in this repo are not marked
-# executable, the same way the workflows call this one.
+# Invoked through bash rather than run directly, the same way the workflows call
+# this one. The scripts carry the executable bit in git now, but a zip download
+# of the repository does not, and neither does a file packwiz has just synced.
+# Naming the interpreter costs nothing and does not depend on any of that.
 bash "$SCRIPT_DIR/checks-mods.sh" "$SIDE" > "$expected_file"
 
 if [[ -d "$TARGET_DIR/mods" ]]; then

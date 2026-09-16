@@ -2,7 +2,7 @@ hash-format = "sha256"
 
 [[files]]
 file = "config/bcc-common.toml"
-hash = "d152ca0c7e04534b735b25f13220b85f46b106753c9130b392207a9a5c37894e"
+hash = "ff9e7ecef86bec23ceac379fc431c6da4fbae8bbf0a56f2e221434e075a5130a"
 
 [[files]]
 file = "config/logbegone.toml"

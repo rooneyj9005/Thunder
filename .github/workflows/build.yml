@@ -5,9 +5,11 @@ on:
     tags:
       - "**"
 
+# Only the prerelease job writes anything. Its own block replaces this one
+# rather than adding to it, so it repeats the actions: read it still needs.
 permissions:
   actions: read
-  contents: write
+  contents: read
 
 concurrency:
   group: prerelease-${{ github.ref }}
@@ -64,6 +66,9 @@ jobs:
 
   prerelease:
     needs: await-checks
+    permissions:
+      actions: read
+      contents: write
     runs-on: ubuntu-latest
     timeout-minutes: 90
 

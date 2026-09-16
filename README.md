@@ -146,7 +146,7 @@ Both take `--pack-url`, so the same script and the same container test the worki
 
 This project is as open as the licence allows. Fork it, adjust it, or build on it as you see fit. If you make Thunder better for players, a pull request would be welcome, but it is never an obligation.
 
-The repository contents are available under the MIT licence in [`LICENSE`](./LICENSE). Individual mods included through packwiz remain under their own licences.
+The repository contents are available under the MIT licence in [`LICENSE`](./LICENSE). That covers the pack metadata, configs, scripts, and everything else written here. Individual mods included through packwiz remain under their own licences, and nothing here claims ownership of them or relicenses them.
 
 The general house rules are still simple:
 

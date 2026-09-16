@@ -99,6 +99,108 @@ for managed_shell in startup.sh functions.sh tools/install.sh tools/update.sh; d
   fi
 done
 
+# ---------------------------------------------------------------------------
+# Constants that live in more than one file
+#
+# The Minecraft and Forge versions and the packwiz host are each written out in
+# several places, because a runtime script cannot read pack.toml before it has
+# fetched anything. pack.toml is the source of truth and this is the one place
+# that says so, so a bump is one edit and then a check that names whatever was
+# missed, rather than a grep and a hope.
+# ---------------------------------------------------------------------------
+
+if ! command -v jq >/dev/null 2>&1; then
+  echo "ERROR: jq is required to validate pterodactyl.json." >&2
+  exit 1
+fi
+
+if ! jq empty pterodactyl.json 2>/dev/null; then
+  echo "ERROR: pterodactyl.json is not valid JSON. It ships as a release asset, so a broken egg reaches operators." >&2
+  jq empty pterodactyl.json || true
+  exit 1
+fi
+
+egg_default() {
+  jq -r --arg name "$1" '
+      .variables[]? | select(.env_variable == $name) | .default_value
+    ' pterodactyl.json
+}
+
+pack_minecraft_version="$(extract_pack_value minecraft)"
+pack_forge_version="$(extract_pack_value forge)"
+
+if [[ -z "$pack_minecraft_version" || -z "$pack_forge_version" ]]; then
+  echo "ERROR: Could not read the minecraft/forge versions from pack.toml [versions]." >&2
+  exit 1
+fi
+
+check_egg_default() {
+  local name="$1" expected="$2" actual
+  actual="$(egg_default "$name")"
+
+  if [[ "$actual" != "$expected" ]]; then
+    echo "ERROR: pterodactyl.json ${name} default is '${actual}', but pack.toml says '${expected}'." >&2
+    exit 1
+  fi
+}
+
+check_egg_default MC_VERSION "$pack_minecraft_version"
+check_egg_default FORGE_VERSION "$pack_forge_version"
+check_egg_default PACKWIZ_SIDE server
+
+# Not read from anywhere: Pages serves it and nothing in the repository declares
+# it any more, since the CNAME went. Changing the host means changing this line
+# and then fixing whatever the check names.
+expected_pack_url="https://packwiz.thunder.john.rooney.scot/pack.toml"
+check_egg_default PACKWIZ_URL "$expected_pack_url"
+
+for defaulting_file in tools/install.sh tools/install.ps1 tools/update.sh tools/update.ps1 startup.ps1; do
+  if ! grep -qF -- "$expected_pack_url" "$defaulting_file"; then
+    echo "ERROR: $defaulting_file does not carry the packwiz host default '$expected_pack_url'." >&2
+    exit 1
+  fi
+done
+
+for versioned_file in tools/install.sh tools/install.ps1 tests/client.Dockerfile; do
+  if ! grep -qF -- "$pack_minecraft_version" "$versioned_file"; then
+    echo "ERROR: $versioned_file does not mention Minecraft $pack_minecraft_version, which pack.toml requires." >&2
+    exit 1
+  fi
+
+  if ! grep -qF -- "$pack_forge_version" "$versioned_file"; then
+    echo "ERROR: $versioned_file does not mention Forge $pack_forge_version, which pack.toml requires." >&2
+    exit 1
+  fi
+done
+
+# The egg curls its own install scripts out of the latest release. If build.yml
+# stops uploading one of them, every new server install breaks at the first
+# step, and nothing else would catch it before an operator did.
+while IFS= read -r egg_asset; do
+  [[ -n "$egg_asset" ]] || continue
+
+  if ! grep -qE "(^|[[:space:]/])${egg_asset//./\\.}([[:space:]]|$)" .github/workflows/build.yml; then
+    echo "ERROR: The egg fetches '${egg_asset}' from the latest release, but build.yml does not upload it." >&2
+    exit 1
+  fi
+done < <(
+  jq -r '.scripts.installation.script' pterodactyl.json |
+    grep -oE 'releases/[^ ]*/download/[A-Za-z0-9._-]+' |
+    sed 's|.*/||' |
+    sort -u
+)
+
+# checks-install.sh silently treats a missing side as "both", so a mod with no
+# side would install on both sides and nobody would be told. All of them declare
+# one today; this is what keeps that true.
+mapfile -t missing_side < <(grep -L '^side = ' mods/*.pw.toml || true)
+
+if [[ "${#missing_side[@]}" -gt 0 ]]; then
+  echo "ERROR: These mods declare no side:" >&2
+  printf '  %s\n' "${missing_side[@]}" >&2
+  exit 1
+fi
+
 "$PACKWIZ_BIN" refresh
 
 if ! git diff --quiet -- pack.toml index.toml; then

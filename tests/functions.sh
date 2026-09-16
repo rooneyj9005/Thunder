@@ -101,22 +101,45 @@ check_budget() {
 # and is already installed in CI. It binds 0.0.0.0, and the test container
 # reaches it through the bridge gateway alias.
 PACK_HOST_PID=""
+PACK_HOST_WINPID=""
+
+# Windows only. Finds the Windows pid behind $!, which taskkill needs and a
+# signal does not reach. Whether packwiz is $! or its child depends on whether
+# the exec in start_pack_host replaced the subshell, so both are matched and the
+# command name decides: in the forked case the $! row is a bash, not packwiz.
+#
+# Called once the port answers rather than at launch, because until then the
+# child may not exist yet, and only while $! is alive, because once it exits
+# packwiz reparents to init and nothing ties the row to this run.
+record_pack_host_winpid() {
+    command -v taskkill >/dev/null 2>&1 || return 0
+
+    PACK_HOST_WINPID=$(ps -W 2>/dev/null | awk -v parent="${PACK_HOST_PID}" '
+        ($1 == parent || $2 == parent) && $0 ~ /packwiz/ { print $4; exit }
+    ')
+}
 
 start_pack_host() {
     command -v packwiz >/dev/null 2>&1 ||
         die "packwiz is not on PATH, so the working tree cannot be served. Install packwiz, or pass --pack-url to test published metadata instead."
 
     say "==> Serving the indexed pack from the working tree on port ${PACK_HOST_PORT}"
-    # exec so $! is packwiz itself, not the subshell wrapping the cd.
+    # The exec is meant to make $! packwiz rather than the subshell wrapping the
+    # cd, and off Windows it does. Git Bash cannot replace an MSYS shell with a
+    # native binary, so there it forks instead and $! stays the subshell.
+    # stop_pack_host deals with the consequence.
+    #
     # Refresh is left at packwiz's default. A run that rewrites index.toml is
     # then telling you the working tree was stale instead of hiding it.
     ( cd "${ROOT_DIR}" && exec packwiz serve -p "${PACK_HOST_PORT}" ) \
         > "${WORK_DIR}/packwiz-serve.log" 2>&1 &
     PACK_HOST_PID=$!
+    PACK_HOST_WINPID=""
 
     host_waited=0
     while [ "${host_waited}" -lt 30 ]; do
         if curl -fsS -o /dev/null "http://127.0.0.1:${PACK_HOST_PORT}/pack.toml" 2>/dev/null; then
+            record_pack_host_winpid
             return 0
         fi
 
@@ -135,10 +158,35 @@ start_pack_host() {
     die "packwiz serve did not answer on port ${PACK_HOST_PORT} within 30s."
 }
 
+# On Windows the kill below reaches the subshell and nothing else, so packwiz
+# keeps the port and the next run dies on "bind: Only one usage of each socket
+# address" with nothing in that message pointing at the leftover process. The
+# port is what the next run collides with, so the port is what is waited on.
 stop_pack_host() {
     [ -n "${PACK_HOST_PID}" ] || return 0
+
     kill "${PACK_HOST_PID}" 2>/dev/null || true
     PACK_HOST_PID=""
+
+    stop_waited=0
+    while [ "${stop_waited}" -lt 15 ]; do
+        if ! curl -fsS -o /dev/null "http://127.0.0.1:${PACK_HOST_PORT}/pack.toml" 2>/dev/null; then
+            PACK_HOST_WINPID=""
+            return 0
+        fi
+
+        if [ -n "${PACK_HOST_WINPID}" ]; then
+            taskkill //PID "${PACK_HOST_WINPID}" //F >/dev/null 2>&1 || true
+            PACK_HOST_WINPID=""
+        fi
+
+        sleep 1
+        stop_waited=$((stop_waited + 1))
+    done
+
+    PACK_HOST_WINPID=""
+    say "WARNING: port ${PACK_HOST_PORT} is still answering after packwiz serve was stopped." >&2
+    say "         Clear the leftover process, or set THUNDER_PACK_HOST_PORT for one run." >&2
 }
 
 # Reached through the gateway alias, which both drivers add. packwiz serve binds

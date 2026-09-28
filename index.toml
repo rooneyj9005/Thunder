@@ -2,7 +2,7 @@ hash-format = "sha256"
 
 [[files]]
 file = "config/bcc-common.toml"
-hash = "ff9e7ecef86bec23ceac379fc431c6da4fbae8bbf0a56f2e221434e075a5130a"
+hash = "bfd97e41f7fa458cc788a4269a89e3d5d1567454e5f3bf7d879f53643ef13172"
 
 [[files]]
 file = "config/logbegone.toml"
@@ -14,8 +14,12 @@ file = "defaultconfigs/voltaic.txt"
 hash = "6ad11b0f52be1a2e5b285c48a13667916ab7922dcfbc3f616fd72f8e77867677"
 
 [[files]]
+file = "functions.ps1"
+hash = "c7c9f8b305520cb40b86942b8401907523c1ccb59d4bee3e42663945dc2caa39"
+
+[[files]]
 file = "functions.sh"
-hash = "bff4a84ad5deae4f2273c7d7904411b21b9494f3868ef396ac89b7d52173fa39"
+hash = "c5649f4dcb07177fae1b73a77b332cf474a2dff3f2ab9492e5858ca5596627ff"
 
 [[files]]
 file = "kubejs/server_scripts/fix_create_confectionery.js"
@@ -683,16 +687,16 @@ preserve = true
 
 [[files]]
 file = "startup.ps1"
-hash = "df3d307c6b77a1e742eb243c332d5b2d47b4f4491aa5c4b81220ddb5c05989da"
+hash = "b579c4ad98a5f636eefc860095259155ad67aae28df94b0f7ab90618c61420f0"
 
 [[files]]
 file = "startup.sh"
-hash = "978a369d0d2f3ec79f618264cb35f2a120bf942deb95831ba2a8d0208be925d5"
+hash = "f006176c564e00ac3162a847611df46a4e02e211885573d1f7c40e879772c78e"
 
 [[files]]
 file = "tools/update.ps1"
-hash = "a5ecf26bf2903214e872d2a18754031d9cae6051cc5675d9d1a45459ffeca6fd"
+hash = "ee4fe5ef14063247c5c4d20f48bbbe3e409e8977555531e033d77e1d766f42ca"
 
 [[files]]
 file = "tools/update.sh"
-hash = "e557edde89ee3d95d5f5a86edd8d23468b58f81495cc796db17c8b4f61ba00bb"
+hash = "0d2a5353469efe11c761da10ed13449a3ef2e6f6817bd9f6f546b1177389bbaa"

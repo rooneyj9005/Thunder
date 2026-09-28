@@ -11,14 +11,28 @@ param(
 
 $ErrorActionPreference = "Stop"
 
+# functions.ps1 sits one level up, at the server root.
+$functionsScript = @(
+    (Join-Path $PSScriptRoot "functions.ps1"),
+    (Join-Path (Split-Path -Parent $PSScriptRoot) "functions.ps1")
+) | Where-Object { Test-Path -LiteralPath $_ } | Select-Object -First 1
+if (-not $functionsScript) {
+    throw "functions.ps1 not found next to or above this script."
+}
+. $functionsScript
+
+# The server directory is the folder above tools/. This script defaulted to its
+# own folder, which was right when it lived at the root and wrong once it moved:
+# run by hand, it synced a whole second copy of the pack into tools/ and left the
+# server itself as it was.
 $defaultDir = if ($Dir) {
     $Dir
 }
 elseif ($PSScriptRoot) {
-    $PSScriptRoot
+    Split-Path -Parent $PSScriptRoot
 }
 elseif ($PSCommandPath) {
-    Split-Path -Parent $PSCommandPath
+    Split-Path -Parent (Split-Path -Parent $PSCommandPath)
 }
 else {
     (Get-Location).Path
@@ -26,191 +40,12 @@ else {
 
 Set-Location $defaultDir
 
-function Get-JavaMajorVersionFromCommand([string]$JavaCommandPath) {
-    if (-not $JavaCommandPath -or -not (Test-Path -LiteralPath $JavaCommandPath -PathType Leaf)) {
-        return $null
-    }
-
-    $stdoutPath = Join-Path ([System.IO.Path]::GetTempPath()) ([System.IO.Path]::GetRandomFileName())
-    $stderrPath = Join-Path ([System.IO.Path]::GetTempPath()) ([System.IO.Path]::GetRandomFileName())
-
-    try {
-        $process = Start-Process -FilePath $JavaCommandPath -ArgumentList "-version" -NoNewWindow -Wait -PassThru `
-            -RedirectStandardOutput $stdoutPath -RedirectStandardError $stderrPath
-
-        if ($process.ExitCode -ne 0) {
-            return $null
-        }
-
-        $versionOutput = @()
-        if (Test-Path $stderrPath) {
-            $versionOutput += Get-Content -LiteralPath $stderrPath -ErrorAction SilentlyContinue
-        }
-        if (Test-Path $stdoutPath) {
-            $versionOutput += Get-Content -LiteralPath $stdoutPath -ErrorAction SilentlyContinue
-        }
-
-        # Filter to the version line rather than taking the first. With
-        # JAVA_TOOL_OPTIONS or _JAVA_OPTIONS set, java prints a "Picked up ..."
-        # banner ahead of it, which carries no quoted version and made this
-        # return $null on a perfectly good runtime.
-        $versionLine = $versionOutput | Where-Object { $_ -match ' version "[^"]+"' } | Select-Object -First 1
-        if ($versionLine -match ' version "(?<version>[^"]+)"') {
-            $parts = $Matches.version.Split(".")
-            if ($parts[0] -eq "1" -and $parts.Length -gt 1) {
-                return $parts[1]
-            }
-            return $parts[0]
-        }
-
-        return $null
-    }
-    finally {
-        Remove-Item -Force -ErrorAction SilentlyContinue $stdoutPath, $stderrPath
-    }
-}
-
-function Get-JavaMajorVersion {
-    $javaCommand = Get-Command java -CommandType Application -ErrorAction SilentlyContinue | Select-Object -First 1
-    if (-not $javaCommand) {
-        return $null
-    }
-
-    return Get-JavaMajorVersionFromCommand $javaCommand.Source
-}
-
-function Test-SupportedJavaVersion([string]$Version) {
-    return $Version -in @("17", "21")
-}
-
-# The environment variables rather than RuntimeInformation.OSArchitecture: that
-# member needs .NET Framework 4.7.1, which every modern host has, but it is not
-# in the 5.1 profile PSScriptAnalyzer checks against and the warning is raised
-# on every edit. A 32-bit PowerShell on 64-bit Windows reports x86 in
-# PROCESSOR_ARCHITECTURE and the real architecture in PROCESSOR_ARCHITEW6432.
-function Get-TemurinArch {
-    $arch = if ($env:PROCESSOR_ARCHITEW6432) { $env:PROCESSOR_ARCHITEW6432 } else { $env:PROCESSOR_ARCHITECTURE }
-    switch ($arch) {
-        "AMD64" { return "x64" }
-        "ARM64" { return "aarch64" }
-        default { throw "Unsupported Windows architecture for Temurin 21: $arch." }
-    }
-}
-
-function Use-LauncherJavaIfAvailable {
-    if (-not $env:INST_JAVA) {
-        return $false
-    }
-
-    $launcherJava = $env:INST_JAVA.Trim('"')
-    $launcherMajor = Get-JavaMajorVersionFromCommand $launcherJava
-    if (-not (Test-SupportedJavaVersion $launcherMajor)) {
-        return $false
-    }
-
-    $launcherBinDir = Split-Path -Parent $launcherJava
-    $launcherHome = Split-Path -Parent $launcherBinDir
-    $env:JAVA_HOME = $launcherHome
-    $env:PATH = "$launcherBinDir;$env:PATH"
-    Write-Host "Using launcher Java at $launcherJava"
-    return $true
-}
-
-function Use-LocalJava21IfAvailable {
-    $localJava = Get-ChildItem -Directory -ErrorAction SilentlyContinue | Where-Object {
-        $_.Name -like "jdk-21*" -or $_.Name -like "jre-21*"
-    } | Select-Object -First 1
-
-    if (-not $localJava) {
-        return $false
-    }
-
-    $env:JAVA_HOME = $localJava.FullName
-    $env:PATH = "$($localJava.FullName)\bin;$env:PATH"
-    Write-Host "Using local Java 21 at $($localJava.FullName)"
-    return $true
-}
-
-function Install-Temurin21 {
-    Write-Host "Installing Temurin 21..."
-    $arch = Get-TemurinArch
-    $javaZip = "temurin-21-$arch.zip"
-    try {
-        Invoke-WebRequest -Uri "https://api.adoptium.net/v3/binary/latest/21/ga/windows/$arch/jre/hotspot/normal/eclipse" -OutFile $javaZip -TimeoutSec 300
-        Expand-Archive -Path $javaZip -DestinationPath "." -Force
-        Remove-Item $javaZip
-    }
-    catch {
-        Remove-Item -Force -ErrorAction SilentlyContinue $javaZip
-        throw "Failed to download Temurin 21: $_"
-    }
-
-    $jdkDir = Get-ChildItem -Directory -ErrorAction SilentlyContinue | Where-Object {
-        $_.Name -like "jdk-21*" -or $_.Name -like "jre-21*"
-    } | Select-Object -First 1
-    if (-not $jdkDir) {
-        throw "Temurin 21 archive did not contain an expected jdk-21* or jre-21* directory."
-    }
-
-    $env:JAVA_HOME = $jdkDir.FullName
-    $env:PATH = "$($jdkDir.FullName)\bin;$env:PATH"
-    Write-Host "Installed Temurin 21 to $($jdkDir.FullName)"
-}
-
-function Confirm-SupportedJava {
-    if (Use-LauncherJavaIfAvailable) {
-        return
-    }
-
-    $javaMajor = Get-JavaMajorVersion
-    if (Test-SupportedJavaVersion $javaMajor) {
-        return
-    }
-
-    if (Use-LocalJava21IfAvailable) {
-        $javaMajor = Get-JavaMajorVersion
-    }
-
-    if (-not (Test-SupportedJavaVersion $javaMajor)) {
-        if ($javaMajor) {
-            Write-Host "Java $javaMajor found. Switching to Temurin 21."
-        }
-        else {
-            Write-Host "No supported Java runtime found locally. Installing Temurin 21."
-        }
-
-        Install-Temurin21
-        $javaMajor = Get-JavaMajorVersion
-    }
-
-    if ($javaMajor -ne "21") {
-        $foundJava = if ($javaMajor) { $javaMajor } else { "none" }
-        throw "Java 17 or Java 21 is required; found Java $foundJava."
-    }
-}
-
 Confirm-SupportedJava
-
-function Test-Truthy([string]$Value) {
-    return $Value -match '^(1|true|yes)$'
-}
-
-function Resolve-StringSetting([string]$ArgumentValue, [string]$EnvValue, [string]$DefaultValue) {
-    if ($ArgumentValue) {
-        return $ArgumentValue
-    }
-
-    if ($EnvValue) {
-        return $EnvValue
-    }
-
-    return $DefaultValue
-}
 
 $resolvedPackwizUrl = Resolve-StringSetting $PackwizUrl $env:PACKWIZ_URL "https://packwiz.thunder.john.rooney.scot/pack.toml"
 $resolvedPackwizSide = Resolve-StringSetting $PackwizSide $env:PACKWIZ_SIDE ""
 $resolvedPackwizExtraFlags = Resolve-StringSetting $PackwizExtraFlags $env:PACKWIZ_EXTRA_FLAGS ""
-$resolvedCleanInstall = $CleanInstall -or (Test-Truthy "$env:CLEAN_INSTALL")
+$resolvedCleanInstall = $CleanInstall -or ($env:CLEAN_INSTALL -match '^(1|true|yes)$')
 
 if (-not $resolvedPackwizSide) {
     throw "PACKWIZ_SIDE must be set to 'server' or 'both'. This script syncs a Thunder server. Running it inside a client instance replaces your client mods with the server set."
@@ -220,40 +55,17 @@ if ($resolvedPackwizSide -notin @("server", "both")) {
     throw "PACKWIZ_SIDE must be 'server' or 'both'."
 }
 
-if ($resolvedPackwizUrl -match "\s") {
-    throw "PACKWIZ_URL must not contain whitespace."
-}
+Assert-PackwizUrl "PACKWIZ_URL" $resolvedPackwizUrl
 
-# Over plaintext an attacker on the path controls the index and the hashes that
-# index is checked against, so hash verification proves nothing about what ends
-# up in mods/. The only host that legitimately serves the pack over http is the
-# local one in tests/ and CI, and that sets PACKWIZ_ALLOW_INSECURE_URL to say
-# so. A real install has no reason to.
-if ($resolvedPackwizUrl -notlike "https://*" -and $env:PACKWIZ_ALLOW_INSECURE_URL -notmatch '^(1|true|yes)$') {
-    throw "PACKWIZ_URL must be an https:// URL. Set PACKWIZ_ALLOW_INSECURE_URL=1 to allow a plaintext host, which is only safe for a local test."
-}
-
-if ($resolvedPackwizExtraFlags -match '[^A-Za-z0-9.,/:=_+\- ]') {
-    throw "PACKWIZ_EXTRA_FLAGS may only contain letters, numbers, spaces, and the characters . , / : = _ + -."
-}
+Assert-ExtraFlags "PACKWIZ_EXTRA_FLAGS" $resolvedPackwizExtraFlags
 
 if ($resolvedCleanInstall) {
     Write-Host "Clean install - wiping mods and packwiz config..."
     Remove-Item -Recurse -Force -ErrorAction SilentlyContinue mods, config/packwiz-installer.toml
 }
 
-function Install-PackwizBootstrap {
-    $bootstrapJar = Join-Path (Get-Location) "packwiz-installer-bootstrap.jar"
-    if (Test-Path $bootstrapJar) {
-        return
-    }
-
-    Write-Host "packwiz-installer-bootstrap.jar not found, downloading latest release..."
-    Invoke-WebRequest -Uri "https://github.com/packwiz/packwiz-installer-bootstrap/releases/latest/download/packwiz-installer-bootstrap.jar" -OutFile $bootstrapJar -TimeoutSec 120
-}
-
 try {
-    Install-PackwizBootstrap
+    Install-PackwizBootstrap (Get-Location).Path
 
     Write-Host "Syncing modpack via packwiz..."
     $packwizArgs = @("-jar", "packwiz-installer-bootstrap.jar", "-g", "-s", $resolvedPackwizSide)

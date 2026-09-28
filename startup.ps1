@@ -19,137 +19,8 @@ $ErrorActionPreference = "Stop"
 
 if ($Dir) { Set-Location $Dir }
 
-function Get-JavaMajorVersion {
-    $javaCommand = Get-Command java -CommandType Application -ErrorAction SilentlyContinue | Select-Object -First 1
-    if (-not $javaCommand) {
-        return $null
-    }
-
-    $stdoutPath = Join-Path ([System.IO.Path]::GetTempPath()) ([System.IO.Path]::GetRandomFileName())
-    $stderrPath = Join-Path ([System.IO.Path]::GetTempPath()) ([System.IO.Path]::GetRandomFileName())
-
-    try {
-        $process = Start-Process -FilePath $javaCommand.Source -ArgumentList "-version" -NoNewWindow -Wait -PassThru `
-            -RedirectStandardOutput $stdoutPath -RedirectStandardError $stderrPath
-
-        if ($process.ExitCode -ne 0) {
-            return $null
-        }
-
-        $versionOutput = @()
-        if (Test-Path $stderrPath) {
-            $versionOutput += Get-Content -LiteralPath $stderrPath -ErrorAction SilentlyContinue
-        }
-        if (Test-Path $stdoutPath) {
-            $versionOutput += Get-Content -LiteralPath $stdoutPath -ErrorAction SilentlyContinue
-        }
-
-        # Filter to the version line rather than taking the first. With
-        # JAVA_TOOL_OPTIONS or _JAVA_OPTIONS set, java prints a "Picked up ..."
-        # banner ahead of it, which carries no quoted version and made this
-        # return $null on a perfectly good runtime.
-        $versionLine = $versionOutput | Where-Object { $_ -match ' version "[^"]+"' } | Select-Object -First 1
-        if ($versionLine -match ' version "(?<version>[^"]+)"') {
-            $parts = $Matches.version.Split(".")
-            if ($parts[0] -eq "1" -and $parts.Length -gt 1) {
-                return $parts[1]
-            }
-            return $parts[0]
-        }
-
-        return $null
-    }
-    finally {
-        Remove-Item -Force -ErrorAction SilentlyContinue $stdoutPath, $stderrPath
-    }
-}
-
-function Test-SupportedJavaVersion([string]$Version) {
-    return $Version -in @("17", "21")
-}
-
-# The environment variables rather than RuntimeInformation.OSArchitecture: that
-# member needs .NET Framework 4.7.1, which every modern host has, but it is not
-# in the 5.1 profile PSScriptAnalyzer checks against and the warning is raised
-# on every edit. A 32-bit PowerShell on 64-bit Windows reports x86 in
-# PROCESSOR_ARCHITECTURE and the real architecture in PROCESSOR_ARCHITEW6432.
-function Get-TemurinArch {
-    $arch = if ($env:PROCESSOR_ARCHITEW6432) { $env:PROCESSOR_ARCHITEW6432 } else { $env:PROCESSOR_ARCHITECTURE }
-    switch ($arch) {
-        "AMD64" { return "x64" }
-        "ARM64" { return "aarch64" }
-        default { throw "Unsupported Windows architecture for Temurin 21: $arch." }
-    }
-}
-
-function Use-LocalJava21IfAvailable {
-    $localJava = Get-ChildItem -Directory -ErrorAction SilentlyContinue | Where-Object {
-        $_.Name -like "jdk-21*" -or $_.Name -like "jre-21*"
-    } | Select-Object -First 1
-
-    if (-not $localJava) {
-        return $false
-    }
-
-    $env:JAVA_HOME = $localJava.FullName
-    $env:PATH = "$($localJava.FullName)\bin;$env:PATH"
-    Write-Host "Using local Java 21 at $($localJava.FullName)"
-    return $true
-}
-
-function Install-Temurin21 {
-    Write-Host "Installing Temurin 21..."
-    $arch = Get-TemurinArch
-    $javaZip = "temurin-21-$arch.zip"
-    try {
-        Invoke-WebRequest -Uri "https://api.adoptium.net/v3/binary/latest/21/ga/windows/$arch/jre/hotspot/normal/eclipse" -OutFile $javaZip -TimeoutSec 300
-        Expand-Archive -Path $javaZip -DestinationPath "." -Force
-        Remove-Item $javaZip
-    }
-    catch {
-        Remove-Item -Force -ErrorAction SilentlyContinue $javaZip
-        throw "Failed to download Temurin 21: $_"
-    }
-
-    $jdkDir = Get-ChildItem -Directory -ErrorAction SilentlyContinue | Where-Object {
-        $_.Name -like "jdk-21*" -or $_.Name -like "jre-21*"
-    } | Select-Object -First 1
-    if (-not $jdkDir) {
-        throw "Temurin 21 archive did not contain an expected jdk-21* or jre-21* directory."
-    }
-
-    $env:JAVA_HOME = $jdkDir.FullName
-    $env:PATH = "$($jdkDir.FullName)\bin;$env:PATH"
-    Write-Host "Installed Temurin 21 to $($jdkDir.FullName)"
-}
-
-function Confirm-SupportedJava {
-    $javaMajor = Get-JavaMajorVersion
-    if (Test-SupportedJavaVersion $javaMajor) {
-        return
-    }
-
-    if (Use-LocalJava21IfAvailable) {
-        $javaMajor = Get-JavaMajorVersion
-    }
-
-    if (-not (Test-SupportedJavaVersion $javaMajor)) {
-        if ($javaMajor) {
-            Write-Host "Java $javaMajor found. Switching to Temurin 21."
-        }
-        else {
-            Write-Host "No supported Java runtime found locally. Installing Temurin 21."
-        }
-
-        Install-Temurin21
-        $javaMajor = Get-JavaMajorVersion
-    }
-
-    if ($javaMajor -ne "21") {
-        $foundJava = if ($javaMajor) { $javaMajor } else { "none" }
-        throw "Java 17 or Java 21 is required; found Java $foundJava."
-    }
-}
+# functions.ps1 sits beside this script in the pack, as functions.sh does.
+. (Join-Path $PSScriptRoot "functions.ps1")
 
 Confirm-SupportedJava
 
@@ -284,18 +155,6 @@ function Get-JvmGcFlags([int]$HeapMiB) {
     )
 }
 
-function Resolve-StringSetting([string]$ArgumentValue, [string]$EnvValue, [string]$DefaultValue) {
-    if ($ArgumentValue) {
-        return $ArgumentValue
-    }
-
-    if ($EnvValue) {
-        return $EnvValue
-    }
-
-    return $DefaultValue
-}
-
 function Resolve-BooleanSetting([string]$Name, [string]$ArgumentValue, [string]$EnvValue, [string]$DefaultValue) {
     $candidate = if ($ArgumentValue) {
         $ArgumentValue
@@ -354,18 +213,11 @@ if ($resolvedVoicePort -gt 65535) {
     throw "VOICE_PORT must be between 0 and 65535 (0 to disable)."
 }
 
-# SERVER_JARFILE names a file in the server directory, not a path to one.
 # tools/install.ps1 has always refused anything else; this is the same rule on
 # the start path, which a standalone run can reach without going through it.
-if ($resolvedServerJarFile -notmatch '^[A-Za-z0-9._-]+\.jar$') {
-    throw "SERVER_JARFILE must be a simple .jar filename."
-}
+Assert-ServerJarFile "SERVER_JARFILE" $resolvedServerJarFile
 
-# Operator-supplied flags reach a command line, so the allowlist is a deliberate
-# floor: letters, numbers, spaces and the punctuation a JVM flag actually needs.
-if ($resolvedJvmExtraFlags -match '[^A-Za-z0-9.,/:=_+\- ]') {
-    throw "JVM_EXTRA_FLAGS may only contain letters, numbers, spaces, and the characters . , / : = _ + -."
-}
+Assert-ExtraFlags "JVM_EXTRA_FLAGS" $resolvedJvmExtraFlags
 
 # A clean install is an install, so it syncs even when auto update is off.
 # Refusing would strand every server built from an egg older than
@@ -389,8 +241,8 @@ if ($AutoUpdate -or $autoByEnv -or $resolvedCleanInstall) {
         throw "Could not find '$updateScript'."
     }
 
-    # update.ps1 defaults -Dir to its own folder, which is tools/, so the
-    # server directory has to be passed explicitly.
+    # The server directory is passed explicitly rather than left to
+    # update.ps1's default, so a start never depends on where that script sits.
     & $updateScript `
         -Dir (Get-Location).Path `
         -PackwizUrl $resolvedPackwizUrl `

@@ -46,155 +46,61 @@ fi
 
 cd "${TARGET_DIR}"
 
-if [ "${MODE}" = "container" ]; then
-    apt-get -q update
-    apt-get install -y --no-install-recommends curl ca-certificates jq tar gzip
-fi
-
+# Nothing is installed with apt-get here any more. The egg's install container
+# carries Java 21 and curl already, and an egg from before 0.12.10, which still
+# installs on Debian, fetches curl itself before it fetches this script. tar and
+# gzip are part of every Debian image.
 ensure_supported_java
 
-printf '%s\n' "Fetching packwiz-installer-bootstrap..."
-curl -sSfL --retry 3 --retry-delay 2 --connect-timeout 30 --max-time 120 \
-    -o packwiz-installer-bootstrap.jar \
-    "https://github.com/packwiz/packwiz-installer-bootstrap/releases/latest/download/packwiz-installer-bootstrap.jar"
-printf '%s\n' "Downloaded packwiz-installer-bootstrap.jar"
+ensure_packwiz_bootstrap
 
-MODLOADER=${MODLOADER:-forge}
 MC_VERSION=${MC_VERSION:-1.20.1}
-if [ "${MODLOADER}" = "forge" ]; then
-    FORGE_VERSION=${FORGE_VERSION:-47.4.13}
-else
-    FORGE_VERSION=${FORGE_VERSION:-}
-fi
+FORGE_VERSION=${FORGE_VERSION:-47.4.13}
 SERVER_JARFILE=${SERVER_JARFILE:-server.jar}
-
-case ${MODLOADER} in
-    forge|fabric|quilt)
-        ;;
-    *)
-        die "MODLOADER must be 'forge', 'fabric', or 'quilt'."
-        ;;
-esac
 
 if ! printf '%s\n' "${MC_VERSION}" | grep -Eq '^[0-9]+\.[0-9]+(\.[0-9]+)?$'; then
     die "MC_VERSION must be in the form x.y or x.y.z."
 fi
 
-if [ -n "${FORGE_VERSION}" ] &&
-    ! printf '%s\n' "${FORGE_VERSION}" | grep -Eq '^[0-9]+(\.[0-9]+)*$'; then
+if ! printf '%s\n' "${FORGE_VERSION}" | grep -Eq '^[0-9]+(\.[0-9]+)*$'; then
     die "FORGE_VERSION must contain only digits and dots."
 fi
 
 validate_server_jarfile "SERVER_JARFILE" "${SERVER_JARFILE}"
 
-if { [ "${MODLOADER}" = "forge" ] && [ -z "${FORGE_VERSION}" ]; } ||
-    [ "${MODLOADER}" = "fabric" ] ||
-    [ "${MODLOADER}" = "quilt" ]; then
-    command -v jq >/dev/null 2>&1 || die "jq is required to resolve loader versions automatically."
+# run.sh and run.bat come straight back from the installer, so clearing them is
+# only tidiness. user_jvm_args.txt does not: the installer keeps an existing one
+# across a reinstall, precisely so an operator's own flags survive, and
+# startup.sh launches with it when it is there.
+rm -f unix_args.txt run.sh run.bat
+
+cleanup_forge() {
+    rm -f installer.jar installer.jar.log
+}
+trap cleanup_forge 0 1 2 15
+
+printf '%s\n' "Installing Forge ${MC_VERSION}-${FORGE_VERSION}..."
+curl -sSfL --retry 3 --retry-delay 2 --connect-timeout 30 --max-time 120 \
+    -o installer.jar \
+    "https://maven.minecraftforge.net/net/minecraftforge/forge/${MC_VERSION}-${FORGE_VERSION}/forge-${MC_VERSION}-${FORGE_VERSION}-installer.jar"
+
+java -jar installer.jar --installServer
+
+# Copied, not symlinked. A panel's permissions pass, its SFTP layer and most
+# backup tooling all treat symlinks differently from files, and losing this one
+# leaves a server that cannot boot at all with no clue as to why. The file is a
+# few hundred bytes.
+ARGS_FILE="libraries/net/minecraftforge/forge/${MC_VERSION}-${FORGE_VERSION}/unix_args.txt"
+if [ -f "${ARGS_FILE}" ]; then
+    rm -f unix_args.txt
+    cp "${ARGS_FILE}" unix_args.txt
+    printf '%s\n' "Wrote unix_args.txt for Forge ${MC_VERSION}-${FORGE_VERSION}"
+elif [ ! -f "${SERVER_JARFILE}" ]; then
+    die "Forge installation produced neither unix_args.txt nor ${SERVER_JARFILE}."
 fi
 
-case ${MODLOADER} in
-    forge)
-        # run.sh and run.bat come straight back from the installer, so clearing
-        # them is only tidiness. user_jvm_args.txt does not: the installer keeps
-        # an existing one across a reinstall, precisely so an operator's own
-        # flags survive, and startup.sh launches with it when it is there.
-        rm -f unix_args.txt run.sh run.bat
-
-        cleanup_forge() {
-            rm -f installer.jar installer.jar.log
-        }
-        trap cleanup_forge 0 1 2 15
-
-        RESOLVED_VERSION=${FORGE_VERSION}
-        if [ -z "${RESOLVED_VERSION}" ]; then
-            JSON_DATA=$(curl -sSfL --retry 3 --retry-delay 2 --connect-timeout 30 --max-time 30 \
-                "https://files.minecraftforge.net/maven/net/minecraftforge/forge/promotions_slim.json")
-            RESOLVED_VERSION=$(printf '%s\n' "${JSON_DATA}" | jq -r \
-                ".promos[\"${MC_VERSION}-recommended\"] // .promos[\"${MC_VERSION}-latest\"]")
-            if [ -z "${RESOLVED_VERSION}" ] || [ "${RESOLVED_VERSION}" = "null" ]; then
-                die "No Forge version found for Minecraft ${MC_VERSION}."
-            fi
-        fi
-
-        printf '%s\n' "Installing Forge ${MC_VERSION}-${RESOLVED_VERSION}..."
-        curl -sSfL --retry 3 --retry-delay 2 --connect-timeout 30 --max-time 120 \
-            -o installer.jar \
-            "https://maven.minecraftforge.net/net/minecraftforge/forge/${MC_VERSION}-${RESOLVED_VERSION}/forge-${MC_VERSION}-${RESOLVED_VERSION}-installer.jar"
-
-        java -jar installer.jar --installServer
-
-        # Copied, not symlinked. A panel's permissions pass, its SFTP layer and
-        # most backup tooling all treat symlinks differently from files, and
-        # losing this one leaves a server that cannot boot at all with no clue
-        # as to why. The file is a few hundred bytes.
-        ARGS_FILE="libraries/net/minecraftforge/forge/${MC_VERSION}-${RESOLVED_VERSION}/unix_args.txt"
-        if [ -f "${ARGS_FILE}" ]; then
-            rm -f unix_args.txt
-            cp "${ARGS_FILE}" unix_args.txt
-            printf '%s\n' "Wrote unix_args.txt for Forge ${MC_VERSION}-${RESOLVED_VERSION}"
-        elif [ ! -f "${SERVER_JARFILE}" ]; then
-            die "Forge installation produced neither unix_args.txt nor ${SERVER_JARFILE}."
-        fi
-
-        rm -f installer.jar installer.jar.log
-        trap - 0 1 2 15
-        ;;
-
-    fabric)
-        if [ -n "${FORGE_VERSION}" ]; then
-            FABRIC_LOADER=${FORGE_VERSION}
-        else
-            FABRIC_LOADER=$(curl -sSfL --retry 3 --retry-delay 2 --connect-timeout 30 --max-time 30 \
-                "https://meta.fabricmc.net/v2/versions/loader" | jq -r '.[0].version')
-        fi
-        FABRIC_INSTALLER=$(curl -sSfL --retry 3 --retry-delay 2 --connect-timeout 30 --max-time 30 \
-            "https://meta.fabricmc.net/v2/versions/installer" | jq -r '.[0].version')
-
-        printf '%s\n' "Installing Fabric Loader ${FABRIC_LOADER} for Minecraft ${MC_VERSION}..."
-
-        cleanup_fabric() {
-            rm -f "${SERVER_JARFILE}.tmp"
-        }
-        trap cleanup_fabric 0 1 2 15
-
-        curl -sSfL --retry 3 --retry-delay 2 --connect-timeout 30 --max-time 120 \
-            -o "${SERVER_JARFILE}.tmp" \
-            "https://meta.fabricmc.net/v2/versions/loader/${MC_VERSION}/${FABRIC_LOADER}/${FABRIC_INSTALLER}/server/jar"
-        mv "${SERVER_JARFILE}.tmp" "${SERVER_JARFILE}"
-
-        trap - 0 1 2 15
-        ;;
-
-    quilt)
-        if [ -n "${FORGE_VERSION}" ]; then
-            QUILT_LOADER=${FORGE_VERSION}
-        else
-            QUILT_LOADER=$(curl -sSfL --retry 3 --retry-delay 2 --connect-timeout 30 --max-time 30 \
-                "https://meta.quiltmc.org/v3/versions/loader" | jq -r '.[0].version')
-        fi
-        QUILT_INSTALLER=$(curl -sSfL --retry 3 --retry-delay 2 --connect-timeout 30 --max-time 30 \
-            "https://meta.quiltmc.org/v3/versions/installer" | jq -r '.[0].version')
-
-        printf '%s\n' "Installing Quilt Loader ${QUILT_LOADER} for Minecraft ${MC_VERSION}..."
-
-        cleanup_quilt() {
-            rm -f "${SERVER_JARFILE}.tmp"
-        }
-        trap cleanup_quilt 0 1 2 15
-
-        curl -sSfL --retry 3 --retry-delay 2 --connect-timeout 30 --max-time 120 \
-            -o "${SERVER_JARFILE}.tmp" \
-            "https://meta.quiltmc.org/v3/versions/loader/${MC_VERSION}/${QUILT_LOADER}/${QUILT_INSTALLER}/server/jar"
-        mv "${SERVER_JARFILE}.tmp" "${SERVER_JARFILE}"
-
-        trap - 0 1 2 15
-        ;;
-
-    *)
-        die "Unknown modloader '${MODLOADER}'. Expected: forge, fabric, or quilt."
-        ;;
-esac
+rm -f installer.jar installer.jar.log
+trap - 0 1 2 15
 
 PACKWIZ_URL=${PACKWIZ_URL:-https://packwiz.thunder.john.rooney.scot/pack.toml}
 PACKWIZ_SIDE=${PACKWIZ_SIDE:-server}

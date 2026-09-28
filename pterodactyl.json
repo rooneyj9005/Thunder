@@ -21,8 +21,8 @@
   },
   "scripts": {
     "installation": {
-      "script": "#!/bin/bash\nset -euo pipefail\n\napt-get -q update\napt-get install -y --no-install-recommends curl ca-certificates\ncd /mnt/server\n\ncurl -sSfL --connect-timeout 30 --max-time 30 -O https://github.com/rooneyj9005/Thunder/releases/latest/download/install.sh -O https://github.com/rooneyj9005/Thunder/releases/latest/download/functions.sh\nbash install.sh --container",
-      "container": "debian:bookworm-slim",
+      "script": "#!/bin/bash\nset -euo pipefail\n\ncd /mnt/server\n\ncurl -sSfL --connect-timeout 30 --max-time 30 -O https://github.com/rooneyj9005/Thunder/releases/latest/download/install.sh -O https://github.com/rooneyj9005/Thunder/releases/latest/download/functions.sh\nbash install.sh --container",
+      "container": "eclipse-temurin:21-jre-noble",
       "entrypoint": "bash"
     }
   },
@@ -48,18 +48,8 @@
       "field_type": "text"
     },
     {
-      "name": "Modloader",
-      "description": "Modloader type. Thunder requires Forge.",
-      "env_variable": "MODLOADER",
-      "default_value": "forge",
-      "user_viewable": true,
-      "user_editable": false,
-      "rules": "required|string|in:forge",
-      "field_type": "text"
-    },
-    {
-      "name": "Build / Loader Version",
-      "description": "Forge build number or Fabric/Quilt loader version. Leave empty for auto-detection. Thunder requires Forge 47.4.13.",
+      "name": "Forge Version",
+      "description": "Forge build to install. Thunder requires Forge 47.4.13, which is also what an empty value installs.",
       "env_variable": "FORGE_VERSION",
       "default_value": "47.4.13",
       "user_viewable": true,
@@ -69,7 +59,7 @@
     },
     {
       "name": "Server Jar File",
-      "description": "Server jar filename. Only used by Fabric/Quilt and legacy Forge. Modern Forge uses unix_args.txt instead.",
+      "description": "Server jar filename. Only used when a Forge install has no unix_args.txt, which the installer always writes for this version.",
       "env_variable": "SERVER_JARFILE",
       "default_value": "server.jar",
       "user_viewable": false,
@@ -159,12 +149,12 @@
     },
     {
       "name": "RCON Password",
-      "description": "Password for RCON authentication. Change from the default before enabling RCON.",
+      "description": "Password for RCON authentication, at least 8 characters. The server will not start with RCON enabled and this empty or set to change_me, the old default.",
       "env_variable": "RCON_PASS",
-      "default_value": "change_me",
+      "default_value": "",
       "user_viewable": true,
       "user_editable": true,
-      "rules": "required|string|min:8",
+      "rules": "nullable|string|min:8",
       "field_type": "text"
     },
     {

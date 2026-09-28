@@ -52,6 +52,42 @@ java_major_version() {
     java -version 2>&1 | awk -F '"' '/ version "/ { split($2, parts, "."); if (parts[1] == 1 && parts[2] != "") { print parts[2]; } else { print parts[1]; } exit }'
 }
 
+sha256_of() {
+    if command -v sha256sum >/dev/null 2>&1; then
+        sha256sum "$1" | cut -d ' ' -f 1
+    else
+        shasum -a 256 "$1" | cut -d ' ' -f 1
+    fi
+}
+
+# Pinned by version and hash rather than fetched from releases/latest, because
+# the jar runs with java -jar on every player machine and every server boot.
+# v0.0.3 has been the only release since 2020. What it runs is a different
+# matter: it still updates packwiz-installer itself on each run unless told not
+# to, which is how packwiz is meant to work, so this pins the first link of the
+# chain and not the whole of it.
+ensure_packwiz_bootstrap() {
+    bootstrap_url="https://github.com/packwiz/packwiz-installer-bootstrap/releases/download/v0.0.3/packwiz-installer-bootstrap.jar"
+    bootstrap_sha256="a8fbb24dc604278e97f4688e82d3d91a318b98efc08d5dbfcbcbcab6443d116c"
+
+    if [ -f packwiz-installer-bootstrap.jar ] &&
+        [ "$(sha256_of packwiz-installer-bootstrap.jar)" = "${bootstrap_sha256}" ]; then
+        return 0
+    fi
+
+    printf '%s\n' "Fetching packwiz-installer-bootstrap v0.0.3..."
+    rm -f packwiz-installer-bootstrap.jar.download
+    curl -sSfL --retry 3 --retry-delay 2 --connect-timeout 30 --max-time 120 \
+        -o packwiz-installer-bootstrap.jar.download "${bootstrap_url}"
+
+    if [ "$(sha256_of packwiz-installer-bootstrap.jar.download)" != "${bootstrap_sha256}" ]; then
+        rm -f packwiz-installer-bootstrap.jar.download
+        die "packwiz-installer-bootstrap.jar did not match its pinned SHA-256, so it was not used."
+    fi
+
+    mv packwiz-installer-bootstrap.jar.download packwiz-installer-bootstrap.jar
+}
+
 temurin_linux_arch() {
     arch=$(uname -m)
 
@@ -68,14 +104,39 @@ temurin_linux_arch() {
     esac
 }
 
+# Follows the newest Temurin 21 rather than pinning one, because a JRE is where
+# security fixes land, and checks the archive against the checksum Adoptium
+# publishes beside it. Adoptium's endpoint redirects to the archive on its own
+# GitHub releases, and the checksum sits at the same URL plus .sha256.txt, which
+# needs no JSON parser. The redirect has to land in Adoptium's releases, so a bad
+# answer from the API cannot send the download somewhere else along with a
+# checksum to match.
 install_local_java21() {
     arch=$(temurin_linux_arch)
     java_archive="temurin-21-${arch}.tar.gz"
 
+    java_url=$(curl -sSf --retry 3 --retry-delay 2 --connect-timeout 30 --max-time 30 \
+        -o /dev/null -w '%{redirect_url}' \
+        "https://api.adoptium.net/v3/binary/latest/21/ga/linux/${arch}/jre/hotspot/normal/eclipse")
+    case ${java_url} in
+        https://github.com/adoptium/*)
+            ;;
+        *)
+            die "Adoptium did not return a usable Temurin 21 download."
+            ;;
+    esac
+
     rm -f "${java_archive}"
     curl -sSfL --retry 3 --retry-delay 2 --connect-timeout 30 --max-time 300 \
-        -o "${java_archive}" \
-        "https://api.adoptium.net/v3/binary/latest/21/ga/linux/${arch}/jre/hotspot/normal/eclipse"
+        -o "${java_archive}" "${java_url}"
+    java_sha256=$(curl -sSfL --retry 3 --retry-delay 2 --connect-timeout 30 --max-time 30 \
+        "${java_url}.sha256.txt" | cut -d ' ' -f 1)
+
+    if [ -z "${java_sha256}" ] || [ "$(sha256_of "${java_archive}")" != "${java_sha256}" ]; then
+        rm -f "${java_archive}"
+        die "${java_url##*/} did not match the checksum Adoptium publishes for it."
+    fi
+
     tar -xzf "${java_archive}"
     rm -f "${java_archive}"
 
@@ -322,6 +383,27 @@ validate_non_negative_mib() {
             ;;
         *)
             return 0
+            ;;
+    esac
+}
+
+# The egg defaulted RCON_PASS to change_me until 0.12.10, and a panel keeps an
+# existing server's value when the egg is re-imported, so a server can have RCON
+# switched on behind a password printed in a public file. Vanilla already
+# disables RCON over an empty password, but with only a warning in the log;
+# this says why before the server starts, rather than after.
+validate_rcon_password() {
+    case ${ENABLE_RCON:-false} in
+        true|1|yes)
+            ;;
+        *)
+            return 0
+            ;;
+    esac
+
+    case ${RCON_PASS:-} in
+        ""|change_me)
+            die "ENABLE_RCON is on but RCON_PASS is empty or still the old change_me default. Set a password of at least 8 characters, or turn RCON off."
             ;;
     esac
 }

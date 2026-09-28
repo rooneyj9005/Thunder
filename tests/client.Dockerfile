@@ -34,7 +34,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && rm -rf /var/lib/apt/lists/*
 
 # portablemc in an isolated venv. Recent releases ship Forge support built in.
-RUN python3 -m venv /opt/pmc && /opt/pmc/bin/pip install --no-cache-dir portablemc
+# Pinned, because the launcher is the one part of this test that is not the
+# pack, and a new release changing under a rebuild would read as a pack fault.
+RUN python3 -m venv /opt/pmc && /opt/pmc/bin/pip install --no-cache-dir portablemc==4.4.1
 ENV PATH="/opt/pmc/bin:${PATH}"
 
 # The whole client-side test: sync the client files the way a launcher would,
@@ -51,7 +53,10 @@ USERNAME="${CLIENT_USERNAME:-TestPlayer}"
 CLIENT_MEMORY="${CLIENT_MEMORY:-4096}"
 SYNC_TIMEOUT="${CLIENT_SYNC_TIMEOUT:-900}"
 RENDER_DISTANCE="${RENDER_DISTANCE:-6}"
-BOOTSTRAP_URL="${BOOTSTRAP_URL:-https://github.com/packwiz/packwiz-installer-bootstrap/releases/latest/download/packwiz-installer-bootstrap.jar}"
+# The same pinned bootstrap functions.sh fetches, since a player's launcher runs
+# this jar too.
+BOOTSTRAP_URL="https://github.com/packwiz/packwiz-installer-bootstrap/releases/download/v0.0.3/packwiz-installer-bootstrap.jar"
+BOOTSTRAP_SHA256="a8fbb24dc604278e97f4688e82d3d91a318b98efc08d5dbfcbcbcab6443d116c"
 
 GAME_DIR=/data
 STATE_DIR="${GAME_DIR}/.thunder-test"
@@ -78,10 +83,14 @@ LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a glxinfo -B 2>&1 | sed -n '1,12p' | sed 's/^/
 printf '%s\n' "==> Syncing client files (side=client) from ${PACKWIZ_URL}"
 
 BOOTSTRAP_JAR="${STATE_DIR}/packwiz-installer-bootstrap.jar"
-if [ ! -s "${BOOTSTRAP_JAR}" ]; then
+if [ ! -s "${BOOTSTRAP_JAR}" ] ||
+    [ "$(sha256sum "${BOOTSTRAP_JAR}" | cut -d' ' -f1)" != "${BOOTSTRAP_SHA256}" ]; then
     curl -fsSL --connect-timeout 15 --max-time 180 --retry 3 --retry-delay 2 \
-        -o "${BOOTSTRAP_JAR}" "${BOOTSTRAP_URL}" ||
+        -o "${BOOTSTRAP_JAR}.download" "${BOOTSTRAP_URL}" ||
         die "Could not download packwiz-installer-bootstrap from ${BOOTSTRAP_URL}."
+    [ "$(sha256sum "${BOOTSTRAP_JAR}.download" | cut -d' ' -f1)" = "${BOOTSTRAP_SHA256}" ] ||
+        die "packwiz-installer-bootstrap.jar did not match its pinned SHA-256, so it was not used."
+    mv "${BOOTSTRAP_JAR}.download" "${BOOTSTRAP_JAR}"
 fi
 
 sync_status=0

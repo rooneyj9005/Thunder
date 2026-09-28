@@ -23,12 +23,12 @@ jobs:
     timeout-minutes: 120
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
         with:
           ref: ${{ github.event.release.tag_name }}
           fetch-depth: 0
 
-      - uses: actions/setup-java@v5
+      - uses: actions/setup-java@b6effb05e454b25005698d916606bdc6ffcbf961 # v5.7.0
         with:
           distribution: temurin
           java-version: "21"
@@ -38,17 +38,17 @@ jobs:
         run: bash ./.github/scripts/build-pages.sh tmp/pages
 
       - name: Setup Pages
-        uses: actions/configure-pages@v5
+        uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5.0.0
 
       - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3.0.1
         with:
           name: pack-pages
           path: ./tmp/pages
 
       - name: Deploy Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4.0.5
         with:
           artifact_name: pack-pages
 
@@ -59,19 +59,24 @@ jobs:
           # packwiz-installer-bootstrap otherwise asks the GitHub releases API for
           # the newest installer on every run. Runners share addresses, so that
           # request routinely lands on an exhausted sixty-an-hour budget and comes
-          # back 403, which surfaces as a broken pack rather than a busy API. The
-          # plain release asset URL below is not the API and is not rate limited
-          # the same way, so CI pins what it runs and stops guessing. Players keep
-          # the auto-update; only CI passes --bootstrap-no-update.
+          # back 403, which surfaces as a broken pack rather than a busy API. A
+          # release asset URL is not the API and is not rate limited the same way,
+          # so CI fetches one version by URL, checks its hash, and runs that.
+          # Players keep the auto-update; only CI passes --bootstrap-no-update.
           curl -sSfL --retry 3 --retry-delay 2 --connect-timeout 30 --max-time 120 \
             -o "$RUNNER_TEMP/packwiz-installer.jar" \
-            "https://github.com/packwiz/packwiz-installer/releases/latest/download/packwiz-installer.jar"
+            "https://github.com/packwiz/packwiz-installer/releases/download/v0.5.14/packwiz-installer.jar"
+          echo "c9f646908d340d84773948a9a7d98bc1dae250d35e1016dc6e2b8459760b5598  $RUNNER_TEMP/packwiz-installer.jar" | sha256sum -c -
 
+      # deploy-install.sh waits for the host to serve this release before it
+      # installs, so a stale edge can neither pass the test with the previous
+      # release nor fail it with a mismatched index.
       - name: Test the deployed install path
         id: install_test
         continue-on-error: true
         env:
           PAGE_URL: ${{ steps.deployment.outputs.page_url }}
+          EXPECTED_VERSION: ${{ github.event.release.tag_name }}
           PACKWIZ_EXTRA_FLAGS: --bootstrap-no-update --bootstrap-main-jar ${{ runner.temp }}/packwiz-installer.jar
         shell: bash
         run: |
@@ -109,7 +114,7 @@ jobs:
 
       - name: Check out rollback tag
         if: ${{ steps.install_test.outputs.ok != 'true' && steps.rollback.outputs.tag != '' }}
-        uses: actions/checkout@v5
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
         with:
           ref: ${{ steps.rollback.outputs.tag }}
           fetch-depth: 0
@@ -121,14 +126,14 @@ jobs:
 
       - name: Upload rollback Pages artifact
         if: ${{ steps.install_test.outputs.ok != 'true' && steps.rollback.outputs.tag != '' }}
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3.0.1
         with:
           name: pack-pages-rollback
           path: ./tmp/rollback-pages
 
       - name: Deploy rollback Pages artifact
         if: ${{ steps.install_test.outputs.ok != 'true' && steps.rollback.outputs.tag != '' }}
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e # v4.0.5
         with:
           artifact_name: pack-pages-rollback
 

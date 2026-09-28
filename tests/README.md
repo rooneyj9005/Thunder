@@ -5,10 +5,11 @@ and launched the way a real one is, against whichever pack metadata you point
 them at. They exist so a runtime problem surfaces here rather than on someone's
 server after a release.
 
-One driver and one Dockerfile per side. Each driver builds an image, runs a
-single container, watches it from the outside and collects its logs. Only one
-game JVM is ever resident, and that falls out of the structure without a driver
-having to police it.
+One driver and one Dockerfile per side. Each driver builds its image, runs its
+containers one at a time, watches them from the outside and collects their logs.
+The server side has two, because a panel does: one to install, then one to run.
+Only one game JVM is ever resident, and that falls out of the structure without
+a driver having to police it.
 
 That matters because of how the old harness failed. It started a server and a
 client together, the Docker VM ran out of memory and thrashed, and the engine
@@ -33,14 +34,18 @@ sh tests/server.sh --help             # every option
 
 Logs land in `tmp/tests/` as `server-logs.zip` and `client-logs.zip`, plus
 `crash-reports-server.zip` or `crash-reports-client.zip` when the game wrote any.
+The server zip carries the install's own output as `.thunder-test/install.log`.
 They survive the container. `tmp/` is where everything throwaway lives, and it is
 gitignored and kept out of the pack.
 
 ## What Each One Proves
 
-**server.sh** installs the pack the way the Pterodactyl egg does, using the
-pack's own `install.sh` and `startup.sh` on the real yolk image, then waits for
-`]: Done (` in the server log. That line means Forge loaded every server mod,
+**server.sh** installs the pack the way the Pterodactyl egg does, running the
+pack's own `install.sh --container` in the egg's own install image, then starts
+it with `startup.sh` on the real yolk image and waits for `]: Done (` in the
+server log. `checks-pack.sh` holds the install stage to the image the egg
+names, and the install fails if it downloads a Java runtime the image already
+has. That line means Forge loaded every server mod,
 the world generated, and the server is accepting connections. It then checks the
 installed jars against the server-side entries in `index.toml` and summarises the
 ERROR and WARN lines the run produced.
@@ -146,7 +151,7 @@ server put into offline mode and the shipped pack keeps online mode on.
 | ------------------- | -------------------------------------------------------- |
 | `functions.sh`      | shared plumbing: pack host, waiting, log collection       |
 | `server.sh`         | drives the server container and judges the result         |
-| `server.Dockerfile` | the Pterodactyl yolk image, plus the install and boot     |
+| `server.Dockerfile` | the egg's install image, then the yolk image it boots on |
 | `client.sh`         | drives the client container and walks the ladder          |
 | `client.Dockerfile` | Java 21, Xvfb, software OpenGL, portablemc, and the sync  |
 

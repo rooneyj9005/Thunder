@@ -190,6 +190,24 @@ done < <(
     sort -u
 )
 
+# The Windows route fetches install.ps1 from the latest release too, and it
+# cannot run without functions.ps1 beside it.
+if ! grep -qE "(^|[[:space:]/])functions\.ps1([[:space:]]|$)" .github/workflows/build.yml; then
+  echo "ERROR: tools/install.ps1 needs functions.ps1 beside it, but build.yml does not upload it." >&2
+  exit 1
+fi
+
+# tests/server.sh installs in the egg's own install image, so the harness runs
+# what a panel runs. Before 0.12.10 the two differed and the harness never saw
+# the egg install a second Java into every server directory.
+egg_install_image="$(jq -r '.scripts.installation.container' pterodactyl.json)"
+test_install_image="$(sed -nE 's/^FROM ([^ ]+) AS install$/\1/p' tests/server.Dockerfile)"
+
+if [[ "$egg_install_image" != "$test_install_image" ]]; then
+  echo "ERROR: The egg installs on '$egg_install_image' but tests/server.Dockerfile installs on '${test_install_image:-nothing}'." >&2
+  exit 1
+fi
+
 # checks-install.sh silently treats a missing side as "both", so a mod with no
 # side would install on both sides and nobody would be told. All of them declare
 # one today; this is what keeps that true.

@@ -6,12 +6,59 @@ ROOT_DIR=$(CDPATH='' cd "${SCRIPT_DIR}/../.." && pwd)
 TOOLS_DIR=${ROOT_DIR}/tmp/tools
 CR_CHARACTER=$(printf '\r')
 
+# Pinned, so a lint result depends on the tree and not on whichever shellcheck
+# a runner image happens to carry. One already on the PATH is used only when it
+# is this same version. Bump the version and the three hashes together; each
+# hash is the SHA-256 of the archive GitHub publishes for that release.
+SHELLCHECK_VERSION=v0.11.0
+
 cd "${ROOT_DIR}"
 
-latest_shellcheck_tag() {
-    latest_url=$(curl -fsSL -o /dev/null -w '%{url_effective}' \
-        "https://github.com/koalaman/shellcheck/releases/latest")
-    printf '%s\n' "${latest_url##*/}"
+shellcheck_archive_sha256() {
+    case $1 in
+        "shellcheck-${SHELLCHECK_VERSION}.linux.x86_64.tar.xz")
+            printf '%s\n' "8c3be12b05d5c177a04c29e3c78ce89ac86f1595681cab149b65b97c4e227198"
+            ;;
+        "shellcheck-${SHELLCHECK_VERSION}.linux.aarch64.tar.xz")
+            printf '%s\n' "12b331c1d2db6b9eb13cfca64306b1b157a86eb69db83023e261eaa7e7c14588"
+            ;;
+        "shellcheck-${SHELLCHECK_VERSION}.zip")
+            printf '%s\n' "8a4e35ab0b331c85d73567b12f2a444df187f483e5079ceffa6bda1faa2e740e"
+            ;;
+        *)
+            return 1
+            ;;
+    esac
+}
+
+fetch_shellcheck_archive() {
+    archive_name=$1
+    archive_path=$2
+
+    expected=$(shellcheck_archive_sha256 "${archive_name}") || {
+        printf '%s\n' "ERROR: No pinned hash for ${archive_name}." >&2
+        return 1
+    }
+
+    curl -fsSL --retry 3 --retry-delay 2 -o "${archive_path}" \
+        "https://github.com/koalaman/shellcheck/releases/download/${SHELLCHECK_VERSION}/${archive_name}"
+
+    if command -v sha256sum >/dev/null 2>&1; then
+        actual=$(sha256sum "${archive_path}" | cut -d ' ' -f 1)
+    else
+        actual=$(shasum -a 256 "${archive_path}" | cut -d ' ' -f 1)
+    fi
+
+    if [ "${actual}" != "${expected}" ]; then
+        rm -f "${archive_path}"
+        printf '%s\n' "ERROR: ${archive_name} did not match its pinned SHA-256." >&2
+        return 1
+    fi
+}
+
+path_shellcheck_is_pinned() {
+    command -v shellcheck >/dev/null 2>&1 || return 1
+    [ "$(shellcheck --version 2>/dev/null | sed -n 's/^version: //p')" = "${SHELLCHECK_VERSION#v}" ]
 }
 
 native_path() {
@@ -55,7 +102,7 @@ extract_zip_archive() {
 }
 
 bootstrap_shellcheck() {
-    version=$(latest_shellcheck_tag)
+    version=${SHELLCHECK_VERSION}
     extract_dir="${TOOLS_DIR}/shellcheck/${version}"
     mkdir -p "${extract_dir}"
 
@@ -64,6 +111,8 @@ bootstrap_shellcheck() {
         printf '%s\n' "${shellcheck_path}"
         return 0
     fi
+
+    printf '%s\n' "Fetching shellcheck ${version} into tmp/tools..." >&2
 
     case $(uname -s) in
         Linux)
@@ -82,16 +131,14 @@ bootstrap_shellcheck() {
             esac
             archive_name="shellcheck-${version}.${os_name}.${machine}.tar.xz"
             archive_path="${TOOLS_DIR}/${archive_name}"
-            curl -fsSL -o "${archive_path}" \
-                "https://github.com/koalaman/shellcheck/releases/latest/download/${archive_name}"
+            fetch_shellcheck_archive "${archive_name}" "${archive_path}"
             tar -xJf "${archive_path}" -C "${extract_dir}" --strip-components=1
             rm -f "${archive_path}"
             ;;
         MINGW*|MSYS*|CYGWIN*)
             archive_name="shellcheck-${version}.zip"
             archive_path="${TOOLS_DIR}/${archive_name}"
-            curl -fsSL -o "${archive_path}" \
-                "https://github.com/koalaman/shellcheck/releases/latest/download/${archive_name}"
+            fetch_shellcheck_archive "${archive_name}" "${archive_path}"
             extract_zip_archive "${archive_path}" "${extract_dir}"
             rm -f "${archive_path}"
             ;;
@@ -150,11 +197,10 @@ for script_path in "$@"; do
     fi
 done
 
-if command -v shellcheck >/dev/null 2>&1; then
+if path_shellcheck_is_pinned; then
     SHELLCHECK_BIN=$(command -v shellcheck)
 else
     mkdir -p "${TOOLS_DIR}"
-    printf '%s\n' "shellcheck not found on PATH, downloading the latest release locally..." >&2
     SHELLCHECK_BIN=$(bootstrap_shellcheck)
 fi
 

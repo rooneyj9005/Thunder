@@ -21,6 +21,7 @@ hs_err_pid*.log
 /.packwizignore
 /LICENSE
 /README.md
+/THANKS.md
 /pterodactyl.json
 /tools/install.sh
 /tools/install.ps1

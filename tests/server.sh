@@ -3,8 +3,9 @@ set -eu
 
 # End-to-end test for the Thunder server.
 #
-# Installs the pack the way the Pterodactyl egg does, boots it, and passes when
-# the server has generated its world and finished starting. The installed jars
+# Installs the pack the way the Pterodactyl egg does, in the egg's own install
+# image, then boots it on the yolk image a panel runs it on, and passes when the
+# server has generated its world and finished starting. The installed jars
 # are checked against the server-side entries in index.toml, and every log the
 # run produced is zipped into tmp/tests/ whether it passed or failed.
 #
@@ -22,12 +23,15 @@ ROLE=server
 . "$(CDPATH='' cd "$(dirname "$0")" && pwd)/functions.sh"
 
 CONTAINER="thunder-test-server"
+INSTALL_CONTAINER="thunder-test-server-install"
 VOLUME="thunder-test-server-data"
 IMAGE="thunder-test-server:local"
+INSTALL_IMAGE="thunder-test-server-install:local"
 LOG_PATH="/home/container/logs/latest.log"
 
 MEMORY=${THUNDER_SERVER_MEMORY:-4096}
 OVERHEAD=${THUNDER_SERVER_OVERHEAD:-1024}
+INSTALL_TIMEOUT=${THUNDER_SERVER_INSTALL_TIMEOUT:-1800}
 BOOT_TIMEOUT=${THUNDER_SERVER_BOOT_TIMEOUT:-2400}
 PACK_URL=""
 INSTALL_ASSETS_URL=""
@@ -99,6 +103,8 @@ cleanup() {
 
     [ "${OWN_PACK_HOST}" -eq 1 ] && stop_pack_host
 
+    dk rm -f "${INSTALL_CONTAINER}" >/dev/null 2>&1 || true
+
     if [ "${KEEP}" -eq 1 ]; then
         say "Container left running (--keep). Stop it with: docker rm -f ${CONTAINER}"
         return 0
@@ -133,53 +139,105 @@ if [ "${CLEAN}" -eq 1 ]; then
 fi
 
 if [ "${BUILD}" -eq 1 ]; then
-    say "==> Building ${IMAGE}"
-    dk build -f "$(host_path "${TESTS_DIR}/server.Dockerfile")" \
+    say "==> Building ${INSTALL_IMAGE} and ${IMAGE}"
+    dk build -f "$(host_path "${TESTS_DIR}/server.Dockerfile")" --target install \
+        -t "${INSTALL_IMAGE}" "$(host_path "${ROOT_DIR}")" ||
+        die "The install image would not build."
+    dk build -f "$(host_path "${TESTS_DIR}/server.Dockerfile")" --target run \
         -t "${IMAGE}" "$(host_path "${ROOT_DIR}")" ||
         die "The server image would not build."
 fi
 
-dk rm -f "${CONTAINER}" >/dev/null 2>&1 || true
+dk rm -f "${INSTALL_CONTAINER}" "${CONTAINER}" >/dev/null 2>&1 || true
 
 STARTED=$(date +%s)
-
-# A hard ceiling with swap denied turns "the whole Docker VM thrashes" into
-# "this container was killed", which is something the driver can explain.
-say "==> Starting ${CONTAINER}"
-dk run -d --init \
-    --name "${CONTAINER}" \
-    --add-host "host.docker.internal:host-gateway" \
-    -e "PACKWIZ_URL=${PACK_URL}" \
-    -e "INSTALL_ASSETS_URL=${INSTALL_ASSETS_URL}" \
-    -v "$(host_path "${ROOT_DIR}/tools/install.sh"):/opt/thunder/install.sh:ro" \
-    -v "$(host_path "${ROOT_DIR}/functions.sh"):/opt/thunder/functions.sh:ro" \
-    -e "SERVER_MEMORY=${MEMORY}" \
-    -e "ENABLE_VOICE_CHAT=false" \
-    -v "${VOLUME}:/home/container" \
-    -m "${CEILING}m" \
-    --memory-swap "${CEILING}m" \
-    "${IMAGE}" >/dev/null ||
-    die "The server container would not start."
-
 STATUS=0
 REASON=""
 
-# The server has proved itself when it has generated its world and finished
-# starting, which is the line vanilla logs and the panel watches for.
-if MARKER=$(wait_for_marker "${CONTAINER}" "${LOG_PATH}" ']: Done \(' '' "${BOOT_TIMEOUT}"); then
-    say "  Ready: ${MARKER}"
-    check_mod_set "${VOLUME}" server /vol/mods || {
-        STATUS=1
-        REASON="the installed mod set does not match index.toml"
-    }
-else
+# The install runs in a container of its own, as it does on a panel, and has to
+# finish before the server can start. Minutes of silence look like a hang, so it
+# gets the same heartbeat as the boot.
+run_install() {
+    say "==> Installing in ${INSTALL_CONTAINER}, the egg's install image"
+    dk run -d --init \
+        --name "${INSTALL_CONTAINER}" \
+        --add-host "host.docker.internal:host-gateway" \
+        -e "PACKWIZ_URL=${PACK_URL}" \
+        -e "INSTALL_ASSETS_URL=${INSTALL_ASSETS_URL}" \
+        -v "$(host_path "${ROOT_DIR}/tools/install.sh"):/opt/thunder/install.sh:ro" \
+        -v "$(host_path "${ROOT_DIR}/functions.sh"):/opt/thunder/functions.sh:ro" \
+        -v "${VOLUME}:/mnt/server" \
+        -m "${CEILING}m" \
+        --memory-swap "${CEILING}m" \
+        "${INSTALL_IMAGE}" >/dev/null ||
+        die "The install container would not start."
+
+    install_waited=0
+    while container_running "${INSTALL_CONTAINER}"; do
+        if [ "${install_waited}" -ge "${INSTALL_TIMEOUT}" ]; then
+            REASON="the install did not finish within ${INSTALL_TIMEOUT}s"
+            return 1
+        fi
+
+        if [ $((install_waited % HEARTBEAT_INTERVAL)) -eq 0 ] && [ "${install_waited}" -gt 0 ]; then
+            install_line=$(dk logs --tail 1 "${INSTALL_CONTAINER}" 2>&1 | tr '\r' '\n' |
+                grep -v '^[[:space:]]*$' | tail -n 1 | cut -c1-140)
+            say "    ${install_waited}s: ${install_line:-waiting}" >&2
+        fi
+
+        sleep "${POLL_INTERVAL}"
+        install_waited=$((install_waited + POLL_INTERVAL))
+    done
+
+    if [ "$(container_field "${INSTALL_CONTAINER}" '{{.State.ExitCode}}')" != "0" ]; then
+        REASON="the install failed: $(exit_reason "${INSTALL_CONTAINER}")"
+        say "" >&2
+        say "Last 40 lines of the install:" >&2
+        dk logs --tail 40 "${INSTALL_CONTAINER}" 2>&1 | tr '\r' '\n' |
+            grep -v '^[[:space:]]*$' | sed 's/^/  /' >&2
+        return 1
+    fi
+
+    dk rm -f "${INSTALL_CONTAINER}" >/dev/null 2>&1 || true
+}
+
+if ! run_install; then
     STATUS=1
-    REASON=${MARKER}
-    report_failure "${CONTAINER}" "${REASON}" "${LOG_PATH}"
+    say "" >&2
+    say "FAILED: the server test, before the server started." >&2
+    say "Why: ${REASON}" >&2
+else
+    # A hard ceiling with swap denied turns "the whole Docker VM thrashes" into
+    # "this container was killed", which is something the driver can explain.
+    say "==> Starting ${CONTAINER}"
+    dk run -d --init \
+        --name "${CONTAINER}" \
+        -e "SERVER_MEMORY=${MEMORY}" \
+        -e "ENABLE_VOICE_CHAT=false" \
+        -v "${VOLUME}:/home/container" \
+        -m "${CEILING}m" \
+        --memory-swap "${CEILING}m" \
+        "${IMAGE}" >/dev/null ||
+        die "The server container would not start."
+
+    # The server has proved itself when it has generated its world and finished
+    # starting, which is the line vanilla logs and the panel watches for.
+    if MARKER=$(wait_for_marker "${CONTAINER}" "${LOG_PATH}" ']: Done \(' '' "${BOOT_TIMEOUT}"); then
+        say "  Ready: ${MARKER}"
+        check_mod_set "${VOLUME}" server /vol/mods || {
+            STATUS=1
+            REASON="the installed mod set does not match index.toml"
+        }
+    else
+        STATUS=1
+        REASON=${MARKER}
+        report_failure "${CONTAINER}" "${REASON}" "${LOG_PATH}"
+    fi
+
+    summarise_problems "${VOLUME}" "logs/latest.log"
 fi
 
-summarise_problems "${VOLUME}" "logs/latest.log"
-collect_logs "${VOLUME}" "server-logs.zip" "logs" "crash-reports" "server.properties"
+collect_logs "${VOLUME}" "server-logs.zip" ".thunder-test/install.log" "logs" "crash-reports" "server.properties"
 
 # Everything worth keeping is out of the container now, so stop holding memory
 # while the result is printed. The EXIT trap still covers every earlier exit.

@@ -131,6 +131,8 @@ ENABLE_VOICE_CHAT=${ENABLE_VOICE_CHAT:-true}
 validate_boolean_value "ENABLE_VOICE_CHAT" "${ENABLE_VOICE_CHAT}"
 validate_extra_flags "JVM_EXTRA_FLAGS" "${JVM_EXTRA_FLAGS}"
 validate_server_jarfile "SERVER_JARFILE" "${SERVER_JARFILE}"
+validate_boolean_value "ENABLE_RCON" "${ENABLE_RCON:-}"
+validate_rcon_password
 
 case ${PACKWIZ_AUTO_UPDATE} in
     true|1|yes) SYNC_ON_START=true ;;

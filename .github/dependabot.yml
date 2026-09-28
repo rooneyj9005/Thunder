@@ -1,0 +1,17 @@
+# The workflows pin every action to a commit, with the version beside it as a
+# comment. This keeps those pins moving, one grouped pull request a week, and
+# checks.yml runs against it like any other change.
+#
+# packwiz, packwiz-installer, shellcheck and PSScriptAnalyzer are pinned in the
+# workflows and scripts by URL and hash, which Dependabot cannot read. Moving
+# them is by hand.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        patterns:
+          - "*"
